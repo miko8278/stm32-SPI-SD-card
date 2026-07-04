@@ -1,0 +1,284 @@
+\documentclass[11pt]{article}
+\usepackage{xcolor}
+%\usepackage{mathptmx} % times new roman
+
+%Fuer Deutschsupport
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+%\usepackage{lmodern}
+%\usepackage{icomma}
+
+
+
+%Mathematik
+\usepackage{amsfonts,amssymb,amsmath}
+
+
+%spezielle Taballen
+\usepackage{booktabs}
+\usepackage{multirow}
+
+%fuer Einheiten
+\usepackage{siunitx}
+%\sisetup{output-decimal-marker={,}, parse-numbers = false}
+%Rand oben unten links rechts
+\usepackage[top=2cm, bottom=2cm, left= 2cm, right=2cm]{geometry}
+
+% Bilder support
+\usepackage{graphicx}
+\usepackage{float}
+
+%Klickbare Links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor = gray,
+    pdftitle={Titel},
+    pdfpagemode=FullScreen,
+    }
+
+%fuer code
+\usepackage[newfloat]{minted}
+%\usepackage{listings}
+\usepackage{moresize}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf}
+%\captionsetup[sub]{font=small}
+
+%Listing in Source code umbenennen
+\newenvironment{code}{\captionsetup{type=listing}}{}
+\SetupFloatingEnvironment{listing}{name=Source Code}
+
+%Custom Commands
+\newcommand*{\quelle}[1]{{\raggedleft\footnotesize Quelle:~#1}}
+\newcommand*{\tab}[1]{\textit{Tabelle~\ref{#1}}}
+\newcommand*{\fig}[1]{\textit{Abbildung~\ref{#1}}}
+\newcommand*{\Fig}[1]{\textit{Abbildungen~\ref{#1}}}
+\newcommand*{\coderef}[1]{\textit{Source Code~\ref{#1}}}
+%\newcommand*{\code}{\textit{Source Code}}
+
+\newcommand{\uaus}{$U\!\_\!aus\!\_\!GND$ }
+\newcommand{\uout}{$U\!\_\!out\!\_\!GND$ }
+%Einheiten
+\newcommand*{\mohm}{\ \si{\milli\ohm}}
+\newcommand*{\ohm}{\ \si{\ohm}}
+\newcommand*{\kohm}{\ \si{\kilo\ohm}}
+\newcommand*{\Mohm}{\ \si{\mega\ohm}}
+\newcommand*{\V}{\ \si{\volt}}
+\newcommand*{\mV}{\ \si{\milli\volt}}
+\newcommand*{\A}{\ \si{\ampere}}
+\newcommand*{\mA}{\ \si{\milli\ampere}}
+\newcommand*{\uA}{\ \si{\micro\ampere}}
+\newcommand*{\s}{\ \si{\second}}
+\newcommand*{\ms}{\ \si{\milli\second}}
+\newcommand*{\us}{\ \si{\micro\second}}
+\newcommand*{\ns}{\ \si{\nano\second}}
+
+\newcommand*{\W}{\ \si{\watt}}
+\newcommand*{\mW}{\ \si{\milli\watt}}
+
+\newcommand*{\Np}{\ \si{\neper}}
+
+\newcommand*{\mH}{\ \si{\milli\henry}}
+\newcommand*{\uH}{\ \si{\micro\henry}}
+\newcommand*{\nH}{\ \si{\nano\henry}}
+
+\newcommand*{\mm}{\ \si{\milli\meter}}
+\newcommand*{\m}{\ \si{\meter}}
+\newcommand*{\km}{\ \si{\kilo\meter}}
+
+\newcommand*{\MHz}{\ \si{\mega\hertz}}
+\newcommand*{\kHz}{\ \si{\kilo\hertz}}
+\newcommand*{\Hz}{\ \si{\hertz}}
+\newcommand*{\pF}{\ \si{\pico\farad}}
+\newcommand*{\nF}{\ \si{\nano\farad}}
+\newcommand*{\uF}{\ \si{\micro\farad}}
+
+\newcommand*{\uS}{\ \si{\micro\siemens}}
+%Bei neuen Paragraphen keinen Einschub
+\parindent 0px
+
+%Fuer Bilder und Tabellen Unterschriften
+\usepackage[font=footnotesize,justification=centering]{caption}
+
+
+%Counter fuer Codelabels
+\newcounter{codecnt}
+\stepcounter{codecnt}
+\newcommand*{\autolabelcode}{
+\label{code:\thecodecnt}
+\stepcounter{codecnt}
+}
+
+
+%Counter fuer Abbildungslabels
+\newcounter{figcnt}
+\stepcounter{figcnt}
+\newcommand*{\autolabelfig}{
+\label{fig:\thefigcnt}
+\stepcounter{figcnt}
+}
+
+
+
+%minipage abstraktion
+\newcommand*{\MP}[3]{
+\begin{minipage}[#1]{#2\textwidth}
+#3
+\end{minipage}
+}
+
+
+\newcommand*{\ABB}{{\Large \textbf{ABBILDUNGFILLER }}}
+
+\begin{document}
+%
+% TITELSEITE
+%
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    
+    %------------------------------------------------
+    % Logo
+    %------------------------------------------------
+    
+    \begin{flushleft}
+        \includegraphics[width=13cm]{Bilder/bht.png}
+    \end{flushleft}
+    
+    \vspace{1.0cm}
+    
+    %------------------------------------------------
+    % Hochschule
+    %------------------------------------------------
+    
+    \begin{center}
+    
+    {\Large\bfseries Berliner Hochschule für Technik}
+    
+    \vspace{0.4cm}
+    
+    {\large Fachbereich VII: Elektrotechnik - Mechatronik - Optometrie} \\
+    
+    \vspace{3.0cm}
+    
+
+    {\Huge Bachelorarbeit}
+    
+    \vspace{0.7cm}
+    
+    %------------------------------------------------
+    % Titel
+    %------------------------------------------------
+    
+    {\Huge\bfseries
+    Vergleich verschiedener Dateisysteme\\
+    für den SD-Karten-Einsatz\\[0.3em]
+    in eingebetteten Systemen
+    }
+    
+    \vspace{2.5cm}
+    
+    %------------------------------------------------
+    % Informationen
+    %------------------------------------------------
+    
+    \renewcommand{\arraystretch}{1.5}
+    
+    \begin{tabular}{rl}
+    Autor:              & Michael Kolorz  \\
+    Matrikelnummer:     & 100359 \\
+    Studiengang:        & Elektrotechnik (B.Eng.) \\
+    Schwerpunkt:        & Kommunikationstechnik \\ 
+    Erstprüfer:         & Prof.\ Dr.\ Peter Gober \\
+    Zweitprüfer:        & Prof.\ Dr.\ David Dietrich \\
+    Semester:           & Sommersemester 2026 \\
+    Abgabedatum:        & 1. Oktober 2026 \\
+    \end{tabular}
+    
+    \vfill
+    
+    \end{center}
+    
+    \end{titlepage}
+
+
+
+% %
+% %   TITELSEITE
+% %
+% \begin{titlepage}
+% 	\includegraphics[scale=0.35]{Bilder/bht.png}
+% 	\begin{center}
+% 	\vspace*{5cm}
+	
+% 	\Huge
+%         \textbf{Bachelorarbeit: Vergleich verschiedener Dateisysteme für den SD-Karten-Einsatz in
+%         eingebetteten Systemen}
+            
+%         \vspace{3 cm}
+
+%         \Large
+        
+%         \begin{tabular}{ll}
+%         \textbf{Autor:}	            &	YYZYY\\
+%         \textbf{Dozent:} &  Prof. Dr. XXX  \\
+%         \end{tabular} 
+%         \vfill
+  
+%     \end{center}
+
+
+% \vspace{1cm}	
+
+%     		\begin{flushright}   
+%         	\large
+%         	  Fachbereich VII - (B.Eng.) Elektrotechnik \\
+%                 Kommunikationstechnik (KT)\\        	
+%                 Sommersemester 2026 \\
+%         	\today
+%   		\end{flushright}
+% \end{titlepage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Verhindert Seitenzahlen für das Inhaltsverzeichnis
+%\pagenumbering{gobble} % Seitenzahlen ausblenden
+\tableofcontents % Inhaltsverzeichnis
+
+%\addcontentsline{toc}{section}{Abbildungsverzeichnis}
+%\listoffigures
+% Wiederherstellung der Seitenzahlen
+\newpage % Neue Seite
+
+\section{Einleitung}
+
+
+Blah blub
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
+
+\renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
+\begin{thebibliography}{9}
+\addcontentsline{toc}{section}{Quellenverzeichnis}
+
+
+\bibitem{coro1}
+Michael Eiler, \textit{C++20: Building a Thread-Pool With Coroutines} \\
+\url{https://blog.eiler.eu/posts/20210512/}
+
+
+\end{thebibliography}
+
+
+
+
+\end{document}
