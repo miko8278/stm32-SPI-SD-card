@@ -1,5 +1,7 @@
 #I'm not allowed to redistribute the ref and datasheets
-stmref/
+#but i'll link them in the readme
+stmref/*
+!stmref/README.md
 
 # ==========================================
 # CMake & Build-Ordner
