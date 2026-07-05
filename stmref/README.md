@@ -1,4 +1,4 @@
-# STM32 reference manual and datasheet
+# STM32-G431 reference manual and datasheet
 
 This project uses the STM32-G431.  
 [Get the datasheet](https://www.st.com/resource/en/datasheet/stm32g431c6.pdf)  
