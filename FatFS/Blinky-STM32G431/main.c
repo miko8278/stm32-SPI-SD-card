@@ -2,7 +2,7 @@
 
 void delay(volatile uint32_t count) {
     while (count--) {
-        __NOP(); // Assembly "No Operation" to prevent compiler optimization
+        __NOP(); 
     }
 }
 
