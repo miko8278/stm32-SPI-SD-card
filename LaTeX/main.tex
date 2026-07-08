@@ -264,6 +264,44 @@
 
 Blah blub
 
+\section{SD}
+\begin{table}[htbp]
+    \centering
+    \caption{Pin-Belegung einer Micro-SD-Karte im SPI-Modus}
+    \label{tab:microsd_spi}
+    \begin{tabular}{lllll}
+    \toprule
+    \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32 G431 Pin} \\ \midrule
+    1            & DAT2              & \textit{Nicht genutzt} & Frei lassen (oder Pull-up)  & --                      \\
+    2            & DAT3 / CD         & \textbf{CS}        & Chip Select (Low-aktiv)     & GPIO (z.~B. PA4)        \\
+    3            & CMD               & \textbf{DI}        & Data In (Dateneingang)      & PA7 (MOSI)              \\
+    4            & VDD               & \textbf{VDD}       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
+    5            & CLK               & \textbf{SCLK}      & Taktleitung                 & PA5 (SCK)               \\
+    6            & VSS               & \textbf{VSS}       & Masse                       & GND                     \\
+    7            & DAT0              & \textbf{DO}        & Data Out (Datenausgang)     & PA6 (MISO)              \\
+    8            & DAT1              & \textit{Nicht genutzt} & Frei lassen (oder Pull-up)  & --                      \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Pin-Belegung einer Standard-SD-Karte im SPI-Modus}
+    \label{tab:standardsd_spi}
+    \begin{tabular}{lllll}
+    \toprule
+    \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32 G431 Pin} \\ \midrule
+    1            & DAT3 / CD         & \textbf{CS}        & Chip Select (Low-aktiv)     & GPIO (z.~B. PA4)        \\
+    2            & CMD               & \textbf{DI}        & Data In (Dateneingang)      & PA7 (MOSI)              \\
+    3            & VSS1              & \textbf{VSS}       & Masse                       & GND                     \\
+    4            & VDD               & \textbf{VDD}       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
+    5            & CLK               & \textbf{SCLK}      & Taktleitung                 & PA5 (SCK)               \\
+    6            & VSS2              & \textbf{VSS}       & Masse                       & GND                     \\
+    7            & DAT0              & \textbf{DO}        & Data Out (Datenausgang)     & PA6 (MISO)              \\
+    8            & DAT1              & \textit{Nicht genutzt} & Frei lassen                 & --                      \\
+    9            & DAT2              & \textit{Nicht genutzt} & Frei lassen                 & --                      \\ \bottomrule
+    \end{tabular}
+    \end{table}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
@@ -271,9 +309,17 @@ Blah blub
 \addcontentsline{toc}{section}{Quellenverzeichnis}
 
 \bibitem{spi1}
-Ababei, C. (2013). \textit{Lecture 12: SPI and SD cards}. Vorlesungsskript, EE-379 Embedded Systems and Applications, University at Buffalo. 
-Abgerufen von \url{https://www.dejazzer.com/ee379/lecture_notes/lec12_sd_card.pdf} (Besucht am 6. Juli 2026).
+Ababei, C. (2013). 
+\textit{Lecture 12: SPI and SD cards}. 
+Vorlesungsskript, EE-379 Embedded Systems and Applications, University at Buffalo. 
+Abgerufen von \url{https://www.dejazzer.com/ee379/lecture_notes/lec12_sd_card.pdf} 
+(Besucht am 6. Juli 2026).
 
+\bibitem{microchip1} Microchip Technology Inc. (2024). 
+\textit{How to interface a microSD media with Microchip SD/MMC Card Readers}. 
+Support Knowledge Base. Abgerufen von 
+\url{https://support.microchip.com/s/article/How-to-interface-a-microSD-media-with-Microchip-SD-MMC-Card-Readers} 
+(Besucht am 8. Juli 2026).
 
 \bibitem{coro1}
 Michael Eiler, \textit{C++20: Building a Thread-Pool With Coroutines} \\
