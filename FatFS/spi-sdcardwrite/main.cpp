@@ -91,6 +91,14 @@ static void SPI1_Init(void)
 //     while (SPI1->SR & SPI_SR_BSY);
 // }
 
+static void SPI1_SetHighSpeed()
+{
+    SPI1->CR1 &= ~SPI_CR1_SPE; // SPI off
+    SPI1->CR1 &= ~SPI_CR1_BR_Msk;
+    SPI1->CR1 |= (3U << SPI_CR1_BR_Pos); // /16
+    SPI1->CR1 |= SPI_CR1_SPE;  // SPI on
+}
+
 static uint8_t SPI1_Transfer(uint8_t data)
 {
     // w8 till txe empty
@@ -135,15 +143,12 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
     } while ((r1 == 0xFF) && (timeout < 255));
 
     // if there is a buffer, we put the rest inside
-    if (response_buf)
-    {
+    if (response_buf) {
         response_buf[0] = r1;
         
         // when r1 is valid, we put the rest inside the buffer
-        if (r1 != 0xFF && extra_bytes > 0)
-        {
-            for (uint8_t i = 1; i <= extra_bytes; i++)
-            {
+        if (r1 != 0xFF && extra_bytes > 0) {
+            for (uint8_t i = 1; i <= extra_bytes; i++) {
                 response_buf[i] = SPI1_Transfer(0xFF);
             }
         }
@@ -158,13 +163,142 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
 }
 
 
-int main(void)
+uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
+{
+    uint8_t r1;
+    uint16_t timeout = 0;
+
+    SD_CS_SELECT();
+
+    // send CMD17
+    // CRC not important anymore => 0xFF
+    SPI1_Transfer(17 | 0x40);
+    SPI1_Transfer((uint8_t)(block_addr >> 24));
+    SPI1_Transfer((uint8_t)(block_addr >> 16));
+    SPI1_Transfer((uint8_t)(block_addr >> 8));
+    SPI1_Transfer((uint8_t)block_addr);
+    SPI1_Transfer(0xFF); 
+
+    // waiting for answer... it has to be 0x00
+    timeout = 0;
+    do {
+        r1 = SPI1_Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0xFF) && (timeout < 1000));
+
+    if (r1 != 0x00) {
+        SD_CS_DESELECT();
+        return 0x01; // did not accept command
+    }
+
+    // wait for start 0xFE
+    timeout = 0;
+    do {
+        r1 = SPI1_Transfer(0xFF);
+        timeout++;
+    } while ((r1 != 0xFE) && (timeout < 0xFFFF));
+
+    if (r1 != 0xFE) {
+        SD_CS_DESELECT();
+        return 0x02; // timeout-error waiting for 0xFE
+    }
+
+    // read 512 byte blockdata
+    for (uint16_t i = 0; i < 512; i++) {
+        buffer[i] = SPI1_Transfer(0xFF);
+    }
+
+    // read 2 byte CRC, do nothing with it
+    SPI1_Transfer(0xFF);
+    SPI1_Transfer(0xFF);
+
+
+    SD_CS_DESELECT();
+    SPI1_Transfer(0xFF); // extra cycle
+
+    return 0x00; // success
+}
+
+uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
+{
+    uint8_t r1;
+    uint16_t timeout = 0;
+
+    SD_CS_SELECT();
+
+    // send CMD24
+    SPI1_Transfer(24 | 0x40);
+    SPI1_Transfer((uint8_t)(block_addr >> 24));
+    SPI1_Transfer((uint8_t)(block_addr >> 16));
+    SPI1_Transfer((uint8_t)(block_addr >> 8));
+    SPI1_Transfer((uint8_t)block_addr);
+    SPI1_Transfer(0xFF); // CRC doesn't matter
+
+
+    // wait for answer 0x00
+    timeout = 0;
+    do {
+        r1 = SPI1_Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0xFF) && (timeout < 1000));
+
+    if (r1 != 0x00) {
+        SD_CS_DESELECT();
+        return 0x01; // Error: cmd not accepted
+    }
+
+    // one cycle for sync
+    SPI1_Transfer(0xFF);
+
+    // send start sign for single-block-write
+    SPI1_Transfer(0xFE);
+
+    // send 512 byte blockdata
+    for (uint16_t i = 0; i < 512; i++) {
+        SPI1_Transfer(buffer[i]);
+    }
+
+    // 2 byte dummy crc
+    SPI1_Transfer(0xFF);
+    SPI1_Transfer(0xFF);
+
+    // data response from card
+    r1 = SPI1_Transfer(0xFF);
+    if ((r1 & 0x1F) != 0x05) {
+        // data not accepted
+        SD_CS_DESELECT();
+        return 0x02; 
+    }
+
+    // wait as long as SD-card is writing
+    timeout = 0;
+    do {
+        r1 = SPI1_Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0x00) && (timeout < 0xFFFF));
+
+    SD_CS_DESELECT();
+    SPI1_Transfer(0xFF); // // extra cycle
+
+    if (r1 == 0x00) {
+        return 0x03; // timeout while writing
+    }
+
+    return 0x00; // success
+}
+
+
+uint8_t sd_block_buffer[512]; 
+uint8_t sd_block_buffer2[512];
+
+int main()
 {
     uint8_t cmd0_resp = 0xFF;
     uint8_t cmd8_resp[5];
     uint8_t cmd55_resp = 0xFF;
     uint8_t acmd41_resp = 0xFF;
     uint16_t timeout = 0;
+
     GPIO_Init();
     SPI1_Init();
 
@@ -196,7 +330,7 @@ int main(void)
 
             if (cmd55_resp <= 0x01) 
             {
-                // argument: 0x40000000 (HCS-Bits set -> support for SDHC/SDXC)
+                // argument: 0x40000000 (HCS-Bits set -> support for SDHC/SDXC, Blockadressing instead of Byteadressing)
                 acmd41_resp = SD_SendCmd(41, 0x40000000, 0xFF, nullptr, 0);
             }
 
@@ -208,13 +342,41 @@ int main(void)
         } while ((acmd41_resp != 0x00) && (timeout < 1000)); // either it works or timeout
 
     
-        if (acmd41_resp == 0x00)
-        {
-            //ACMD41 was successful! SD-Card is ready now!
-            GPIOA->ODR ^= (1U << 4); 
-        }
 
         //SD-Card initialised in SPI-Mode
+
+        //Set to higher speed
+        //SPI1_SetHighSpeed();
+
+        for(uint16_t i = 0; i < 512; i++) {
+            sd_block_buffer[i] = (uint8_t)i; 
+        }
+
+        uint8_t write_result = SD_WriteBlock(10, sd_block_buffer);
+
+        if (write_result == 0x00) {
+            // read block again to verify
+            uint8_t read_back_result = SD_ReadBlock(10, sd_block_buffer2);
+            
+            if (read_back_result == 0x00) {
+                __BKPT(0); // debugger softbreakpoint
+            }
+        }
+
+
+        // if (read_result == 0x00)
+        // {
+
+        //     if (sd_block_buffer[510] == 0x55 && sd_block_buffer[511] == 0xAA)
+        //     {
+        //         // MBR signature
+        //         GPIOA->ODR ^= (1U << 4); // LED toggle
+        //     }
+        // }
+        // else
+        // {
+        //     GPIOA->ODR |= (1U << 4); 
+        // }
 
 
         for (volatile uint32_t i = 0; i < 10000; i++);

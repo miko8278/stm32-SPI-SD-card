@@ -302,6 +302,25 @@ Blah blub
     \end{tabular}
     \end{table}
 
+
+    \begin{table}[htbp]
+        \centering
+        \caption{Anschlussbelegung der MicroSD-Karte am STM32G431 im SPI-Modus}
+        \label{tab:microsd_pinout}
+        \begin{tabular}{c|l|l}
+        \hline
+        \textbf{MicroSD-Pin} & \textbf{Signalname} & \textbf{Verbindung am STM32G431 / Platine} \\ \hline
+        Pin 1 & DAT1 / RSV & 3.3V "uber internen Pull-up \\ 
+        Pin 2 & CS & PA9 \\ 
+        Pin 3 & DI (MOSI) & PA7 \\ 
+        Pin 4 & VDD & 3.3V Hauptversorgung \\ 
+        Pin 5 & SCK & PA5 \\ 
+        Pin 6 & VSS & GND \\ 
+        Pin 7 & DO (MISO) & PA6 \\ 
+        Pin 8 & DAT2 & 3.3V "uber internen Pull-up \\ \hline
+        \end{tabular}
+        \end{table}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
@@ -314,6 +333,14 @@ Ababei, C. (2013).
 Vorlesungsskript, EE-379 Embedded Systems and Applications, University at Buffalo. 
 Abgerufen von \url{https://www.dejazzer.com/ee379/lecture_notes/lec12_sd_card.pdf} 
 (Besucht am 6. Juli 2026).
+
+\bibitem{sd_spec}
+SD Group
+Matsushita Electric Industrial Co., Ltd. (Panasonic)  (2006). 
+\textit{SD Specifications Part 1: Physical Layer Simplified Specification, Version 2.00}. 
+Technische Spezifikation, SD Card Association. 
+Abgerufen von \url{https://users.ece.utexas.edu/~valvano/EE345M/SD_Physical_Layer_Spec.pdf} 
+(Besucht am 8. Juli 2026).
 
 \bibitem{microchip1} Microchip Technology Inc. (2024). 
 \textit{How to interface a microSD media with Microchip SD/MMC Card Readers}. 
