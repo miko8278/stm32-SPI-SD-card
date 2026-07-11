@@ -1,0 +1,1 @@
+easyeda2kicad --lcsc_id CXXX --full --output ~/Universitaet/BA-stm/PCB/stm-sdcard/libs/XXX.kicad_sym

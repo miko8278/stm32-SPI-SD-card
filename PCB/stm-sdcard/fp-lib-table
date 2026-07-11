@@ -1,4 +1,6 @@
 (fp_lib_table
 	(version 7)
 	(lib (name "1_hanxia_sd_slot") (type "KiCad") (uri "${KIPRJMOD}/libs/hanxia_sd_slot.pretty") (options "") (descr ""))
+	(lib (name "2_usb_C_connect") (type "KiCad") (uri "${KIPRJMOD}/libs/usb-typec.pretty") (options "") (descr ""))
+	(lib (name "3_LDO_TI") (type "KiCad") (uri "${KIPRJMOD}/libs/LDO-TI.pretty") (options "") (descr ""))
 )
