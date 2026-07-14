@@ -5029,7 +5029,7 @@
 	)
 	(wire
 		(pts
-			(xy 224.79 121.92) (xy 224.79 125.73)
+			(xy 220.98 116.84) (xy 220.98 120.65)
 		)
 		(stroke
 			(width 0)
@@ -5269,7 +5269,7 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 119.38) (xy 227.33 125.73)
+			(xy 223.52 114.3) (xy 223.52 120.65)
 		)
 		(stroke
 			(width 0)
@@ -6548,7 +6548,7 @@
 		(uuid "c0e1440f-1558-4352-8a81-365c4ece43ac")
 	)
 	(label "U_BAT"
-		(at 224.79 121.92 90)
+		(at 220.98 116.84 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6769,7 +6769,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0815_2038Metric_Pad1.20x4.05mm_HandSolder"
 			(at 267.97 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -7087,7 +7087,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 234.95 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -7326,7 +7326,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 66.04 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -7564,7 +7564,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 58.42 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -7799,7 +7799,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0815_2038Metric_Pad1.20x4.05mm_HandSolder"
 			(at 107.95 143.51 0)
 			(hide yes)
 			(show_name no)
@@ -7879,7 +7879,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical"
 			(at 116.84 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -7969,7 +7969,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 172.72 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -8051,7 +8051,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 80.01 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -8252,7 +8252,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 73.66 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -8332,7 +8332,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 127 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -8415,7 +8415,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0815_2038Metric_Pad1.20x4.05mm_HandSolder"
 			(at 267.97 77.47 0)
 			(hide yes)
 			(show_name no)
@@ -8495,7 +8495,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 175.26 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -8858,7 +8858,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
-		(at 224.79 130.81 90)
+		(at 220.98 125.73 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -8868,7 +8868,7 @@
 		(dnp no)
 		(uuid "576d581a-4644-4cbe-a8f1-cc45f6201ee2")
 		(property "Reference" "BAT_CONN1"
-			(at 221.996 133.35 90)
+			(at 218.186 128.27 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8879,7 +8879,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Pin"
-			(at 220.218 136.398 90)
+			(at 216.408 130.81 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8889,8 +8889,8 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
-			(at 224.79 130.81 0)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 220.98 125.73 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8901,7 +8901,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 224.79 130.81 0)
+			(at 220.98 125.73 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8912,7 +8912,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 224.79 130.81 0)
+			(at 220.98 125.73 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8969,7 +8969,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 196.85 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -9022,7 +9022,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 227.33 119.38 180)
+		(at 223.52 114.3 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -9032,7 +9032,7 @@
 		(dnp no)
 		(uuid "5dbc6d38-2250-4c44-903f-ed34a50d916b")
 		(property "Reference" "#PWR060"
-			(at 227.33 113.03 0)
+			(at 223.52 107.95 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9043,7 +9043,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 227.33 115.062 0)
+			(at 223.52 109.982 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9053,7 +9053,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 227.33 119.38 0)
+			(at 223.52 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9064,7 +9064,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 227.33 119.38 0)
+			(at 223.52 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9075,7 +9075,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 227.33 119.38 0)
+			(at 223.52 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9517,7 +9517,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 102.87 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -9839,7 +9839,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 96.52 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -9919,7 +9919,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 201.93 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -10002,7 +10002,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
 			(at 147.32 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -10407,7 +10407,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 48.26 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -10488,7 +10488,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 147.32 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -10568,7 +10568,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 147.32 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -10752,7 +10752,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 86.36 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -12234,7 +12234,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 273.05 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -12848,7 +12848,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm"
 			(at 105.41 39.37 0)
 			(hide yes)
 			(show_name no)
