@@ -5157,7 +5157,7 @@
 	)
 	(wire
 		(pts
-			(xy 191.77 87.63) (xy 191.77 100.33)
+			(xy 191.77 87.63) (xy 191.77 92.71)
 		)
 		(stroke
 			(width 0)
@@ -5377,7 +5377,7 @@
 	)
 	(wire
 		(pts
-			(xy 194.31 87.63) (xy 194.31 100.33)
+			(xy 194.31 87.63) (xy 194.31 92.71)
 		)
 		(stroke
 			(width 0)
@@ -5737,7 +5737,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 87.63) (xy 199.39 100.33)
+			(xy 199.39 87.63) (xy 199.39 92.71)
 		)
 		(stroke
 			(width 0)
@@ -5767,7 +5767,7 @@
 	)
 	(wire
 		(pts
-			(xy 196.85 87.63) (xy 196.85 100.33)
+			(xy 196.85 87.63) (xy 196.85 92.71)
 		)
 		(stroke
 			(width 0)
@@ -6165,16 +6165,6 @@
 		)
 		(uuid "15a58fdb-c7c2-419d-8172-b200d1b7178d")
 	)
-	(label "PA15_PU1"
-		(at 191.77 100.33 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1686c28c-9d30-47db-92fa-5b77b6d74890")
-	)
 	(label "PC14"
 		(at 102.87 110.49 270)
 		(effects
@@ -6425,16 +6415,6 @@
 		)
 		(uuid "45dd12b5-c63f-4a40-afa3-08cebd739562")
 	)
-	(label "PB9_PU4"
-		(at 199.39 100.33 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "534e58ff-81d8-481c-a779-bdf9ba25bd1f")
-	)
 	(label "USB_D-"
 		(at 261.62 72.39 180)
 		(effects
@@ -6484,16 +6464,6 @@
 			(justify right bottom)
 		)
 		(uuid "5bff4e9b-8d43-4ba5-8863-fb0a044f2c87")
-	)
-	(label "PB0_PU2"
-		(at 194.31 100.33 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "61d90012-3cd4-4035-aa4b-8d223f1aeef3")
 	)
 	(label "PB6_USART1_TX"
 		(at 36.83 95.25 0)
@@ -6745,16 +6715,6 @@
 		)
 		(uuid "c9805849-b6f2-4ea9-85c2-28ebc6ce5fdc")
 	)
-	(label "PB2_PU3"
-		(at 196.85 100.33 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "cd9fd2e8-c3f1-400d-a2c8-0f802db5c134")
-	)
 	(label "PA1_ADC2"
 		(at 105.41 54.61 180)
 		(effects
@@ -7000,6 +6960,87 @@
 			(project "stm-sdcard"
 				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
 					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 194.31 95.25 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "04b76e1e-2e64-4b4d-b957-bcabefb25c40")
+		(property "Reference" "R5"
+			(at 193.294 92.202 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "50k"
+			(at 192.278 94.996 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 194.31 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 194.31 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 194.31 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b38413e1-d409-4538-9df4-9bf1d5fd7a93")
+		)
+		(pin "2"
+			(uuid "4e984e98-a76f-437f-8d45-7ba9b80f9efc")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "R5")
 					(unit 1)
 				)
 			)
@@ -7318,6 +7359,160 @@
 			(project "stm-sdcard"
 				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
 					(reference "C2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 199.39 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "19e8c44b-3dea-4cfb-854f-4949eeb98d64")
+		(property "Reference" "#PWR066"
+			(at 199.39 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 199.39 102.616 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 199.39 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 199.39 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 199.39 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9dd40e3c-44d5-4cd5-b915-dfda3148cb95")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "#PWR066")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 194.31 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1bb34de2-f24a-4960-8003-3c87dea681f8")
+		(property "Reference" "#PWR064"
+			(at 194.31 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 194.31 102.616 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 194.31 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 194.31 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 194.31 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "243acbd0-b6f0-4529-b281-7699cca63721")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "#PWR064")
 					(unit 1)
 				)
 			)
@@ -8963,6 +9158,87 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 199.39 95.25 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "56212992-0fab-49f4-8bff-f9bc6728abdb")
+		(property "Reference" "R7"
+			(at 198.374 92.202 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "50k"
+			(at 200.914 94.996 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 199.39 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 199.39 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 199.39 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "14c58afa-8261-4491-99ec-22b6d38c7407")
+		)
+		(pin "2"
+			(uuid "d2fce26f-9f92-4a1a-a592-0adeb7c1e9e6")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "R7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
 		(at 220.98 125.73 90)
 		(unit 1)
@@ -9121,6 +9397,87 @@
 			(project "stm-sdcard"
 				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
 					(reference "ADC2_CONN1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 191.77 95.25 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5be708c2-50f3-48c9-b4bb-3d90c7aada8b")
+		(property "Reference" "R4"
+			(at 190.754 92.202 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "50k"
+			(at 187.198 94.996 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 191.77 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 191.77 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 191.77 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c244b5d9-a12b-424a-ab6a-5c4630cc72d4")
+		)
+		(pin "2"
+			(uuid "f11d648d-d5c7-4eb2-a699-8684549c6788")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "R4")
 					(unit 1)
 				)
 			)
@@ -10071,6 +10428,83 @@
 			(project "stm-sdcard"
 				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
 					(reference "USART1_CONN1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 196.85 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "8b0d3eec-a563-4991-b470-fb7d993c3bd7")
+		(property "Reference" "#PWR065"
+			(at 196.85 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 196.85 102.616 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 196.85 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 196.85 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 196.85 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "036f4130-e257-4291-9e25-80166ac70bdd")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "#PWR065")
 					(unit 1)
 				)
 			)
@@ -11846,6 +12280,83 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 191.77 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "be45541c-93f1-4e67-af8d-5abdf71d10c1")
+		(property "Reference" "#PWR063"
+			(at 191.77 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 191.77 102.616 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 191.77 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 191.77 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 191.77 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c36a1880-cc2e-43cf-9be7-fe351145b565")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "#PWR063")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 66.04 38.1 0)
 		(unit 1)
 		(body_style 1)
@@ -12147,6 +12658,87 @@
 			(project "stm-sdcard"
 				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
 					(reference "#PWR054")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 196.85 95.25 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d49305e2-6c24-46a1-a8a4-94a6fad186ab")
+		(property "Reference" "R6"
+			(at 195.58 92.202 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "50k"
+			(at 195.834 94.996 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 196.85 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 196.85 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 196.85 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c3be43ef-caf9-4634-ab95-47a36d3a0f41")
+		)
+		(pin "2"
+			(uuid "fa8b5ac7-5280-4896-8744-68fed35ff20a")
+		)
+		(instances
+			(project "stm-sdcard"
+				(path "/8c3b7987-8bc9-4c61-81e1-e087d84e40be"
+					(reference "R6")
 					(unit 1)
 				)
 			)
