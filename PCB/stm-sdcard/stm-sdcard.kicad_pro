@@ -696,7 +696,7 @@
         "uuid": "8c3b7987-8bc9-4c61-81e1-e087d84e40be"
       }
     ],
-    "used_designators": "UART_PRG1,#FLG1-3,JP1-3,ADC1_CONN1,STM1,R1-7,SW1-2,DAC1_CONN1,USART1_CONN1,U1-4,SWD_PRG1,ADC2_CONN1,USB1,J1-3,C1-9,BAT_CONN1,#PWR1-66",
+    "used_designators": "ADC2_CONN1,SWD_PRG1,U1-4,USART1_CONN1,#PWR1-66,BAT_CONN1,C1-9,UART_PRG1,#FLG1-3,JP1-3,USB1,J1-3,ADC1_CONN1,R1-7,STM1,SW1-2,DAC1_CONN1",
     "variants": []
   },
   "sheets": [
