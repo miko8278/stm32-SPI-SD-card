@@ -2,7 +2,7 @@
 #but i'll link them in the readme
 stmref/*
 !stmref/README.md
-
+*.svd
 # ==========================================
 # CMake & Build-Ordner
 # ==========================================

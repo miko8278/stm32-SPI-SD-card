@@ -337,22 +337,22 @@ public:
     static void AF(uint8_t af)
     {
         // Alternate function mode
-        GPIOx->MODER &= ~(0b11u << (Pin * 2));
-        GPIOx->MODER |=  (0b10u << (Pin * 2));
+        GPIOx->MODER &= ~(0b11 << (Pin * 2));
+        GPIOx->MODER |=  (0b10 << (Pin * 2));
 
         // AFRL or AFRH
-        // if constexpr (Pin < 8)
-        // {   
+        if constexpr (Pin < 8)
+        {   
             
             GPIOx->AFR[0] &= ~(0xF << (Pin * 4));
             GPIOx->AFR[0] |=  (static_cast<uint32_t>(af) << (Pin * 4));
-        // }
-        // else
-        // {
-        //     constexpr uint32_t shift = (Pin - 8) * 4;
-        //     GPIOx->AFR[1] &= ~(0xFu << shift);
-        //     GPIOx->AFR[1] |=  (static_cast<uint32_t>(af) << shift);
-        // }
+        }
+        else
+        {
+            constexpr uint32_t shift = (Pin - 8) * 4;
+            GPIOx->AFR[1] &= ~(0xF << shift);
+            GPIOx->AFR[1] |=  (static_cast<uint32_t>(af) << shift);
+        }
     }
 
 };
@@ -372,9 +372,7 @@ static void GPIO_Init()
 
     //SPI1 chosen PINs
     // PA5 = SCK, PA6 = MISO ,PA7 = MOSI (to AF5)
-    GpioPin<GPIOA_BASE, 5>::AF(5);
-    GpioPin<GPIOA_BASE, 6>::AF(5);
-    GpioPin<GPIOA_BASE, 7>::AF(5);
+
     // GPIOA->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
     // GPIOA->MODER |=
     //     (2U << GPIO_MODER_MODE5_Pos) |
@@ -387,16 +385,34 @@ static void GPIO_Init()
     //     (5U << GPIO_AFRL_AFSEL5_Pos) |
     //     (5U << GPIO_AFRL_AFSEL6_Pos) |
     //     (5U << GPIO_AFRL_AFSEL7_Pos);
-
+    GpioPin<GPIOA_BASE, 5>::AF(5);
+    GpioPin<GPIOA_BASE, 6>::AF(5);
+    GpioPin<GPIOA_BASE, 7>::AF(5);
 
     //SPI2 chosen PINs
     // PB3 = SCK PB4 = MISO PB5 = MOSI -> Alternate Function mode
     GpioPin<GPIOB_BASE, 3>::AF(5);
-    __BKPT(0);
-    GpioPin<GPIOB_BASE, 4>::AF(5);
-    __BKPT(0);
+    //GpioPin<GPIOB_BASE, 4>::AF(5);
+    //GpioPin<GPIOB_BASE, 4>::OutputLowInit();
     GpioPin<GPIOB_BASE, 5>::AF(5);
+    // GPIOB->MODER &= ~(GPIO_MODER_MODE4_Msk);
+    // GPIOB->MODER |=  (0b10U << GPIO_MODER_MODE4_Pos);
+    // GPIOB->OSPEEDR &= ~(3U << (4*2));
+    // GPIOB->OSPEEDR |=  (3U << (4*2));
 
+    // GPIOB->PUPDR &= ~(3U << (4*2));
+    // GPIOB->PUPDR |=  (1U << (4*2)); // pull-up
+    // GPIOB->MODER &= ~(3U << (4 * 2));
+    // GPIOB->MODER |=  (2U << (4 * 2));
+
+    // GPIOB->AFR[0] &= ~(0xFu << 16);
+    // GPIOB->AFR[0] |=  (5U << 16);
+    // uint32_t moder = GPIOB->MODER;
+    // uint32_t afrl  = GPIOB->AFR[0];
+    // __BKPT(0);
+    // // Select AF5 for PB4
+    // GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL4_Msk);
+    // GPIOB->AFR[0] |=  (5U << GPIO_AFRL_AFSEL4_Pos);
     // PB3/PB4/PB5 -> Alternate Function mode
     // GPIOB->MODER &= ~(GPIO_MODER_MODE3_Msk |
     //                 GPIO_MODER_MODE4_Msk |
@@ -433,7 +449,7 @@ int main()
     uint8_t acmd41_resp = 0xFF;
     uint16_t timeout = 0;
     using SPI_1 = SpiDriver<SPI1_BASE>;
-    using SPI_2 = SpiDriver<SPI2_BASE>;
+    //using SPI_2 = SpiDriver<SPI2_BASE>;
 
     //Configure the alternate functions
     GPIO_Init();
