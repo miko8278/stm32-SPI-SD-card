@@ -146,26 +146,12 @@ static void GPIO_Init()
         (3U << GPIO_OSPEEDR_OSPEED5_Pos) |
         (3U << GPIO_OSPEEDR_OSPEED7_Pos);
 
-    //PA9 as CS-Pin, it's common just to use any PIN for this
-    GPIOA->MODER &= ~GPIO_MODER_MODE9_Msk;
-    GPIOA->MODER |= (1U << GPIO_MODER_MODE9_Pos);
-    GPIOA->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED9_Msk;
-    GPIOA->OSPEEDR |= (2U << GPIO_OSPEEDR_OSPEED9_Pos);
-
-    //Note, CS is lowactive, so the DESELECT puts PA9 in HIGH-state
-    SD_CS_DESELECT();
-
-    //PA4 as indicatorpin
-    GPIOA->MODER &= ~GPIO_MODER_MODE4_Msk;
-    GPIOA->MODER |= (1U << GPIO_MODER_MODE4_Pos);
-    GPIOA->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED4_Msk;
-    GPIOA->OSPEEDR |= (2U << GPIO_OSPEEDR_OSPEED4_Pos);
 }
 
 struct SD1_Config {
     static constexpr uintptr_t SpiBase  = SPI1_BASE;
     static constexpr uintptr_t PortBase = GPIOA_BASE;
-    static constexpr uint32_t  Pin      = 9;
+    static constexpr uint32_t  Pin      = 8;
 };
 
 struct SD2_Config {
@@ -367,6 +353,49 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     return 0x00; // success
 }
 
+template<uintptr_t PortBase, uint32_t Pin>
+struct GpioPin
+{
+private:
+    static inline GPIO_TypeDef* const GPIOx =
+        reinterpret_cast<GPIO_TypeDef*>(PortBase);
+
+public:
+    static void OutputLowInit()
+    {
+        // Output mode
+        GPIOx->MODER &= ~(0b11u << (Pin * 2));
+        GPIOx->MODER |=  (0b01u << (Pin * 2));
+
+        // High speed
+        GPIOx->OSPEEDR &= ~(0b11u << (Pin * 2));
+        GPIOx->OSPEEDR |=  (0b10u << (Pin * 2));
+
+        // Push-pull
+        GPIOx->OTYPER &= ~(1u << Pin);
+
+        // No pull-up/down
+        GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
+    }
+
+    static void OutputHighInit()
+    {
+        OutputLowInit();
+        // Default HIGH (CS inactive)
+        GPIOx->BSRR = (1u << Pin);
+    }
+
+    static void setHigh()
+    {
+        GPIOx->BSRR = (1u << Pin);
+    }
+    static void setLow()
+    {
+        GPIOx->BSRR = (1u << (Pin + 16));
+    }
+
+};
+
 
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
@@ -379,10 +408,21 @@ int main()
     uint8_t acmd41_resp = 0xFF;
     uint16_t timeout = 0;
     using SPI_1 = SpiDriver<SPI1_BASE>;
+    using SPI_2 = SpiDriver<SPI2_BASE>;
 
+    //Configure the alternate functions
     GPIO_Init();
-    //SPI1_Init();
+
+    //Configure the CS-Pins as Output
+    GpioPin<GPIOA_BASE, SD1_Config::Pin>::OutputHighInit();
+
+    //Configure as indicatorpin
+    GpioPin<GPIOA_BASE, 4>::OutputLowInit();
+
+    //Configure the registers for SPI
     SpiDriver<SPI1_BASE>::Init();
+
+    //Ssend some dummydata before starting
     for (uint8_t i = 0; i < 10; i++){
         SPI_1::Transfer(0xFF);
     }
