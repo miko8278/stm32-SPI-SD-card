@@ -385,16 +385,16 @@ static void GPIO_Init()
     //     (5U << GPIO_AFRL_AFSEL5_Pos) |
     //     (5U << GPIO_AFRL_AFSEL6_Pos) |
     //     (5U << GPIO_AFRL_AFSEL7_Pos);
+    //SPI1 chosen PINs PA5,PA6,PA7
     GpioPin<GPIOA_BASE, 5>::AF(5);
     GpioPin<GPIOA_BASE, 6>::AF(5);
     GpioPin<GPIOA_BASE, 7>::AF(5);
 
-    //SPI2 chosen PINs
+    //SPI3 chosen PINs
     // PB3 = SCK PB4 = MISO PB5 = MOSI -> Alternate Function mode
-    GpioPin<GPIOB_BASE, 3>::AF(5);
-    //GpioPin<GPIOB_BASE, 4>::AF(5);
-    //GpioPin<GPIOB_BASE, 4>::OutputLowInit();
-    GpioPin<GPIOB_BASE, 5>::AF(5);
+    GpioPin<GPIOB_BASE, 3>::AF(6);
+    GpioPin<GPIOB_BASE, 4>::AF(6);
+    GpioPin<GPIOB_BASE, 5>::AF(6);
     // GPIOB->MODER &= ~(GPIO_MODER_MODE4_Msk);
     // GPIOB->MODER |=  (0b10U << GPIO_MODER_MODE4_Pos);
     // GPIOB->OSPEEDR &= ~(3U << (4*2));
@@ -406,10 +406,7 @@ static void GPIO_Init()
     // GPIOB->MODER |=  (2U << (4 * 2));
 
     // GPIOB->AFR[0] &= ~(0xFu << 16);
-    // GPIOB->AFR[0] |=  (5U << 16);
-    // uint32_t moder = GPIOB->MODER;
-    // uint32_t afrl  = GPIOB->AFR[0];
-    // __BKPT(0);
+    // GPIOB->AFR[0] |=  (4U << 16);
     // // Select AF5 for PB4
     // GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL4_Msk);
     // GPIOB->AFR[0] |=  (5U << GPIO_AFRL_AFSEL4_Pos);
@@ -438,6 +435,50 @@ static void GPIO_Init()
 
 }
 
+
+template<typename Config>
+bool SD_InitSPI()
+{
+    uint8_t cmd8_resp[5];
+    uint8_t cmd0_resp = 0xFF;
+    uint8_t cmd55_resp = 0xFF;
+    uint8_t acmd41_resp = 0xFF;
+
+    // CMD0
+    cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
+    if (cmd0_resp != 0x01)
+        return false;
+
+    // CMD8
+    SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
+
+    if (cmd8_resp[0] != 0x01 || cmd8_resp[4] != 0xAA)
+        return false;
+
+    // ACMD41
+    uint32_t timeout = 1000;
+
+    while (timeout--)
+    {
+        cmd55_resp = SD_SendCmd<Config>(55, 0, 0xFF, nullptr, 0);
+
+        if (cmd55_resp <= 0x01)
+        {
+            acmd41_resp = SD_SendCmd<Config>(41, 0x40000000, 0xFF, nullptr, 0);
+
+            if (acmd41_resp == 0x00)
+                return true;
+        }
+
+        //pause, probably fine without
+        //for (volatile uint32_t i = 0; i < 1000; i++);
+        //SD_DelayMs(1);
+    }
+
+    return false;
+}
+
+
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
 
@@ -463,49 +504,17 @@ int main()
     //Configure the registers for SPI
     SpiDriver<SPI1_BASE>::Init();
 
-    //Ssend some dummydata before starting
+    //Send some dummydata before starting
     for (uint8_t i = 0; i < 10; i++){
         SPI_1::Transfer(0xFF);
     }
 
     while (1)
     {
-        timeout = 0;
-        //CMD0
-        cmd0_resp = SD_SendCmd<SD1_Config>(0, 0, 0x95, nullptr, 0);
-        if(cmd0_resp != 0x01){
-            GPIOA->ODR |= (1U << 4); 
-            continue;
-        }
-        //CMD8
-        SD_SendCmd<SD1_Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
-        if (cmd8_resp[0] != 0x01 && cmd8_resp[4] != 0xAA){
-            GPIOA->ODR |= (1U << 4); 
-            continue;
-        }
-
-        //CMD55 + ACMD41
-        do {
-            // send CMD55, always needed before sending an application command
-            cmd55_resp = SD_SendCmd<SD1_Config>(55, 0, 0xFF, nullptr, 0);
-
-            if (cmd55_resp <= 0x01) 
-            {
-                // argument: 0x40000000 (HCS-Bits set -> support for SDHC/SDXC, Blockadressing instead of Byteadressing)
-                acmd41_resp = SD_SendCmd<SD1_Config>(41, 0x40000000, 0xFF, nullptr, 0);
-            }
-
-            timeout++;
-            
-            //pause
-            for (volatile uint32_t i = 0; i < 1000; i++);
-
-        } while ((acmd41_resp != 0x00) && (timeout < 1000)); // either it works or timeout
-
+        
+        //Initialise SD-card into SPI-Mode
+        SD_InitSPI<SD1_Config>();
     
-
-        //SD-Card initialised in SPI-Mode
-
         //Set to higher speed
         SPI_1::SetHighSpeed(SPI_1::SpiDiv::Div16);
 
