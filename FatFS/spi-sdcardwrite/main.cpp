@@ -224,16 +224,89 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     return 0x00; // success
 }
 
+template<typename Config>
+uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer)
+{
+    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+
+    uint8_t r1;
+    uint16_t timeout;
+
+    // CMD18
+    SpiDriver<Config::SpiBase>::Transfer(18 | 0x40);
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 24));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 16));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 8));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)block_addr);
+    SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+    // Wait for R1
+    timeout = 0;
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0xFF) && timeout < 1000);
+
+    if (r1 != 0x00)
+        return 0x01;
+
+    uint8_t *ptr = buffer;
+
+    for (uint32_t block = 0; block < block_count; block++)
+    {
+        // Wait for data token
+        timeout = 0;
+        do {
+            r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+            timeout++;
+        } while ((r1 != 0xFE) && timeout < 0xFFFF);
+
+        if (r1 != 0xFE)
+            return 0x02;
+
+        // Read 512 bytes
+        for (uint16_t i = 0; i < 512; i++)
+        {
+            ptr[i] = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        }
+
+        ptr += 512;
+
+        // Ignore CRC
+        SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    }
+
+    // CMD12 STOP_TRANSMISSION
+    SpiDriver<Config::SpiBase>::Transfer(12 | 0x40);
+    SpiDriver<Config::SpiBase>::Transfer(0x00);
+    SpiDriver<Config::SpiBase>::Transfer(0x00);
+    SpiDriver<Config::SpiBase>::Transfer(0x00);
+    SpiDriver<Config::SpiBase>::Transfer(0x00);
+    SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+    // CMD12 has a stuff byte before R1
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    } while (r1 == 0xFF);
+
+    if (r1 != 0x00)
+        return 0x03;
+
+    return 0x00;
+}
+
+
 //template<uintptr_t Base, uintptr_t PortBase, uint32_t Pin>
 template<typename Config>
 uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
 {
     //This gets automatically destructed when leaving the function at any point
-    //ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
     uint8_t r1;
     uint16_t timeout = 0;
 
-    SD_CS_SELECT();
+    //SD_CS_SELECT();
 
     // send CMD24
     SpiDriver<Config::SpiBase>::Transfer(24 | 0x40);
@@ -252,7 +325,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     } while ((r1 == 0xFF) && (timeout < 1000));
 
     if (r1 != 0x00) {
-        SD_CS_DESELECT();
+        //SD_CS_DESELECT();
         return 0x01; // Error: cmd not accepted
     }
 
@@ -275,7 +348,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
     if ((r1 & 0x1F) != 0x05) {
         // data not accepted
-        SD_CS_DESELECT();
+        //SD_CS_DESELECT();
         return 0x02; 
     }
 
@@ -286,7 +359,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
         timeout++;
     } while ((r1 == 0x00) && (timeout < 0xFFFF));
 
-    SD_CS_DESELECT();
+    //SD_CS_DESELECT();
     SpiDriver<Config::SpiBase>::Transfer(0xFF); // // extra cycle
 
     if (r1 == 0x00) {
@@ -482,8 +555,8 @@ bool SD_InitSPI()
 }
 
 
-
-uint32_t xorshift32()
+//Generate pseudorandom testdata
+uint32_t xorshift32(uint32_t rnxg)
 {
     static uint32_t rng = 0x12345678;   // seed
     rng ^= rng << 13;
@@ -495,6 +568,8 @@ uint32_t xorshift32()
 
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
+uint8_t sd_block_buffer3[4096];
+uint8_t sd_block_buffer4[4096];
 
 int main()
 {
@@ -529,23 +604,33 @@ int main()
         //Initialise SD-card into SPI-Mode
         SD_InitSPI<SD1_Config>();
     
+        for (int i = 0; i < 10; i++)
+        {
+            SPI_1::Transfer(0xFF);
+        }
         //Set to higher speed
         //SPI_1::SetHighSpeed(SPI_1::SpiDiv::Div16);
 
         for(uint16_t i = 0; i < 512; i++) {
-            sd_block_buffer[i] = (uint8_t)xorshift32(); 
+            sd_block_buffer[i] = (uint8_t)xorshift32(0x12345678); 
         }
 
-        uint8_t write_result = SD_WriteBlock<SD1_Config>(10, sd_block_buffer);
-        
+        //check state before write 
+        uint8_t status_before[2];
+        SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_before, 1);
+
+        uint8_t write_result = SD_WriteBlock<SD1_Config>(11, sd_block_buffer);
+
         //check state after write 
-        //uint8_t status[2];
-        //uint8_t r1 = SD_SendCmd<SD1_Config>(13, 0, 0xFF, status, 1);
+        uint8_t status_after[2];
+        SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
 
         if (write_result == 0x00) {
             // read block again to verify
             uint8_t read_back_result = SD_ReadBlock<SD1_Config>(10, sd_block_buffer2);
             
+
+            uint8_t result = SD_ReadBlocks<SD1_Config>(9,8, sd_block_buffer3);
             if (read_back_result == 0x00) {
                 __BKPT(0); // debugger softbreakpoint
             }
