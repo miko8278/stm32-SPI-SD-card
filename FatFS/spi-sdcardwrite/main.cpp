@@ -537,9 +537,10 @@ int main()
         }
 
         uint8_t write_result = SD_WriteBlock<SD1_Config>(10, sd_block_buffer);
-        uint8_t status[2];
-
-        uint8_t r1 = SD_SendCmd<SD1_Config>(13, 0, 0xFF, status, 1);
+        
+        //check state after write 
+        //uint8_t status[2];
+        //uint8_t r1 = SD_SendCmd<SD1_Config>(13, 0, 0xFF, status, 1);
 
         if (write_result == 0x00) {
             // read block again to verify
