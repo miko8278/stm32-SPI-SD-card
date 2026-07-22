@@ -1,8 +1,8 @@
 #include "stm32g431xx.h"
 
 //old def
-#define SD_CS_SELECT()     (GPIOA->BSRR = (1U << (9 + 16))) // PA9 LOW
-#define SD_CS_DESELECT()   (GPIOA->BSRR = (1U << 9))        // PA9 HIGH
+#define SD_CS_SELECT()     (GPIOA->BSRR = (1U << (8 + 16))) // PA9 LOW
+#define SD_CS_DESELECT()   (GPIOA->BSRR = (1U << 8))        // PA9 HIGH
 
 
 template<uintptr_t PortBase, uint32_t Pin>
@@ -67,6 +67,7 @@ struct SpiDriver {
         Div128 = 6,
         Div256 = 7,
     };
+
     static void SetHighSpeed(SpiDiv div) {
         SPIx->CR1 &= ~SPI_CR1_SPE;
         SPIx->CR1 &= ~SPI_CR1_BR_Msk;
@@ -94,16 +95,18 @@ struct SD1_Config {
     static constexpr uint32_t  Pin      = 8;
 };
 
+//Note, I messed up my schematic, so where SPI2 should be used
+//SPI 3 is connected... use SD3_Config for the 2. slot
 struct SD2_Config {
     static constexpr uintptr_t SpiBase  = SPI2_BASE;
     static constexpr uintptr_t PortBase = GPIOB_BASE;
-    static constexpr uint32_t  Pin      = 11;
+    static constexpr uint32_t  Pin      = 10;
 };
 
 struct SD3_Config {
     static constexpr uintptr_t SpiBase  = SPI3_BASE;
     static constexpr uintptr_t PortBase = GPIOB_BASE;
-    static constexpr uint32_t  Pin      = 10;
+    static constexpr uint32_t  Pin      = 11;
 };
 
 //template<uintptr_t Base, uintptr_t PortBase, uint32_t Pin>
@@ -226,11 +229,11 @@ template<typename Config>
 uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
 {
     //This gets automatically destructed when leaving the function at any point
-    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+    //ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
     uint8_t r1;
     uint16_t timeout = 0;
 
-    //SD_CS_SELECT();
+    SD_CS_SELECT();
 
     // send CMD24
     SpiDriver<Config::SpiBase>::Transfer(24 | 0x40);
@@ -249,7 +252,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     } while ((r1 == 0xFF) && (timeout < 1000));
 
     if (r1 != 0x00) {
-        //SD_CS_DESELECT();
+        SD_CS_DESELECT();
         return 0x01; // Error: cmd not accepted
     }
 
@@ -272,7 +275,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
     if ((r1 & 0x1F) != 0x05) {
         // data not accepted
-        //SD_CS_DESELECT();
+        SD_CS_DESELECT();
         return 0x02; 
     }
 
@@ -283,7 +286,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
         timeout++;
     } while ((r1 == 0x00) && (timeout < 0xFFFF));
 
-    //SD_CS_DESELECT();
+    SD_CS_DESELECT();
     SpiDriver<Config::SpiBase>::Transfer(0xFF); // // extra cycle
 
     if (r1 == 0x00) {
@@ -479,6 +482,17 @@ bool SD_InitSPI()
 }
 
 
+
+uint32_t xorshift32()
+{
+    static uint32_t rng = 0x12345678;   // seed
+    rng ^= rng << 13;
+    rng ^= rng >> 17;
+    rng ^= rng << 5;
+    return rng;
+}
+
+
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
 
@@ -516,13 +530,16 @@ int main()
         SD_InitSPI<SD1_Config>();
     
         //Set to higher speed
-        SPI_1::SetHighSpeed(SPI_1::SpiDiv::Div16);
+        //SPI_1::SetHighSpeed(SPI_1::SpiDiv::Div16);
 
         for(uint16_t i = 0; i < 512; i++) {
-            sd_block_buffer[i] = (uint8_t)i; 
+            sd_block_buffer[i] = (uint8_t)xorshift32(); 
         }
 
         uint8_t write_result = SD_WriteBlock<SD1_Config>(10, sd_block_buffer);
+        uint8_t status[2];
+
+        uint8_t r1 = SD_SendCmd<SD1_Config>(13, 0, 0xFF, status, 1);
 
         if (write_result == 0x00) {
             // read block again to verify
