@@ -37,7 +37,7 @@ set(BINARY_NAME SPI-SDCard)
 
 # Target Executable
 add_executable(${BINARY_NAME}
-    main.cpp
+    src/main.cpp
     startup_stm32g431xx.s
     system_stm32g4xx.c
 )
