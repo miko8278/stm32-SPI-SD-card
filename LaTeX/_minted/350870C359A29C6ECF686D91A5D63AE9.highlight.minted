@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{n}{DSTATUS}\PYG{+w}{ }\PYG{n+nf}{disk\PYGZus{}initialize}\PYG{p}{(}\PYG{n}{BYTE}\PYG{+w}{ }\PYG{n}{pdrv}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{DSTATUS}\PYG{+w}{ }\PYG{n+nf}{disk\PYGZus{}status}\PYG{p}{(}\PYG{n}{BYTE}\PYG{+w}{ }\PYG{n}{pdrv}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{DRESULT}\PYG{+w}{ }\PYG{n+nf}{disk\PYGZus{}read}\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{DRESULT}\PYG{+w}{ }\PYG{n+nf}{disk\PYGZus{}write}\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{DRESULT}\PYG{+w}{ }\PYG{n+nf}{disk\PYGZus{}ioctl}\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}\PYG{p}{;}
+\end{MintedVerbatim}

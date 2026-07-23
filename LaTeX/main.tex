@@ -53,7 +53,7 @@
 
 %Listing in Source code umbenennen
 \newenvironment{code}{\captionsetup{type=listing}}{}
-\SetupFloatingEnvironment{listing}{name=Source Code}
+\SetupFloatingEnvironment{listing}{name=Quellcode}
 
 %Custom Commands
 \newcommand*{\quelle}[1]{{\raggedleft\footnotesize Quelle:~#1}}
@@ -321,6 +321,75 @@ Blah blub
         \end{tabular}
         \end{table}
 
+
+\section{Dateisysteme}
+\subsection{FatFS}
+\subsubsection{Einleitung}
+FatFs ist ein plattformunabhängiges, quelloffenes Software-Modul zur Implementierung von FAT/exFAT-Dateisystemen in ressourcenbeschränkten, eingebetteten Systemen. 
+Es wurde von dem Entwickler ChaN\cite{fatfs} entworfen und zeichnet sich durch einen extrem geringen Speicherbedarf sowohl im Programm- als auch im Arbeitsspeicher aus.
+Das Modul ist vollständig in ANSI C (C89) geschrieben. 
+Dadurch ist es hardwareunabhängig auf praktisch jedem gängigen Mikrocontroller 
+(z. B. ARM, AVR, PIC oder STM32) ohne "Anderungen des Codes direkt lauffähig.\\ 
+Die Architektur trennt das Dateisystem strikt in zwei logische Schichten: 
+Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zur Datei- und Verzeichnisverwaltung wie f\_open, f\_read, f\_write und f\_close zur Verfügung, 
+während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Dateisystem entkoppelt. 
+
+\subsubsection{Implementierung}
+    \begin{listing}[htbp]
+        \begin{minted}[
+            frame=lines,      % Rahmenlinien oben und unten
+            framesep=2mm,     % Abstand zum Rahmen
+            baselinestretch=1.2,
+            bgcolor=lightgray!20, % Hintergrundfarbe
+            fontsize=\footnotesize,
+            linenos           % Zeilennummern aktivieren
+        ]{cpp}
+    DSTATUS disk_initialize(BYTE pdrv);
+    DSTATUS disk_status(BYTE pdrv);
+    DRESULT disk_read(...);
+    DRESULT disk_write(...);
+    DRESULT disk_ioctl(...);
+        \end{minted}
+\caption{Funktionen, die in der diskio.cpp implementiert werden mussten}
+\label{listing:cpp-example}
+\end{listing}
+
+
+\subsubsection*{ffconf.h}
+
+Die Datei ffconf.h ist die zentrale Konfigurationsdatei des FatFs-Moduls. 
+Über den C-Präprozessor lässt sich der Funktionsumfang auf die Hardware-Ressourcen des Mikrocontrollers zuschneiden.
+
+\begin{itemize}
+    \item \textbf{Anpassbarer Funktionsumfang:}
+    \begin{itemize}
+        \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab, was massiv Flash-Speicher einspart.
+        \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
+        \item \texttt{FF\_USE\_MKFS}: Aktiviert oder deaktiviert die Formatierungsfunktion \texttt{f\_mkfs}.
+    \end{itemize}
+    
+    \item \textbf{Namensräume und Lokalisierung:}
+    \begin{itemize}
+        \item \texttt{FF\_USE\_LFN}: Schaltet die Unterstützung für lange Dateinamen frei.
+        \item \texttt{FF\_CODE\_PAGE}: Legt die Codepage fest, um Sonderzeichen korrekt darzustellen.
+    \end{itemize}
+    
+    \item \textbf{Speicher- und Laufwerksoptionen:}
+    \begin{itemize}
+        \item \texttt{FF\_VOLUMES}: Definiert die Anzahl der logischen Laufwerke, die gleichzeitig verwaltet werden können.
+        \item \texttt{FF\_MAX\_SS} \& \texttt{FF\_MIN\_SS}: Steuert die Sektorgröße, was wichtig für Medien mit Sektoren größer als 512 Byte ist.
+    \end{itemize}
+    
+    \item \textbf{Systemeinstellungen:}
+    \begin{itemize}
+        \item \texttt{FF\_FS\_TINY}: Reduziert den RAMbedarf pro Datei, indem interne Puffer ausgelagert werden.
+        \item \texttt{FF\_FS\_EXFAT}: Aktiviert die Unterstützung von exFAT für moderne Speichermedien über 32 GB.
+    \end{itemize}
+\end{itemize}
+
+Da der verwendete STM32-G431 f"ur einen Mikrocontroller "uber verh"altnism"a"sig viele Ressourcen verf"ugt, konnten viele Zusatzoptionen
+wie die Unterst"utzung f"ur das exFAT-Dateisystem kompiliert werden.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
@@ -341,6 +410,12 @@ Matsushita Electric Industrial Co., Ltd. (Panasonic)  (2006).
 Technische Spezifikation, SD Card Association. 
 Abgerufen von \url{https://users.ece.utexas.edu/~valvano/EE345M/SD_Physical_Layer_Spec.pdf} 
 (Besucht am 8. Juli 2026).
+
+\bibitem{fatfs} ChaN (2024).  
+\textit{FatFs - Generic FAT Filesystem Module}.
+Software-Dokumentation, Electronic Lives Manufacturing.
+Abgerufen von \url{https://elm-chan.org/fsw/ff/}  
+(Besucht am 23. Juli 2026).
 
 \bibitem{microchip1} Microchip Technology Inc. (2024). 
 \textit{How to interface a microSD media with Microchip SD/MMC Card Readers}. 
