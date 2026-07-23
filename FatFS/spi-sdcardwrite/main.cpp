@@ -369,6 +369,96 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     return 0x00; // success
 }
 
+template<typename Config>
+uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t *buffer)
+{
+    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+
+    uint8_t r1;
+    uint16_t timeout;
+
+    // CMD25 WRITE_MULTIPLE_BLOCK
+    SpiDriver<Config::SpiBase>::Transfer(25 | 0x40);
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 24));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 16));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 8));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)block_addr);
+    SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+    // wait for R1
+    timeout = 0;
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0xFF) && (timeout < 1000));
+
+    if (r1 != 0x00)
+        return 0x01;
+
+
+    const uint8_t *ptr = buffer;
+
+    for (uint32_t block = 0; block < block_count; block++)
+    {
+        // multiple block write token
+        SpiDriver<Config::SpiBase>::Transfer(0xFC);
+
+        // write 512 bytes
+        for (uint16_t i = 0; i < 512; i++)
+        {
+            SpiDriver<Config::SpiBase>::Transfer(ptr[i]);
+        }
+
+        ptr += 512;
+
+        // dummy CRC
+        SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+
+        // data response
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+        if ((r1 & 0x1F) != 0x05)
+            return 0x02;
+
+
+        // wait while programming
+        timeout = 0;
+        do {
+            r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+            timeout++;
+        } while ((r1 == 0x00) && (timeout < 0xFFFF));
+
+
+        if (timeout >= 0xFFFF)
+            return 0x03;
+    }
+
+
+    // stop transmission token
+    SpiDriver<Config::SpiBase>::Transfer(0xFD);
+
+
+    // wait until card is no longer busy
+    timeout = 0;
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+        timeout++;
+    } while ((r1 == 0x00) && (timeout < 0xFFFF));
+
+
+    if (timeout >= 0xFFFF)
+        return 0x04;
+
+
+    // extra clocks
+    SpiDriver<Config::SpiBase>::Transfer(0xFF);
+
+    return 0x00;
+}
+
+
 template<uintptr_t PortBase, uint32_t Pin>
 struct GpioPin
 {
@@ -629,14 +719,15 @@ int main()
             // read block again to verify
             uint8_t read_back_result = SD_ReadBlock<SD1_Config>(10, sd_block_buffer2);
             
-
-            uint8_t result = SD_ReadBlocks<SD1_Config>(9,8, sd_block_buffer3);
             if (read_back_result == 0x00) {
                 __BKPT(0); // debugger softbreakpoint
             }
         }
 
-
+        uint8_t result_writeblocks = SD_WriteBlocks<SD1_Config>(10, 8, sd_block_buffer3);
+        if (result_writeblocks == 0x00){
+            uint8_t result_readblocks = SD_ReadBlocks<SD1_Config>(9,8, sd_block_buffer4);
+        }
         for (volatile uint32_t i = 0; i < 10000; i++);
     }
 }
