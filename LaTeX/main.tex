@@ -264,7 +264,7 @@
 
 Blah blub
 
-\section{SD}
+\section{SPI-Treiber und SD-Karten} \label{sec:spi} 
 \begin{table}[htbp]
     \centering
     \caption{Pin-Belegung einer Micro-SD-Karte im SPI-Modus}
@@ -323,6 +323,50 @@ Blah blub
 
 
 \section{Dateisysteme}
+\subsection{Einleitung}
+Eine umfassende Einführung in die Grundlagen von Dateisystemen wird 
+von Tanenbaum und Bos in ihrem Standardwerk \textit{Modern Operating Systems} bereitgestellt \cite{tanenbaum2015}.
+Laut den Autoren werden drei essenzielle Anforderungen an die Langzeitspeicherung von Daten gestellt:
+\begin{enumerate}
+    \item Es muss möglich sein, eine sehr gro"se Menge an Informationen zu speichern.
+    \item Die Informationen müssen das Beenden des Prozesses, der sie verwendet, überdauern.
+    \item Mehrere Prozesse müssen gleichzeitig auf die Informationen zugreifen können.
+\end{enumerate}
+
+Im Prinzip k"onnte das Problem eine gro"se Menge an Information zu speichern bereits mit zwei Operationen
+l"osen:
+\begin{enumerate}
+    \item Einen w"ahlbaren Block lesen
+    \item Einen w"ahlbaren Block schreiben
+\end{enumerate}
+
+Das sind exakt die Operationen, die in dem vorherigen Kapitel \ref{sec:spi} f"ur die SD-Karte implementiert wurden.
+In der Praxis sind diese zwei Operationen allerdings zu primitiv, um Daten effektiv zu verwalten.
+Tanenbaum und Bos stellen beispielhaft folgende Fragen:
+\begin{itemize}
+    \item Wie findet man eine bestimmte Information
+    \item Wie verhindert man (auf Mehrbenutzersystemen), dass ein Benutzer nicht die Daten eines anderen ausliest?
+    \item Woher wei"s man, welche Bl"ocke frei sind?
+\end{itemize}
+
+F"ur diese und viele andere praktische Probleme hilft uns das Konzept der Datei.
+Die Datei ist etymologisch ein Neologismus aus Daten und Kartei.
+Im Kontext moderner Betriebssysteme definieren Tanenbaum und Bos\cite{tanenbaum2015} Dateien als 
+logische Einheiten von Information, die von Prozessen erzeugt werden und diese "uberdauern.
+Eine Datei soll erst gel"oscht werden, wenn ein Besitzer dies explizit veranlasst.\\
+Wie Dateien strukturiert, benannt, aufgerufen, genutzt, geschützt, implementiert und verwaltet werden ist Sache
+des Dateisystems.
+Aus Sicht des Nutzers ist der wichtigste Aspekt eines Dateisystems,
+wie es sich darstellt: Was eine Datei ausmacht, wie Dateien benannt und geschützt werden, 
+welche Operationen auf Dateien erlaubt sind. Die Details darüber, ob verkettete Listen oder Bitmaps verwendet werden, 
+um den freien Speicherplatz zu verwalten, oder wie viele Sektoren ein logischer Festplattenblock enthält, sind für den Nutzer von keinem Interesse,
+obwohl sie für die Entwickler des Dateisystems von großer Bedeutung sind\cite{tanenbaum2015}.
+W"ahrend Tanenbaum und Bos den Schwerpunkt auf Dateisystemen f"ur Betriebssysteme legen, 
+was sicherlich der "ubliche Anwendungsbereich ist, geht es in dieser Arbeit um die Verwendung
+von Dateisystemen in eingebetteten Systemen, bzw. konkret auf einem STM32-G431 und deren Vor- und Nachteile.
+
+
+
 \subsection{FatFS}
 \subsubsection{Einleitung}
 FatFs ist ein plattformunabhängiges, quelloffenes Software-Modul zur Implementierung von FAT/exFAT-Dateisystemen in ressourcenbeschränkten, eingebetteten Systemen. 
@@ -363,38 +407,63 @@ Die Datei ffconf.h ist die zentrale Konfigurationsdatei des FatFs-Moduls.
 \begin{itemize}
     \item \textbf{Anpassbarer Funktionsumfang:}
     \begin{itemize}
-        \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab, was massiv Flash-Speicher einspart.
-        \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
+        \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab, was Flash-Speicher einspart.
+        \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie z.B. die Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
         \item \texttt{FF\_USE\_MKFS}: Aktiviert oder deaktiviert die Formatierungsfunktion \texttt{f\_mkfs}.
+        \item \texttt{FF\_USE\_FASTSEEK}: Beschleunigt den wahlfreien Zugriff auf große Dateien.
+        \item \texttt{FF\_USE\_FIND}: Aktiviert Suchfunktionen wie \texttt{f\_findfirst()} und \texttt{f\_findnext()}.
     \end{itemize}
     
-    \item \textbf{Namensräume und Lokalisierung:}
+    \item \textbf{Dateinamen und Zeichenkodierung:}
     \begin{itemize}
         \item \texttt{FF\_USE\_LFN}: Schaltet die Unterstützung für lange Dateinamen frei.
         \item \texttt{FF\_CODE\_PAGE}: Legt die Codepage fest, um Sonderzeichen korrekt darzustellen.
+        \item \texttt{FF\_LFN\_UNICODE}: Aktiviert Unicode-Unterstützung für Dateinamen.
     \end{itemize}
     
     \item \textbf{Speicher- und Laufwerksoptionen:}
     \begin{itemize}
         \item \texttt{FF\_VOLUMES}: Definiert die Anzahl der logischen Laufwerke, die gleichzeitig verwaltet werden können.
-        \item \texttt{FF\_MAX\_SS} \& \texttt{FF\_MIN\_SS}: Steuert die Sektorgröße, was wichtig für Medien mit Sektoren größer als 512 Byte ist.
+        \item \texttt{FF\_MAX\_SS} \& \texttt{FF\_MIN\_SS}: Definiert die vom Dateisystem unterstützten logischen Sektorgrößen. Üblicherweise besitzen SD-Karten eine logische Sektorgröße von 512 Byte, FatFs kann jedoch auch größere Sektorgrößen unterstützen.
+        \item \texttt{FF\_FS\_LOCK}: Legt fest, wie viele Dateien gleichzeitig vor konkurrierenden Zugriffen geschützt werden können.
     \end{itemize}
     
     \item \textbf{Systemeinstellungen:}
     \begin{itemize}
-        \item \texttt{FF\_FS\_TINY}: Reduziert den RAMbedarf pro Datei, indem interne Puffer ausgelagert werden.
-        \item \texttt{FF\_FS\_EXFAT}: Aktiviert die Unterstützung von exFAT für moderne Speichermedien über 32 GB.
+        \item \texttt{FF\_FS\_TINY}: Reduziert den RAM-Bedarf pro Datei, indem interne Puffer gemeinsam genutzt werden.
+        \item \texttt{FF\_FS\_EXFAT}: Aktiviert die Unterstützung des exFAT-Dateisystems für SDXC-Speicherkarten.
+        \item \texttt{FF\_FS\_NORTC}: Verwendet feste Zeitstempel, wenn keine Echtzeituhr (RTC) vorhanden ist.
+        \item \texttt{FF\_FS\_REENTRANT}: Aktiviert die Thread-Sicherheit des Dateisystems für Mehrthread-Anwendungen.
     \end{itemize}
 \end{itemize}
 
-Da der verwendete STM32-G431 f"ur einen Mikrocontroller "uber verh"altnism"a"sig viele Ressourcen verf"ugt, konnten viele Zusatzoptionen
-wie die Unterst"utzung f"ur das exFAT-Dateisystem kompiliert werden.
+Darüber hinaus stellt FatFs zahlreiche weitere Konfigurationsoptionen bereit.
+Dazu gehören beispielsweise Einstellungen für mehrere Partitionen
+(\texttt{FF\_MULTI\_PARTITION}), Laufwerksbezeichnungen
+(\texttt{FF\_STR\_VOLUME\_ID}), Dateiattribute
+(\texttt{FF\_USE\_CHMOD}), Laufwerkslabels
+(\texttt{FF\_USE\_LABEL}) oder die Unterstützung von TRIM-Befehlen für
+Flash-Speicher (\texttt{FF\_USE\_TRIM}). Dadurch lässt sich das
+Dateisystem flexibel an die Anforderungen der jeweiligen
+Embedded-Anwendung anpassen.
+Eine vollst"andige Auflistung findet sich einerseits direkt in der ffconf.h mit hilfreichen Kommentaren,
+andererseits auf der \href{https://elm-chan.org/fsw/ff/doc/config.html}{offiziellen Webseite des Entwicklers}.
+
+
+
+Aufgrund der verfügbaren Ressourcen des STM32G431 wurde auf eine weitgehend vollständige FatFs-Konfiguration zurückgegriffen, 
+einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
 \begin{thebibliography}{9}
 \addcontentsline{toc}{section}{Quellenverzeichnis}
+
+\bibitem{tanenbaum2015}
+Tanenbaum, A. S. \& Bos, H. (2015). 
+\textit{Modern Operating Systems} (4. Aufl.). 
+Vrije Universiteit Amsterdam, The Netherlands: Prentice Hall.
 
 \bibitem{spi1}
 Ababei, C. (2013). 
