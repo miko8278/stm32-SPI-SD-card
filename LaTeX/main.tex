@@ -258,13 +258,180 @@
 %\listoffigures
 % Wiederherstellung der Seitenzahlen
 \newpage % Neue Seite
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{example-image}
+    \caption{Loram Ipsum und so weiter}
+    \label{fig:REPLACE}
+\end{figure}
 
 \section{Einleitung}
 
 
 Blah blub
 
+
+Die gesamte Bachelorarbeit befindet sich "offentlich auf Github unter \url{https://github.com/miko8278/stm32-SPI-SD-card}.
+
+\section{Hardware-Design und Schnittstellen}
+
+\subsection{Einleitung}
+F"ur diese Bachelorarbeit wurde eigens eine PCB in KiCad10 entwickelt.
+Die vollst"andigen Dateien, inklusive der Gerberdateien, liegen in
+dem \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/PCB}{Projektverzeichnis auf Github}.\\
+
+Das Kernelement der Platine bildet der STM32G431, ein 2017?? ver"offentlicher Mikrocontroller von ST.
+Dieser ist preiswert und enth"alt alle wesentlichen Elemente, die f"ur diese Arbeit ben"otigt wurden:
+128 KB Flash, 32 KB SRAM, 3x SPI-Interfaces und au"serdem frei konfigurierbares Direct Memory Access (DMA),
+das sogenannte DMAMUX.
+Bei den "alteren STM32 waren die DMA-Kan"ale festgelegt. Das hatte den Nachteil, dass man schon 
+im Schaltplan sehr darauf achten musste, welche Pins f"ur welche Peripherien verwendet werden,
+da ansonsten der DMA nicht verwendet werden konnte. Das wiederrum h"atte den Nachteil, dass die CPU unn"otig 
+belastet wird. Weiterhin bietet der STM32G431 2x 12-bit ADCs und 2x 12-bit DACs, sodass potentielle Anwendungen
+wie das Einlesen von Sensordaten oder das Ausgeben von Audiodaten umgesetzt werden k"onnen.\\
+Als Geh"auseform wurde LQFP48 gew"ahlt, da dieses von Hand l"otbar ist und genug Pins f"ur alle ben"otigten Zwecke
+herausf"uhrt. \\
+
+Die Platine wurde bei dem gro"sen chinesischen Unternehmen \href{jlc.com}{JLCPCB} bestellt.
+Die Bauteile wurden bei dessen Tochterunternehmen \href{lcsc.com}{LCSC} bestellt. Der Bill of Material (BOM)
+f"ur die Bauteile befindet sich ebenfalls im Projektverzeichnis.
+
+
+
+\subsection{Idee und Schaltplan}
+Die Idee war der Entwurf einer Prototypplatine f"ur einen STM32G431, die mit zwei MicroSD-Kartenslots ausgestattet
+wird. Dar"uber hinaus sollte die PCB so simpel wie m"oglich gehalten werden, da dies mein erster eigener Platinenentwurf ist und
+die n"otige Erfahrung f"ur komplexe Wechselwirkungen und Probleme fehlt. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_main.png}
+    \caption{Hauptblatt des Schaltplans}
+    \label{fig:schalt_main}
+\end{figure}
+\fig{fig:schalt_main} zeigt den haupts"achlichen Schaltplan. In der Kurzschreibweise von Schaltungen werden oft die Leitungen
+f"ur GND und VCC/VDD weggelassen. In "ahnlichem Stile wurden in dem vorliegenden Schaltplan fast alle anderen Leitungen auch
+weggelassen und die Pins der "Ubersichtlichkeit halber mit Labels verbunden. Auch bei einem minimalen Design mussten einige 
+einige Dinge f"ur eine korrekte Funktionsweise beachtet werden, andere Features wurden hinzugef"ugt, um eine bessere Auswertung
+und Nutzung der Platine zu gew"ahrleisten:
+\subsubsection{Spannungsversorgung}
+Die Spannungsversorgung soll haupts"achlich "uber ein 5V USB-C-Netzteil gew"ahrleistet werden.
+Ein umsteckbarer Jumper erm"oglicht allerdings auch die Versorgung "uber einen externen Akku,
+sofern er minimal 3,8 V bis maximal 6 V zur Verf"ugung stellt. F"ur die Spannungsregelung
+ist ein \texttt{Texas Instruments TLV1117LV33DCYR} Linearregler zust"andig, da dieser au"ser zwei Kondensatoren keine
+komplexe, externe Beschaltung ben"otigt. Weiterhin wurden f"ur eine stabile Spannungsversorgung alle VDD-Pins des STM32G431 mit 
+einem 100 nF Kondensator ausgestattet.
+
+\subsection{USB-C}
+Die Platine ist mit einem 16-Pin USB Typ C Stecker ausgestattet. Da der Stecker beidseitig in die Buchse gesteckt werden kann,
+ist jeder Pin in zweifacher Ausf"uhrung vorhanden.
+Haupts"achlich ist der Stecker zur Spannungsversorgung gedacht gewesen. Damit die USB-Spannung von 5 V von einem
+Netzteil oder anderem Ger"at "uberhaupt bereit gestellt werden kann, m"ussen die Pins CC1 und CC2 "uber einen $5,1\kohm$ Widerstand
+auf Masse gezogen werden. Es stehen mit USB-C auch h"ohere Spannungen zur Verf"ugung, wenn mit der Spannungsquelle "uber
+das XXX Protokoll kommuniziert wird. Dies war f"ur die vorliegende Arbeit aber nicht relevant. 
+
+Da STM32G431 aber einen USB 2.0 Controller besitzt, wurden ebenfalls die differenziellen Datenpins angeschlossen.
+Das erweitert die potentiellen M"oglichkeiten der Platine f"ur einen Datenaustausch mit dem Computer.
+
+\subsection{SPI-Interfaces}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_spi.png}
+    \caption{Schaltplan f"ur die SPI-Interfaces}
+    \label{fig:schalt_spi}
+\end{figure}
+Die Hauptfunktionalit"at der Platine ist die Ansteuerung einer MicroSD Karte "uber das SPI-Protokoll.
+Der STM32G431 bietet hierf"ur eigene SPI-Hardwarecontroller, die als Master fungieren k"onnen und einen
+konfigurierbaren Takt vorgeben. Die Platine verbindet zwei der drei SPI-Peripherien mit MicroSD-Karten Steckpl"atzen
+und f"uhrt den dritten mit einer Pinleiste aus. Der gew"ohnliche Kommunikationsmodus von SD-Karten, der XXX-modus, ben"otigt
+zwei weitere Pins. Diese werden per Pull-Up Widerstand auf 3,3 V Spannungspegel gebracht, um ein  
+"Ubersprechen von den anderen Leitungen auf diese Pins zu unterbinden und damit potentielle Fehler zu minimieren.
+Die Pull-Up Widerst"ande sollten zun"achst direkt "uber ungenutzte STM32G431 Pins per Software konfiguriert werden.
+Beim Routing hat sich dies jedoch als schwierig herausgestellt, sodass physische Pull-Up Widerst"ande verwendet werden sollten.
+Durch die "Anderungen in letzter Minute hat sich hierbei allerdings ein Fehler eingeschlichen und die Widerst"ande sind
+zu Pull-Down Widerst"anden geschaltet worden.
+Das dritte SPI-Interface wurde per Pinleiste rausgef"uhrt, sodass die Flexibilit"at gew"ahrleistet ist ein
+externes SPI-Ger"at anzuschlie"sen (wie z.B einen kleinen LCD-Bildschirm), falls dies gew"unscht ist.
+
+\subsection{Programmier-Interfaces}
+Das Programmierinterface wurde in zwei Versionen herausgef"uhrt:\\
+Einerseits das UART-Programmierinterface "uber eine 5-Pin Leiste.
+Dieses erlaubt den STM32 "uber einen gew"ohnlichen UART-Adapter zu programmieren.
+Der Nachteil ist hierbei allerdings, dass kein Debug-Interface vorhanden ist,
+sodass die Entwicklung eines Programms erschwert wird. \\
+Andererseits wurden die Pins f"ur das SWD-Interface mit einer 6-Pin Leiste herausgef"uhrt.
+Dieses Interface ben"otigt einen dezidierten Programmieradapter. Allerdings lassen sich
+mit einigen Jumperumstellungen auch die STM-Nucleo Boards daf"ur nutzen,
+da diese ebenfalls SWD intern f"ur ihre Programmierung verwenden. 
+**HIER GENAUER SWD PROG ERKLAEREN MIT PINS UND BILDERN**
+
+
+\subsection{VREF und ADCs/DACs}
+F"ur die Referenzspannung f"ur die ADC und DAC muss der Pin VREF mit VDDA verbunden werden und mit 
+1 uF und 100 nF Kondensatoren abgesichert werden. Alternativ k"onnte man f"ur
+eine Referenz den internen VREFBUF nutzen. In der vorliegenden Konfiguration besteht allerdings
+maximale Flexibilit"at. Um die Komplexit"at der Schaltung niedrig zu halten, 
+wurden in diesem Platinendesign keine separaten Versorgungen f"ur die digitale und analoge Spannung
+verwendet, sodass mit einem h"oheren Grundrauschen bei DAC und ADC gerechnet werden muss. 
+Es wurden 2x ADCs und 2x DACs "uber 2-Pin Leisten herausgef"uhrt. Einer der DAC ist intern
+mit dem OPAMP3 verschaltet und somit gepuffert. 
+
+\subsection{Weitere Peripherien}
+F"ur potentielle Debugging und Kommunikationszwecke wurde ebenfalls per 3-Pin Leiste ein
+USART-Interface herausgef"uhrt. F"ur eine einfache Eingabem"oglichkeit wurden zwei Pins
+"uber einen Taster an GND angeschlossen. Diese sollen mit in Software zugeschalteten Pull-Up Widerst"anden
+verwendet werden. Weiterhin wurden 5 weitere ungenutze Pins herausgef"uhrt.
+
+
+
+
+\subsection{Routing und Design}
+
+\subsubsection{Footprints}
+Da die Platine von Hand gel"otet werden sollte, wurden alle 
+Kondensatoren und Widerst"ande in der 0805 Gr"o"se gew"ahlt.
+Alle Bauteile wurden schon in der Schaltplanphase darauf begutachtet,
+ob es sie in einer von Hand l"otbaren Geh"auseform gibt. \\
+Die Pads praktisch aller Bauteile wurden manuell etwas verl"angert, um
+eine gute Handl"otbarkeit zu gew"ahrleisten.
+LCSC stellt f"ur alle bei Ihnen verf"ugbaren Bauteile auch Footprints
+zur Verf"ugung. Die Footprints der spezielleren Bauteile, wie die des MicroSD-Kartenslots oder
+des TI Linearreglers, wurden mit dem Tool easyeda2kicad in einen KiCad Footprint
+"uberf"uhrt. Diese wiederrum mussten teilweise auch leicht angepasst werden, weil z.B 
+der Abstand der Pads zu den Bohrl"ochern nicht die f"ur die Produktion zul"assigen Ma"se 
+besessen hatte.
+
+\subsubsection{Design}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Hard_Bilder/PreviewPCB.png}
+    \caption{Vorschau der entwickelten PCB}
+    \label{fig:platlayout}
+\end{figure}
+\fig{fig:platlayout} zeigt die Platine in dem Zustand, in dem sie bestellt wurde.
+F"ur Signalleitungen wurden 0,2 mm dicke Kupferbahnen
+Alle Leitungen 
+
+
+Bei zuk"unftigen Projekten wird f"ur die Beschaltung das echte physische Layout der Pins
+im Geh"ause st"arker beachtet werden. So liegen beispielsweise die Pins PA8 bis PA12 am
+rechten oberen Rand des LQFP48-Geh"auses, w"ahrend die Pins PA0 bis PA4 in der linken unteren Ecke 
+liegen. Dies ist beim Schaltungslayout irrelevant, beim Routing der echten Leitungen hingegen
+f"uhrt dies zu "uberkreuzenden Leitungen. Daher sollte schon in der Schaltungsphase ein wenig
+das sp"atere physische Layout mitbedacht werden.  
+
+
+\subsection{Bestellung}
+
+
+\subsection{Inbetriebnahme und Probleme}
+Neben dem bereits erw"ahnten Problem der falsch beschalteten Pull-Up Widerst"ande wurden ebenfalls
+die Pins f"ur die SPI2 und SPI3 Peripherien vertauscht. Dieser Fehler l"asst sich durch eine 
+Umkonfigurierung softwareseitig aber l"osen. 
+
+
 \section{SPI-Treiber und SD-Karten} \label{sec:spi} 
+%Sektor => physisch hardware kleinste Einheit
+%Block => logisch Software kleinste Einheit
 \begin{table}[htbp]
     \centering
     \caption{Pin-Belegung einer Micro-SD-Karte im SPI-Modus}
@@ -325,7 +492,7 @@ Blah blub
 \section{Dateisysteme}
 \subsection{Einleitung}
 Eine umfassende Einführung in die Grundlagen von Dateisystemen wird 
-von Tanenbaum und Bos in ihrem Standardwerk \textit{Modern Operating Systems} bereitgestellt \cite{tanenbaum2015}.
+von Tanenbaum und Bos in ihrem Standardwerk \textit{Modern Operating Systems} bereitgestellt \cite[S.~263 ff.]{tanenbaum2015}.
 Laut den Autoren werden drei essenzielle Anforderungen an die Langzeitspeicherung von Daten gestellt:
 \begin{enumerate}
     \item Es muss möglich sein, eine sehr gro"se Menge an Informationen zu speichern.
@@ -333,6 +500,9 @@ Laut den Autoren werden drei essenzielle Anforderungen an die Langzeitspeicherun
     \item Mehrere Prozesse müssen gleichzeitig auf die Informationen zugreifen können.
 \end{enumerate}
 
+Tanenbaum und Bos nutzen in ihrem Buch den Begriff des Prozesses zur Ressourcenverwaltung und -abstraktion, 
+w"ahrend diese Notwendigkeit in der vorliegenden Arbeit entf"allt, 
+da das Programm direkte Kontrolle über die gesamte Hardware des Mikrocontrollers besitzt.
 Im Prinzip k"onnte das Problem eine gro"se Menge an Information zu speichern bereits mit zwei Operationen
 l"osen:
 \begin{enumerate}
@@ -355,17 +525,96 @@ Im Kontext moderner Betriebssysteme definieren Tanenbaum und Bos\cite{tanenbaum2
 logische Einheiten von Information, die von Prozessen erzeugt werden und diese "uberdauern.
 Eine Datei soll erst gel"oscht werden, wenn ein Besitzer dies explizit veranlasst.\\
 Wie Dateien strukturiert, benannt, aufgerufen, genutzt, geschützt, implementiert und verwaltet werden ist Sache
-des Dateisystems.
+des Dateisystems. Ein Dateisystem l"ost (je nach Funktionsumfang) viele der oben gestellten Anforderungen.
 Aus Sicht des Nutzers ist der wichtigste Aspekt eines Dateisystems,
 wie es sich darstellt: Was eine Datei ausmacht, wie Dateien benannt und geschützt werden, 
 welche Operationen auf Dateien erlaubt sind. Die Details darüber, ob verkettete Listen oder Bitmaps verwendet werden, 
 um den freien Speicherplatz zu verwalten, oder wie viele Sektoren ein logischer Festplattenblock enthält, sind für den Nutzer von keinem Interesse,
 obwohl sie für die Entwickler des Dateisystems von großer Bedeutung sind\cite{tanenbaum2015}.
+Zusammenfassend l"asst sich sagen, dass ein Dateisystem eine f"ur den Anwendungszweck geeignete Struktur in einen rohen Speicherbereich bringt.
 W"ahrend Tanenbaum und Bos den Schwerpunkt auf Dateisystemen f"ur Betriebssysteme legen, 
 was sicherlich der "ubliche Anwendungsbereich ist, geht es in dieser Arbeit um die Verwendung
 von Dateisystemen in eingebetteten Systemen, bzw. konkret auf einem STM32-G431 und deren Vor- und Nachteile.
 
+\subsection{Layout eines Dateisystem}
+W"ahrend das Design eines Dateisystems grunds"atzlich frei entschieden werden kann,
+folgt die Struktur meist einem "ahnlichen Muster, sodass die Kl"arung einiger "ublicher Begriffe
+n"otig ist.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Bilder/TAN_Filesystem.png}
+    \caption{Ein m"ogliches Dateisystemlayout \cite[S. 282]{tanenbaum2015}}
+    \label{fig:fslayout}
+\end{figure}
+\fig{fig:fslayout} zeigt ein m"ogliches Layout eines Dateisystems nach Tanenbaum und Bos \cite[S.~282]{tanenbaum2015}.
+Der erste Sektor eines Speichermediums wird reserviert f"ur den MBR (Master Boot Record) und wird "ublicherweise
+zum Starten eines Computers verwendet. Das Ende des MBR enth"alt die Partitionstabelle, in welcher eine
+der Partitionen als aktiv markiert ist. Ein physisches Medium kann mehrere Partitionen und somit mehrere Dateisysteme 
+beinhalten. Wenn der Computer gebooted wird, dann stellt ein Programm fest, welche Partition
+aktiv ist und f"uhrt die Anweisungen in dem ''Boot block'' aus. "Ublicherweise folgt darauf Superblock, in dem
+wichtige Informationen "uber das Dateisystem stehen wie der Typ des Dateisystems oder die Anzahl der vorhandenen Bl"ocke.
+Im Anschluss folgen typischerweise Informationen über die freien Blöcke des Dateisystems, 
+die beispielsweise in Form einer Zeigerliste organisiert sind. 
+Darauf folgen die sogenannten I-Nodes, ein Array von Datenstrukturen, das für jede Datei existiert
+und alle relevanten Datei-Metadaten enthält. 
+Danach schließt sich das Wurzelverzeichnis (Root Directory) an, 
+welches die Wurzel der gesamten Dateisystemstruktur bildet. 
+Der verbleibende Speicherplatz des Datenträgers steht schließlich für alle weiteren Verzeichnisse
+ und die eigentlichen Dateien zur Verfügung\cite[S. 282]{tanenbaum2015}.
+\subsection{FAT-Dateisysteme}
+Das FAT-Dateisystem wurde 1980 von Microsoft entwickelt und erstmals von MS-DOS unterstützt.
+Es wurde ursprünglich als einfaches Dateisystem entwickelt, 
+das für Disketten mit einer Größe von weniger als 500 KB geeignet war. 
+FAT ist die Abkürzung für File Allocation Table (Dateizuordnungstabelle). 
+Derzeit gibt es vier FAT-Untertypen: FAT12, FAT16, FAT32 und seit 2006 exFAT als Nachfolger\cite{FAT32}.
+Im Laufe der Zeit wurden die Spezifikationen erweitert, 
+um mit zunehmender Kapazität auch größere Speichermedien zu unterstützen.
 
+\begin{table}[H]
+    \centering
+    \caption{Technische Adressierungsgrenzen der FAT-Dateisysteme\cite{MSLearnFS}}
+    \label{tab:fat_limits}
+    \smallskip
+    \begin{tabular}{l l l p{5cm}}
+    \toprule
+    \textbf{Dateisystem} & \textbf{Max. Dateigröße} & \textbf{Max. Mediengröße} & \textbf{Hauptsächlicher Einsatzzweck} \\
+    \midrule
+    \textbf{FAT12} & 16 MB & 16 MB   & Klassische 3,5-Zoll-Disketten (1,44 MB) \\
+    \addlinespace
+    \textbf{FAT16} & 2 GB & 2 GB  & MS-DOS-Systeme, frühe MP3-Player, alte CNC-Maschinen \\
+    \addlinespace
+    \textbf{FAT32} & 4 GB  & 2 TB  & USB-Sticks, ältere Kameras oder Konsolen \\
+    \addlinespace
+    \textbf{exFAT} & 512 TB oder mehr & 512 TB oder mehr & Moderne SDXC/SDUC-Speicherkarten, externe SSDs \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+\tab{tab:fat_limits} zeigt die maximal m"oglichen, \textit{"ublichen} Datei- und Mediengr"osen f"ur die FAT-Dateisysteme
+und soll in erster Linie die Entwicklung der Spezifikation und die Probleme der "alteren Dateisysteme darstellen.
+So ist es einem FAT32-Dateisystem beispielsweise nicht m"oglich eine 12 GB gro"se .iso Datei aufzunehmen.
+
+Wie ergeben sich die maximalen Datei und Mediengr"o"sen?
+Der Unterschied zwischen einem Sektor und einem Block wurde bereits erl"autert: Der Sektor ist die physisch kleinste adressierbare Einheit, 
+w"ahrend der Block die logisch die kleinste adressierbare Einheit ist. Im Kontext der FAT-Dateisysteme wird
+der Block allerdings Cluster genannt, w"ahrend der Begriff des Blocks meist im Unix-Kontext "ublich ist. 
+FAT12 stehen 12 Bits, FAT16 16 Bits und FAT32 28 Bits f"ur die Adressierung der Cluster zur Verf"ugung.
+Mit gr"o"seren Clustergr"o"sen ergibt sich also eine gr"o"sere Mediengr"ose. 
+Gro"se Cluster haben allerdings den Nachteil, dass sehr kleine Dateien mindestens so gro"s werden wie die Clustergr"o"se.
+Weiterhin wurden Clustergr"o"sen immer gedeckelt, "ublicherweise mit 32 KB Maximalgr"o"se f"ur FAT16 und FAT32.
+Dies f"uhrt bei FAT16 zu den genannten 2 GB und bei FAT32 zu 8 TB maximaler Mediengr"o"se.
+Hinzu kommt allerdings eine weitere Limitierung: Der MBR enth"alt die Partitionstabelle. Dieser z"ahlt allerdings
+in 512 Byte gro"sen Sektoren und ihm steht lediglich ein Feld von 32 Bit f"ur die Adressierung zur Verf"ugung.
+Folglich kann das FAT32-Dateisystem zwar eine gr"o"sere Medien unterst"utzen, wird dann aber von der MBR-Partitionstabelle
+gebremst\cite{MSLearnFS}\cite{FAT32}. 
+
+Die moderne L"osung dieser Limitierung liegt in der Verwendung des GUID Partition Table (GPT),
+die ebenfalls viele weitere Vorteile zum MBR bringt wie beispielsweise eine erh"ohte Anzahl von Prim"arpartitionen und ein Backup
+der Partitionstabelle am Ende des Speichermediums \cite{gpt}.
+
+Die Dateigr"o"se bei FAT32-Systemen ist durch ein 32 Bit-Adressierungsfeld limitiert. Dieses z"ahlt in Bytes, wodurch sich
+die charakteristischen 4 GB Dateigr"o"se ergeben, die f"ur heutige Zwecke manchmal nicht ausreichend sind\cite{MSLearnFS}\cite{FAT32}.
+Zu diesem Zweck wurde mit exFAT als moderne FAT-Variante 2006 eingef"uhrt.
 
 \subsection{FatFS}
 \subsubsection{Einleitung}
@@ -454,6 +703,10 @@ andererseits auf der \href{https://elm-chan.org/fsw/ff/doc/config.html}{offiziel
 Aufgrund der verfügbaren Ressourcen des STM32G431 wurde auf eine weitgehend vollständige FatFs-Konfiguration zurückgegriffen, 
 einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
+
+
+\section{LittleFS}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 
 \renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
@@ -486,11 +739,29 @@ Software-Dokumentation, Electronic Lives Manufacturing.
 Abgerufen von \url{https://elm-chan.org/fsw/ff/}  
 (Besucht am 23. Juli 2026).
 
+\bibitem{FAT32} ChaN (2020).  
+\textit{FAT Filesystem}.
+Software-Dokumentation, Electronic Lives Manufacturing.
+Abgerufen von \url{https://elm-chan.org/docs/fat_e.html}  
+(Besucht am 24. Juli 2026).
+
+\bibitem{MSLearnFS} Microsoft (2023).  
+\textit{File System Functionality Comparison}.Software-Dokumentation, Microsoft Learn.
+Abgerufen von \url{https://learn.microsoft.com/en-us/windows/win32/fileio/filesystem-functionality-comparison}
+(Besucht am 24. Juli 2026).
+
+
 \bibitem{microchip1} Microchip Technology Inc. (2024). 
 \textit{How to interface a microSD media with Microchip SD/MMC Card Readers}. 
 Support Knowledge Base. Abgerufen von 
 \url{https://support.microchip.com/s/article/How-to-interface-a-microSD-media-with-Microchip-SD-MMC-Card-Readers} 
 (Besucht am 8. Juli 2026).
+
+\bibitem{gpt} UEFI Forum. (2024). 
+\textit{UEFI Specification Version 2.11 (Chapter 5: GUID Partition Table Format)}. 
+Official Specification. 
+Abgerufen von \url{https://uefi.org/specs/UEFI/2.11/05_GUID_Partition_Table_Format.html} 
+(Besucht am 24. Juli 2026).
 
 \bibitem{coro1}
 Michael Eiler, \textit{C++20: Building a Thread-Pool With Coroutines} \\
