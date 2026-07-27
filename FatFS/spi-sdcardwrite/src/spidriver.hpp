@@ -55,6 +55,16 @@ struct SpiDriver {
         SPIx->CR1 |= (static_cast<uint32_t>(div) << SPI_CR1_BR_Pos);
         SPIx->CR1 |= SPI_CR1_SPE;
     }
+    //test this out later
+    // static inline uint8_t SPI_Transfer(uint8_t data)
+    // {
+    // SPIx->TXDR = data;
+
+    // while (!(SPIx->SR & SPI_SR_RXP))
+    //     ;
+
+    // return SPIx->RXDR;
+    // }
 
     static uint8_t Transfer(uint8_t data) {
         // wait till tx empty

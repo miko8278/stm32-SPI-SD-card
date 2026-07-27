@@ -89,6 +89,7 @@
 \newcommand*{\uH}{\ \si{\micro\henry}}
 \newcommand*{\nH}{\ \si{\nano\henry}}
 
+\newcommand*{\um}{\ \si{\micro\meter}}
 \newcommand*{\mm}{\ \si{\milli\meter}}
 \newcommand*{\m}{\ \si{\meter}}
 \newcommand*{\km}{\ \si{\kilo\meter}}
@@ -107,6 +108,9 @@
 %Fuer Bilder und Tabellen Unterschriften
 \usepackage[font=footnotesize,justification=centering]{caption}
 
+
+%mintinline cpp Command
+\newcommand{\cpp}[1]{\mintinline{cpp}{#1}}
 
 %Counter fuer Codelabels
 \newcounter{codecnt}
@@ -229,7 +233,7 @@
         
 %         \begin{tabular}{ll}
 %         \textbf{Autor:}	            &	YYZYY\\
-%         \textbf{Dozent:} &  Prof. Dr. XXX  \\
+%         \textbf{Dozent:} &  Prof. Dr. XYX  \\
 %         \end{tabular} 
 %         \vfill
   
@@ -280,17 +284,25 @@ F"ur diese Bachelorarbeit wurde eigens eine PCB in KiCad10 entwickelt.
 Die vollst"andigen Dateien, inklusive der Gerberdateien, liegen in
 dem \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/PCB}{Projektverzeichnis auf Github}.\\
 
-Das Kernelement der Platine bildet der STM32G431, ein 2017?? ver"offentlicher Mikrocontroller von ST.
+Das Kernelement der Platine bildet der \href{https://www.st.com/en/microcontrollers-microprocessors/stm32g431rb.html}{STM32G431}, ein 2019 ver"offentlicher Mikrocontroller von STMicroelectronics\cite{st1}.
 Dieser ist preiswert und enth"alt alle wesentlichen Elemente, die f"ur diese Arbeit ben"otigt wurden:
 128 KB Flash, 32 KB SRAM, 3x SPI-Interfaces und au"serdem frei konfigurierbares Direct Memory Access (DMA),
 das sogenannte DMAMUX.
 Bei den "alteren STM32 waren die DMA-Kan"ale festgelegt. Das hatte den Nachteil, dass man schon 
 im Schaltplan sehr darauf achten musste, welche Pins f"ur welche Peripherien verwendet werden,
-da ansonsten der DMA nicht verwendet werden konnte. Das wiederrum h"atte den Nachteil, dass die CPU unn"otig 
-belastet wird. Weiterhin bietet der STM32G431 2x 12-bit ADCs und 2x 12-bit DACs, sodass potentielle Anwendungen
+da ansonsten der DMA nicht verwendet werden konnte oder sich mit anderen Peripherien gedoppelt hat. \\
+Weiterhin bietet der STM32G431 2x 12-bit ADCs, 2x 12-bit DACs und zahlreiche Timer, sodass potentielle Anwendungen
 wie das Einlesen von Sensordaten oder das Ausgeben von Audiodaten umgesetzt werden k"onnen.\\
+Eine "Ubersicht der gesamten Features findet sich im \href{https://www.st.com/resource/en/datasheet/stm32g431rb.pdf}{offiziellen Datenblatt},
+wobei sehr genau gelesen werden muss: Beispielsweise besitzt der Controller zwar 4 DAC Kan"ale, aber nur 2 sind gleichzeitig nutzbar.
+ebenfalls kann eine ADC Genauigkeit von 16 Bit zwar erreicht werden, aber nur in einem speziellen Oversamplingmodus,
+wodurch die m"ogliche Abtastrate drastisch sinkt.
 Als Geh"auseform wurde LQFP48 gew"ahlt, da dieses von Hand l"otbar ist und genug Pins f"ur alle ben"otigten Zwecke
 herausf"uhrt. \\
+Es ist an dieser Stelle erw"ahnenswert, dass ST Microelectronics im h"oherwertigen Segment ebenfalls 
+Mikrocontroller anbietet, die eine dezidierte SDMMC-Schnittstelle f"ur den nativen SD-Modus von SD-Karten haben.
+Mit diesem lassen sich h"ohere "Ubertragungsraten erreichen, was f"ur die vorliegende Arbeit aber nicht relevant war.\\
+
 
 Die Platine wurde bei dem gro"sen chinesischen Unternehmen \href{jlc.com}{JLCPCB} bestellt.
 Die Bauteile wurden bei dessen Tochterunternehmen \href{lcsc.com}{LCSC} bestellt. Der Bill of Material (BOM)
@@ -321,18 +333,18 @@ ist ein \texttt{Texas Instruments TLV1117LV33DCYR} Linearregler zust"andig, da d
 komplexe, externe Beschaltung ben"otigt. Weiterhin wurden f"ur eine stabile Spannungsversorgung alle VDD-Pins des STM32G431 mit 
 einem 100 nF Kondensator ausgestattet.
 
-\subsection{USB-C}
+\subsubsection{USB-C}
 Die Platine ist mit einem 16-Pin USB Typ C Stecker ausgestattet. Da der Stecker beidseitig in die Buchse gesteckt werden kann,
 ist jeder Pin in zweifacher Ausf"uhrung vorhanden.
 Haupts"achlich ist der Stecker zur Spannungsversorgung gedacht gewesen. Damit die USB-Spannung von 5 V von einem
 Netzteil oder anderem Ger"at "uberhaupt bereit gestellt werden kann, m"ussen die Pins CC1 und CC2 "uber einen $5,1\kohm$ Widerstand
 auf Masse gezogen werden. Es stehen mit USB-C auch h"ohere Spannungen zur Verf"ugung, wenn mit der Spannungsquelle "uber
-das XXX Protokoll kommuniziert wird. Dies war f"ur die vorliegende Arbeit aber nicht relevant. 
+das USB Power Delivery Protokoll kommuniziert wird. Dies war f"ur die vorliegende Arbeit aber nicht relevant. 
 
 Da STM32G431 aber einen USB 2.0 Controller besitzt, wurden ebenfalls die differenziellen Datenpins angeschlossen.
 Das erweitert die potentiellen M"oglichkeiten der Platine f"ur einen Datenaustausch mit dem Computer.
 
-\subsection{SPI-Interfaces}
+\subsubsection{SPI-Interfaces}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_spi.png}
@@ -342,7 +354,7 @@ Das erweitert die potentiellen M"oglichkeiten der Platine f"ur einen Datenaustau
 Die Hauptfunktionalit"at der Platine ist die Ansteuerung einer MicroSD Karte "uber das SPI-Protokoll.
 Der STM32G431 bietet hierf"ur eigene SPI-Hardwarecontroller, die als Master fungieren k"onnen und einen
 konfigurierbaren Takt vorgeben. Die Platine verbindet zwei der drei SPI-Peripherien mit MicroSD-Karten Steckpl"atzen
-und f"uhrt den dritten mit einer Pinleiste aus. Der gew"ohnliche Kommunikationsmodus von SD-Karten, der XXX-modus, ben"otigt
+und f"uhrt den dritten mit einer Pinleiste aus. Der gew"ohnliche Kommunikationsmodus von SD-Karten, der SD-Modus, ben"otigt
 zwei weitere Pins. Diese werden per Pull-Up Widerstand auf 3,3 V Spannungspegel gebracht, um ein  
 "Ubersprechen von den anderen Leitungen auf diese Pins zu unterbinden und damit potentielle Fehler zu minimieren.
 Die Pull-Up Widerst"ande sollten zun"achst direkt "uber ungenutzte STM32G431 Pins per Software konfiguriert werden.
@@ -352,7 +364,7 @@ zu Pull-Down Widerst"anden geschaltet worden.
 Das dritte SPI-Interface wurde per Pinleiste rausgef"uhrt, sodass die Flexibilit"at gew"ahrleistet ist ein
 externes SPI-Ger"at anzuschlie"sen (wie z.B einen kleinen LCD-Bildschirm), falls dies gew"unscht ist.
 
-\subsection{Programmier-Interfaces}
+\subsubsection{Programmier-Interfaces}
 Das Programmierinterface wurde in zwei Versionen herausgef"uhrt:\\
 Einerseits das UART-Programmierinterface "uber eine 5-Pin Leiste.
 Dieses erlaubt den STM32 "uber einen gew"ohnlichen UART-Adapter zu programmieren.
@@ -365,7 +377,7 @@ da diese ebenfalls SWD intern f"ur ihre Programmierung verwenden.
 **HIER GENAUER SWD PROG ERKLAEREN MIT PINS UND BILDERN**
 
 
-\subsection{VREF und ADCs/DACs}
+\subsubsection{VREF und ADCs/DACs}
 F"ur die Referenzspannung f"ur die ADC und DAC muss der Pin VREF mit VDDA verbunden werden und mit 
 1 uF und 100 nF Kondensatoren abgesichert werden. Alternativ k"onnte man f"ur
 eine Referenz den internen VREFBUF nutzen. In der vorliegenden Konfiguration besteht allerdings
@@ -375,7 +387,7 @@ verwendet, sodass mit einem h"oheren Grundrauschen bei DAC und ADC gerechnet wer
 Es wurden 2x ADCs und 2x DACs "uber 2-Pin Leisten herausgef"uhrt. Einer der DAC ist intern
 mit dem OPAMP3 verschaltet und somit gepuffert. 
 
-\subsection{Weitere Peripherien}
+\subsubsection{Weitere Peripherien}
 F"ur potentielle Debugging und Kommunikationszwecke wurde ebenfalls per 3-Pin Leiste ein
 USART-Interface herausgef"uhrt. F"ur eine einfache Eingabem"oglichkeit wurden zwei Pins
 "uber einen Taster an GND angeschlossen. Diese sollen mit in Software zugeschalteten Pull-Up Widerst"anden
@@ -407,78 +419,123 @@ besessen hatte.
     \caption{Vorschau der entwickelten PCB}
     \label{fig:platlayout}
 \end{figure}
-\fig{fig:platlayout} zeigt die Platine in dem Zustand, in dem sie bestellt wurde.
-F"ur Signalleitungen wurden 0,2 mm dicke Kupferbahnen
-Alle Leitungen 
+\fig{fig:platlayout} zeigt die Vorderseite der Platine in dem Zustand, in dem sie bestellt wurde.
+Die Platine ist zweilagig angelegt und wird nur auf der Vorderseite per Hand best"uckt.\\
+F"ur Signalleitungen wurden 0,2 mm dicke Kupferbahnen, f"ur die stromf"uhrenden Leitungen wurde 
+eine Breite von 0,4 mm gew"ahlt. Der grundlegende Abstand von Leiterbahn zu Leiterbahn betr"agt 0,2 mm,
+w"ahrend der Abstand zu nicht kontaktierten Bohrl"ochern 0,25 mm betr"agt. Dies sind "uberwiegend
+Vorgaben des Produzenten JLCPCB. Die Gr"o"se der Platine betr"agt 71 mm x 40,5 mm.
+
 
 
 Bei zuk"unftigen Projekten wird f"ur die Beschaltung das echte physische Layout der Pins
 im Geh"ause st"arker beachtet werden. So liegen beispielsweise die Pins PA8 bis PA12 am
 rechten oberen Rand des LQFP48-Geh"auses, w"ahrend die Pins PA0 bis PA4 in der linken unteren Ecke 
 liegen. Dies ist beim Schaltungslayout irrelevant, beim Routing der echten Leitungen hingegen
-f"uhrt dies zu "uberkreuzenden Leitungen. Daher sollte schon in der Schaltungsphase ein wenig
+f"uhrt dies zu "uberkreuzenden Leitungen. Daher sollte schon in der Schaltungsphase
 das sp"atere physische Layout mitbedacht werden.  
 
 
-\subsection{Bestellung}
+\subsubsection{Fertigung}
+Die bisherigen Ma"se und "Uberlegungen mussten schon konzeptionell und beim Entwurf im CAD-Programm beachtet werden.
+F"ur die Fertigung bei JLCPCB mussten weitere Optionen festgelegt werden:
+Der Materialtyp ist das "ubliche FR4 TG135 in der Farbe Blau. Die L"otpads werden nach dem Kupfer"atzprozess im ''LeadFree HASL'' Verfahren
+mit einer Schutzschicht Zinn "uberzogen. Auf diese Option muss besonders geachtet werden, da in Asien
+weiterhin bleihaltige Verzinnung "ublich ist. Dies ist notwendig, da blankes Kupfer innerhalb kurzer Zeit oxidieren w"urde.
+Die Kupferdicke liegt bei den "ublichen $35\um$. \\
+Alle weiteren M"oglichkeiten sind Spezialoptionen f"ur Sonderanwendungen wie beispielsweise galvanisierte Kanten und sind f"ur diese Platine
+nicht relevant.
 
 
-\subsection{Inbetriebnahme und Probleme}
+\subsubsection{Inbetriebnahme und Probleme}
 Neben dem bereits erw"ahnten Problem der falsch beschalteten Pull-Up Widerst"ande wurden ebenfalls
 die Pins f"ur die SPI2 und SPI3 Peripherien vertauscht. Dieser Fehler l"asst sich durch eine 
 Umkonfigurierung softwareseitig aber l"osen. 
 
 
-\section{SPI-Treiber und SD-Karten} \label{sec:spi} 
-%Sektor => physisch hardware kleinste Einheit
-%Block => logisch Software kleinste Einheit
-\begin{table}[htbp]
-    \centering
-    \caption{Pin-Belegung einer Micro-SD-Karte im SPI-Modus}
-    \label{tab:microsd_spi}
-    \begin{tabular}{lllll}
-    \toprule
-    \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32 G431 Pin} \\ \midrule
-    1            & DAT2              & \textit{Nicht genutzt} & Frei lassen (oder Pull-up)  & --                      \\
-    2            & DAT3 / CD         & \textbf{CS}        & Chip Select (Low-aktiv)     & GPIO (z.~B. PA4)        \\
-    3            & CMD               & \textbf{DI}        & Data In (Dateneingang)      & PA7 (MOSI)              \\
-    4            & VDD               & \textbf{VDD}       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
-    5            & CLK               & \textbf{SCLK}      & Taktleitung                 & PA5 (SCK)               \\
-    6            & VSS               & \textbf{VSS}       & Masse                       & GND                     \\
-    7            & DAT0              & \textbf{DO}        & Data Out (Datenausgang)     & PA6 (MISO)              \\
-    8            & DAT1              & \textit{Nicht genutzt} & Frei lassen (oder Pull-up)  & --                      \\ \bottomrule
-    \end{tabular}
-\end{table}
+\subsection{Fazit}
 
-\begin{table}[htbp]
+\subsection{Testhardware}
+Bestellungen aus China ben"otigen mehrere Wochen Zeit.
+
+
+\MP{b}{0.5}{
+    \begin{figure}[H]
+        \centering
+        \includegraphics[height=6cm]{Hard_Bilder/sdadapter_sold.jpg}
+        \caption{Erster gel"oteter SD-Adapter}
+        \label{fig:sd_sold}
+    \end{figure}
+}
+\MP{b}{0.5}{
+    \begin{figure}[H]
+        \centering
+        \includegraphics[height=6cm]{Hard_Bilder/sdadapter_broken.jpg}
+        \caption{Aufgebrochener SD-Adapter}
+        \label{fig:sd_broken}
+    \end{figure}
+}
+
+
+Um in der Zwischenzeit an der Arbeitsstellung weiterarbeiten zu k"onnen,
+wurde der in \fig{fig:sd_sold} gezeigte Adapter verwendet in Kombination
+mit einem ST Nucleo-G431RB. Diese Adapter finden sich meist bei jeder gekauften MicroSD-Karte
+und haben den Zweck die kleine Karte in ein gr"o"seres Format zu "uberf"uhren.
+Wie so oft sind improvisierte L"osungen aber nicht sehr zuverl"assig:
+Schon nach zwei Wochen musste ein neuer Adapter, diesmal mit gecrimpten Aderendh"ulsen, gel"otet werden,
+da sich einzelne Str"ange des Litzenkabels gel"ost haben und zu Kurzschl"ussen gef"uhrt haben.
+
+\section{SPI- und SD-Karten-Treiber} \label{sec:spi} 
+
+\subsection{Embedded C++20}
+F"ur die Entwicklung des SPI- und SD-Karten-Treibers wurde bewusst auf modernes C++20 zur"uckgegriffen.
+Die Sprache erlaubt Hardware-Abstraktionen mit Templates und Berechnungen zur Compilezeit mit \cpp{constexpr} 
+vollkommen ohne Laufzeitoverhead, sogenannte ''zero-cost abstractions''.
+Moderne Sprachfeatures wie \cpp{enum class} und \cpp{namespace} bieten Typensicherheit und erh"ohen die Lesbarkeit.
+Bedingte Kompilierung mit \cpp{if constexpr} w"ahlt nur relevante Zweige zur Compilezeit aus und kompiliert den Rest erst gar nicht.
+ 
+
+\subsection{SPI}
+
+\subsubsection{Anschlussbelegung}
+
+\begin{table}[H]
     \centering
-    \caption{Pin-Belegung einer Standard-SD-Karte im SPI-Modus}
+    \caption{Anschlussbelegung der Standard SD-Karte am STM32G431 im SPI-Modus f"ur SPI1}
     \label{tab:standardsd_spi}
     \begin{tabular}{lllll}
     \toprule
     \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32 G431 Pin} \\ \midrule
-    1            & DAT3 / CD         & \textbf{CS}        & Chip Select (Low-aktiv)     & GPIO (z.~B. PA4)        \\
-    2            & CMD               & \textbf{DI}        & Data In (Dateneingang)      & PA7 (MOSI)              \\
-    3            & VSS1              & \textbf{VSS}       & Masse                       & GND                     \\
-    4            & VDD               & \textbf{VDD}       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
-    5            & CLK               & \textbf{SCLK}      & Taktleitung                 & PA5 (SCK)               \\
-    6            & VSS2              & \textbf{VSS}       & Masse                       & GND                     \\
-    7            & DAT0              & \textbf{DO}        & Data Out (Datenausgang)     & PA6 (MISO)              \\
-    8            & DAT1              & \textit{Nicht genutzt} & Frei lassen                 & --                      \\
-    9            & DAT2              & \textit{Nicht genutzt} & Frei lassen                 & --                      \\ \bottomrule
+    1            & DAT3 / CD         & CS        & Chip Select (Low-aktiv)     & GPIO (z.B. PA8)        \\
+    2            & CMD               & DI        & Data In (Dateneingang)      & PA7 (MOSI)              \\
+    3            & VSS1              & VSS       & Masse                       & GND                     \\
+    4            & VDD               & VDD       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
+    5            & CLK               & SCLK      & Taktleitung                 & PA5 (SCK)               \\
+    6            & VSS2              & VSS       & Masse                       & GND                     \\
+    7            & DAT0              & DO        & Data Out (Datenausgang)     & PA6 (MISO)              \\
+    8            & DAT1              & \textit{Nicht genutzt} & Pull-Up/nicht belegt                & --                      \\
+    9            & DAT2              & \textit{Nicht genutzt} & Pull-Up/nicht belegt                 & --                      \\ \bottomrule
     \end{tabular}
-    \end{table}
+\end{table}
+
+    \tab{tab:standardsd_spi} verdeutlicht die Anschlussbelegungen, die "uberwiegend f"ur die Testhardware
+    am Nucleo-G431RB verwendet wurden.
 
 
-    \begin{table}[htbp]
+
+
+\fig{fig:sd_broken} verdeutlicht, dass SD-Adapter lediglich die Leitungen der MicroSD-Karte umlenken.
+Die neue Belegung f"ur SPI1, mit der die Platine arbeitet, findet sich in \tab{tab:microsd_pinout}.
+
+    \begin{table}[H]
         \centering
-        \caption{Anschlussbelegung der MicroSD-Karte am STM32G431 im SPI-Modus}
+        \caption{Anschlussbelegung der MicroSD-Karte am STM32G431 im SPI-Modus f"ur SPI1}
         \label{tab:microsd_pinout}
         \begin{tabular}{c|l|l}
         \hline
         \textbf{MicroSD-Pin} & \textbf{Signalname} & \textbf{Verbindung am STM32G431 / Platine} \\ \hline
         Pin 1 & DAT2 & 3.3V "uber internen Pull-up \\ 
-        Pin 2 & CS & PA9 \\ 
+        Pin 2 & CS & GPIO (z.B. PA8) \\ 
         Pin 3 & DI (MOSI) & PA7 \\ 
         Pin 4 & VDD & 3.3V Hauptversorgung \\ 
         Pin 5 & SCK & PA5 \\ 
@@ -486,7 +543,28 @@ Umkonfigurierung softwareseitig aber l"osen.
         Pin 7 & DO (MISO) & PA6 \\ 
         Pin 8 & DAT1 & 3.3V "uber internen Pull-up \\ \hline
         \end{tabular}
-        \end{table}
+    \end{table}
+
+%Sektor => physisch hardware kleinste Einheit
+%Block => logisch Software kleinste Einheit
+\subsubsection{SPI-Peripherie des STM32G431}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{SPI-Treiber-Bilder/st-blockdiagram.png}
+    \caption{Blockdiagramm f"ur die SPI-Peripherie des STMG431\cite{st3}}
+    \label{fig:stblock}
+\end{figure}
+\fig{fig:stblock} zeigt das Blockdiagramm f"ur die SPI-Peripherie der STMG4-Serie.
+Der relevanteste Teil ist das Shiftregister. Das oberste Bit des Shift-Registers wird auf MOSI ausgegeben.
+Gleichzeitig wird das Bit auf MISO eingelesen. Es liegt immer eine Full-Duplex "Ubertragung vor.
+M"ochte man ein Byte empfangen, so muss immer auch eines gesendet werden. Aus dem Rx-FIFO k"onnen Daten gelesen werden,
+sobald das RXP-Flag gesetzt ist. Dieses Flag wird gesetzt, wenn so viele Bits wie im Feld ''Data size'' des \texttt{SPIx\_CR2} Registers
+mit Daten gef"ullt wurden. \\
+Der Baudratencontroller ist f"ur die SCLK und somit f"ur die "Ubertragungsgeschwindigkeit zust"andig.
+Er nutzt den APB2-Bus-Takt und teilt ihn gegebenenfalls durch einen Prescaler.
+%Das ist f"ur die Funktion des Treibers wichtig, da dieser in der Initialisierungsphase
+
 
 
 \section{Dateisysteme}
@@ -519,7 +597,7 @@ Tanenbaum und Bos stellen beispielhaft folgende Fragen:
     \item Woher wei"s man, welche Bl"ocke frei sind?
 \end{itemize}
 
-F"ur diese und viele andere praktische Probleme hilft uns das Konzept der Datei.
+F"ur diese und viele andere praktische Probleme hilft das Konzept der Datei.
 Die Datei ist etymologisch ein Neologismus aus Daten und Kartei.
 Im Kontext moderner Betriebssysteme definieren Tanenbaum und Bos\cite{tanenbaum2015} Dateien als 
 logische Einheiten von Information, die von Prozessen erzeugt werden und diese "uberdauern.
@@ -718,6 +796,24 @@ Tanenbaum, A. S. \& Bos, H. (2015).
 \textit{Modern Operating Systems} (4. Aufl.). 
 Vrije Universiteit Amsterdam, The Netherlands: Prentice Hall.
 
+\bibitem{st1} STMicroelectronics. (2026). 
+\textit{STM32G431RB Mainstream Arm Cortex-M4 MCU Product Page}. 
+Offizielle Produkt Information. 
+Abgerufen von \url{https://www.st.com/en/microcontrollers-microprocessors/stm32g431rb.html} 
+(Besucht am 26. Juli 2026).
+
+\bibitem{st2} STMicroelectronics. (2021). 
+\textit{STM32G431x6 STM32G431x8 STM32G431xB Datasheet (DS12589 Rev 6)}. 
+Offizielle Spezifikation. 
+Abgerufen von \url{https://www.st.com/resource/en/datasheet/stm32g431rb.pdf} 
+(Besucht am 26. Juli 2026).
+
+\bibitem{st3} STMicroelectronics. (2025). 
+\textit{RM0440 Reference manual: STM32G4 series advanced Arm-based 32-bit MCUs (Rev 9)}. 
+Offizielle Spezifikation. 
+Abgerufen von \url{https://www.st.com/resource/en/reference_manual/rm0440-stm32g4-series-advanced-armbased-32bit-mcus-stmicroelectronics.pdf} 
+(Besucht am 26. Juli 2026).
+
 \bibitem{spi1}
 Ababei, C. (2013). 
 \textit{Lecture 12: SPI and SD cards}. 
@@ -762,6 +858,8 @@ Support Knowledge Base. Abgerufen von
 Official Specification. 
 Abgerufen von \url{https://uefi.org/specs/UEFI/2.11/05_GUID_Partition_Table_Format.html} 
 (Besucht am 24. Juli 2026).
+
+
 
 \bibitem{coro1}
 Michael Eiler, \textit{C++20: Building a Thread-Pool With Coroutines} \\
