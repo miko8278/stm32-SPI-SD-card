@@ -493,6 +493,8 @@ Die Sprache erlaubt Hardware-Abstraktionen mit Templates und Berechnungen zur Co
 vollkommen ohne Laufzeitoverhead, sogenannte ''zero-cost abstractions''.
 Moderne Sprachfeatures wie \cpp{enum class} und \cpp{namespace} bieten Typensicherheit und erh"ohen die Lesbarkeit.
 Bedingte Kompilierung mit \cpp{if constexpr} w"ahlt nur relevante Zweige zur Compilezeit aus und kompiliert den Rest erst gar nicht.
+Gleichzeitig besteht Abw"artskompatiblit"at zu C-Code, sodass beispielsweise die in C89 geschriebene
+FatFS-Bibliothek problemlos implementiert werden kann.
  
 
 \subsection{SPI}
@@ -545,10 +547,8 @@ Die neue Belegung f"ur SPI1, mit der die Platine arbeitet, findet sich in \tab{t
         \end{tabular}
     \end{table}
 
-%Sektor => physisch hardware kleinste Einheit
-%Block => logisch Software kleinste Einheit
-\subsubsection{SPI-Peripherie des STM32G431}
 
+\subsubsection{SPI-Peripherie des STM32G431}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\linewidth]{SPI-Treiber-Bilder/st-blockdiagram.png}
@@ -562,10 +562,67 @@ M"ochte man ein Byte empfangen, so muss immer auch eines gesendet werden. Aus de
 sobald das RXP-Flag gesetzt ist. Dieses Flag wird gesetzt, wenn so viele Bits wie im Feld ''Data size'' des \texttt{SPIx\_CR2} Registers
 mit Daten gef"ullt wurden. \\
 Der Baudratencontroller ist f"ur die SCLK und somit f"ur die "Ubertragungsgeschwindigkeit zust"andig.
-Er nutzt den APB2-Bus-Takt und teilt ihn gegebenenfalls durch einen Prescaler.
+Er nutzt den APB-Bus-Takt und teilt ihn, falls im BR-Register konfiguriert, durch einen Prescaler. \\
+F"ur den Zweck der SD-Karten-Kommunikation wurde die SPI-Peripherie als Master konfiguriert mit 
+einem frei w"ahlbaren, softwareseitig zuschaltbaren NSS-Pin (chip select).
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+template<uintptr_t PortBase, uint32_t Pin>
+struct ChipSelect {
+private:
+    static inline GPIO_TypeDef* const port = reinterpret_cast<GPIO_TypeDef*>(PortBase);
+public:
+    ChipSelect() {
+        port->BSRR = (1U << (Pin + 16));
+    }
+
+    ~ChipSelect() {
+        port->BSRR = (1U << Pin);
+    }
+};
+    \end{minted}
+\caption{Chip select als Klasse}
+\label{listing:chipselect}
+\end{listing}
+Der Quellcode \ref{listing:chipselect} zeigt die St"arke von C++ im Gegensatz zu C in diesem Kontext.
+Der NSS-Pin muss am Anfang der meisten SD-Funktionen wie \cpp{SD_ReadBlock(...)}
+oder \cpp{SD_SendCmd(...)} auf Low konfiguriert werden und beim Verlassen der Funktion wieder auf High.
+Mit \cpp{ChipSelect<GPIOA_BASE, 8> chipselect_tmp;} w"urde ein Objekt erzeugt werden. Beim Konstruieren, also dem Erzeugen
+des Objektes, w"urde der Konstruktor Pin 8 von GPIOA auf Low setzen und beim Verlassen der Funktion w"urde der Destruktor aufgerufen
+werden und den Pin wieder auf High setzen. In C m"ussten manuell alle Stellen gefunden werden, bei dem die Funktion verlassen wird
+oder Laufzeitkosten in Kauf genommen werden mit dem Aufruf einer Helferfunktion.
+Die Informationen welcher GPIO-Port mit welchem Pin benutzt werden soll steht zur Compilezeit fest, der verwendete
+Cast ist \cpp{static inline const},
+sodass ein guter C++-Compiler die gesamte Klasse vollständig auf zwei direkte Registerzugriffe reduzieren kann.
+
+
+
+
+\subsection{Initialisierung der SD-Karte in den SPI-Modus}
+
 %Das ist f"ur die Funktion des Treibers wichtig, da dieser in der Initialisierungsphase
 
+\subsection{Lese- und Schreiboperationen}
+%Sektor => physisch hardware kleinste Einheit
+%Block => logisch Software kleinste Einheit
 
+Ein Sektor bezeichnet die kleinste physikalisch adressierbare Speichereinheit eines Datenträgers.
+Ein Block bezeichnet dagegen die kleinste logische Speichereinheit, 
+die von einem Betriebssystem oder Dateisystem adressiert wird.
+Im Zusammenhang von Flashspeicher wird die Page als kleinste programmierbare Einheit beschrieben,
+wohingegen der Erase Block die kleinste löschbare Einheit beschreibt.
+Leider werden in Spezifikationen und Literatur die Begrifflichkeiten nicht eindeutig verwendet.
+So spricht man im Zusammenhang von SD-Karten meist von Bl"ocken, die beschrieben werden,
+obwohl der Begriff des Sektors hier manchmal synonym verwendet wird.
 
 \section{Dateisysteme}
 \subsection{Einleitung}
@@ -706,7 +763,7 @@ Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zu
 während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Dateisystem entkoppelt. 
 
 \subsubsection{Implementierung}
-    \begin{listing}[htbp]
+\begin{listing}[H]
         \begin{minted}[
             frame=lines,      % Rahmenlinien oben und unten
             framesep=2mm,     % Abstand zum Rahmen
