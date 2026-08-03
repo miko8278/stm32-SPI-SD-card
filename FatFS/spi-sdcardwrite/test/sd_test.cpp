@@ -4,8 +4,6 @@
 #include "GPIO_HAL.hpp"
 #include "init_conf.hpp"
 
-
-
 //Generate pseudorandom testdata
 uint32_t xorshift32(uint32_t rnxg)
 {
@@ -16,17 +14,15 @@ uint32_t xorshift32(uint32_t rnxg)
     return rng;
 }
 
+void test_complete()
+{
+    // nothing
+}
 
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
 uint8_t sd_block_buffer3[4096];
 uint8_t sd_block_buffer4[4096];
-
-
-void test_complete()
-{
-    // nothing
-}
 
 int main()
 {
@@ -76,7 +72,7 @@ int main()
         uint8_t status_before[2];
         SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_before, 1);
 
-        uint8_t write_result = SD_WriteBlock<SD1_Config>(11, sd_block_buffer);
+        uint8_t write_result = SD_WriteBlock<SD1_Config>(20, sd_block_buffer);
 
         //check state after write 
         uint8_t status_after[2];
@@ -84,7 +80,7 @@ int main()
 
         if (write_result == 0x00) {
             // read block again to verify
-            uint8_t read_back_result = SD_ReadBlock<SD1_Config>(10, sd_block_buffer2);
+            uint8_t read_back_result = SD_ReadBlock<SD1_Config>(21, sd_block_buffer2);
             
             if (read_back_result == 0x00) {
                 test_complete();

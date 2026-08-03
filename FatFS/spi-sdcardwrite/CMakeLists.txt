@@ -34,15 +34,24 @@ add_compile_definitions(STM32G431xx)
 set_source_files_properties(startup_stm32g431xx.s PROPERTIES LANGUAGE ASM) 
 
 set(BINARY_NAME SPI-SDCard)
+set(TEST_NAME Test-SPI-SDCard)
 
-# Target Executable
+# Main Executable
 add_executable(${BINARY_NAME}
     src/main.cpp
     startup_stm32g431xx.s
     system_stm32g4xx.c
 )
 
-# Linker script
+# Test Executable
+add_executable(${TEST_NAME}
+    test/sd_test.cpp
+    startup_stm32g431xx.s
+    system_stm32g4xx.c
+)
+
+
+# Linker script main
 target_link_options(${BINARY_NAME} PRIVATE
     -T${CMAKE_SOURCE_DIR}/linker/STM32G431RBTX_FLASH.ld
 )
@@ -51,7 +60,18 @@ target_include_directories(${BINARY_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-# Post-build commands 
+# Linker script Test
+target_link_options(${TEST_NAME} PRIVATE
+    -T${CMAKE_SOURCE_DIR}/linker/STM32G431RBTX_FLASH.ld
+)
+
+target_include_directories(${TEST_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+)
+
+
+# Post-build commands main
 add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${BINARY_NAME}> ${CMAKE_BINARY_DIR}/${BINARY_NAME}.elf
 )
@@ -62,4 +82,17 @@ add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
 
 add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
     COMMAND arm-none-eabi-size $<TARGET_FILE:${BINARY_NAME}>
+)
+
+# Post-build commands test
+add_custom_command(TARGET ${TEST_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TEST_NAME}> ${CMAKE_BINARY_DIR}/${TEST_NAME}.elf
+)
+
+add_custom_command(TARGET ${TEST_NAME} POST_BUILD
+    COMMAND arm-none-eabi-objcopy -O ihex $<TARGET_FILE:${TEST_NAME}> ${CMAKE_BINARY_DIR}/${TEST_NAME}.hex
+)
+
+add_custom_command(TARGET ${TEST_NAME} POST_BUILD
+    COMMAND arm-none-eabi-size $<TARGET_FILE:${TEST_NAME}>
 )

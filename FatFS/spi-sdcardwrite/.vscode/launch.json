@@ -7,13 +7,17 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceFolder}",
-            "executable": "build/SPI-SDCard.elf",
+            //"executable": "build/SPI-SDCard.elf",
+            "executable": "${command:cmake.launchTargetPath}",
             "request": "launch",
             "type": "cortex-debug",
             "runToEntryPoint": "main",
             "servertype": "stlink",
             "interface": "swd",
-            "svdFile": "STM32G431xx.svd"
+            "svdFile": "STM32G431xx.svd",
+            "preLaunchCommands": [
+                "source test/spi_test.gdb"
+            ]
         }
     ]
 }
