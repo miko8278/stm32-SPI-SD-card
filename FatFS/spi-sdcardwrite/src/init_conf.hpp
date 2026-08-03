@@ -36,6 +36,7 @@ static void GPIO_Init()
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 
+    //SPI1
     GpioPin<GPIOA_BASE, 5>::AF(5);
     GpioPin<GPIOA_BASE, 6>::AF(5);
     GpioPin<GPIOA_BASE, 7>::AF(5);

@@ -271,7 +271,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     SpiDriver<Config::SpiBase>::Transfer(0xFF); // // extra cycle
 
     if (r1 == 0x00) {
-        return 0x03; // timeout while writing
+        return 0x04; // timeout while writing
     }
 
     return 0x00; // success
@@ -370,7 +370,7 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
 }
 
 template<typename Config>
-bool SD_InitSPI()
+uint8_t SD_InitSPI()
 {
     uint8_t cmd8_resp[5];
     uint8_t cmd0_resp = 0xFF;
@@ -380,13 +380,13 @@ bool SD_InitSPI()
     // CMD0
     cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
     if (cmd0_resp != 0x01)
-        return false;
+        return 0x02;
 
     // CMD8
     SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
 
     if (cmd8_resp[0] != 0x01 || cmd8_resp[4] != 0xAA)
-        return false;
+        return 0x04;
 
     // ACMD41
     uint32_t timeout = 1000;
@@ -400,7 +400,7 @@ bool SD_InitSPI()
             acmd41_resp = SD_SendCmd<Config>(41, 0x40000000, 0xFF, nullptr, 0);
 
             if (acmd41_resp == 0x00)
-                return true;
+                return 0x00;
         }
 
         //pause, probably fine without
@@ -408,5 +408,6 @@ bool SD_InitSPI()
         //SD_DelayMs(1);
     }
 
-    return false;
+    //Timeout: loop of CMD55 and ACMD41 failed
+    return 0x08;
 }
