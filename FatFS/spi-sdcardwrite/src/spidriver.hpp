@@ -76,6 +76,10 @@ struct SpiDriver {
         // wait until a received byte is available.
         while (!(SPIx->SR & SPI_SR_RXNE));
 
+
+        //return *(volatile uint8_t *)&SPIx->DR;
+        //check this out
+        //return *reinterpret_cast<volatile uint8_t*>(&SPIx->DR);
         return *(__IO uint8_t *)&SPIx->DR;
     }
 };

@@ -90,9 +90,9 @@ static void GPIO_Init()
 
 
 //Generate pseudorandom testdata
-uint32_t xorshift32(uint32_t rnxg)
+uint32_t xorshift32(uint32_t rng)
 {
-    static uint32_t rng = 0x12345678;   // seed
+    //static uint32_t rng = 0x12345678;   // seed
     rng ^= rng << 13;
     rng ^= rng >> 17;
     rng ^= rng << 5;
