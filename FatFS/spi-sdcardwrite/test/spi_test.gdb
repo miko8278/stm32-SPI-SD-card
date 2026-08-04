@@ -55,6 +55,38 @@ define spi_test
         end
 
 
+        #SD CARD READ MULTI
+
+        if sdtest.readblockmulti == 0x00
+            printf "SPI1: SD CARD READ MULTIPLE BLOCK [OK]\n"
+        end
+        if sdtest.readblockmulti == 0x01
+            printf "SPI1: SD CARD READ MULTIPLE BLOCK [FAILED: 0x01] => CMD18 FAILED \n"
+        end
+        if sdtest.readblockmulti == 0x02
+            printf "SPI1: SD CARD READ MULTIPLE BLOCK [FAILED: 0x02] => DATA TRANSFER FAILED, NEVER GOT 0xFE \n"
+        end
+        if sdtest.readblockmulti == 0x04
+            printf "SPI1: SD CARD READ MULTIPLE BLOCK [FAILED: 0x04] => CMD12 STOP TRANSMISSION FAILED \n"
+        end
+
+        #SD CARD WRITE MULTI
+
+        if sdtest.writeblockmulti == 0x00
+            printf "SPI1: SD CARD WRITE MULTIPLE BLOCK [OK]\n"
+        end
+        if sdtest.writeblockmulti == 0x01
+            printf "SPI1: SD CARD WRITE MULTIPLE BLOCK [FAILED: 0x01] => CMD25 FAILED \n"
+        end
+        if sdtest.writeblockmulti == 0x02
+            printf "SPI1: SD CARD WRITE MULTIPLE BLOCK [FAILED: 0x02] => AT LEAST ONE BLOCK OF DATA TRANSFER FAILED \n"
+        end
+        if sdtest.writeblockmulti == 0x04
+            printf "SPI1: SD CARD WRITE MULTIPLE BLOCK [FAILED: 0x04] => TIMEOUT AFTER ACCEPTING A BLOCK \n"
+        end
+        if sdtest.writeblockmulti == 0x08
+            printf "SPI1: SD CARD WRITE MULTIPLE BLOCK [FAILED: 0x08] => TIMEOUT AFTER CMD25 TERMINATION \n"
+        end
     end
 
 end

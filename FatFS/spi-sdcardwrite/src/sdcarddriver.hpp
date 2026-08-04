@@ -1,6 +1,7 @@
 #pragma once
 #include "stm32g431xx.h"
 #include "spidriver.hpp"
+#include <cstdint>
 
 
 template<uintptr_t PortBase, uint32_t Pin>
@@ -79,8 +80,9 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     ChipSelect<Config::PortBase,Config::Pin> chipselect_tmp;
 
     uint8_t r1;
-    uint16_t timeout = 0;
-
+    uint32_t timeout = 0;
+    constexpr uint32_t T_OUT1 = 1000;
+    constexpr uint32_t T_OUT2 = 2000;
     //SD_CS_SELECT();
 
     // send CMD17
@@ -97,7 +99,7 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0xFF) && (timeout < 1000));
+    } while ((r1 == 0xFF) && (timeout < T_OUT1));
 
     if (r1 != 0x00) {
         //SD_CS_DESELECT();
@@ -109,7 +111,7 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 != 0xFE) && (timeout < 0xFFFF));
+    } while ((r1 != 0xFE) && (timeout < T_OUT2));
 
     if (r1 != 0xFE) {
         //SD_CS_DESELECT();
@@ -132,14 +134,17 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     return 0x00; // success
 }
 
+uint8_t rrr;
+
 template<typename Config>
 uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer)
 {
     ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
 
     uint8_t r1;
-    uint16_t timeout;
-
+    uint32_t timeout;
+    constexpr uint32_t T_OUT1 = 1000;
+    constexpr uint32_t T_OUT2 = 2000;
     // CMD18
     SpiDriver<Config::SpiBase>::Transfer(18 | 0x40);
     SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 24));
@@ -153,7 +158,7 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0xFF) && timeout < 1000);
+    } while ((r1 == 0xFF) && timeout < T_OUT1);
 
     if (r1 != 0x00)
         return 0x01;
@@ -167,7 +172,7 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
         do {
             r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
             timeout++;
-        } while ((r1 != 0xFE) && timeout < 0xFFFF);
+        } while ((r1 != 0xFE) && timeout < T_OUT2);
 
         if (r1 != 0xFE)
             return 0x02;
@@ -193,13 +198,16 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     SpiDriver<Config::SpiBase>::Transfer(0x00);
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
-    // CMD12 has a stuff byte before R1
+    // CMD12 has a stuff byte before R1, bizarre, but does not work without it properly
+    SpiDriver<Config::SpiBase>::Transfer(0xFF);
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
     } while (r1 == 0xFF);
 
-    if (r1 != 0x00)
-        return 0x03;
+    if (r1 != 0x00){
+        rrr = r1;
+        return 0x04;
+    }
 
     return 0x00;
 }
@@ -212,8 +220,9 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     //This gets automatically destructed when leaving the function at any point
     ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
     uint8_t r1;
-    uint16_t timeout = 0;
-
+    uint32_t timeout = 0;
+    constexpr uint32_t T_OUT1 = 1000;
+    constexpr uint32_t T_OUT2 = 2000;
     //SD_CS_SELECT();
 
     // send CMD24
@@ -230,7 +239,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0xFF) && (timeout < 1000));
+    } while ((r1 == 0xFF) && (timeout < T_OUT1));
 
     if (r1 != 0x00) {
         //SD_CS_DESELECT();
@@ -265,7 +274,7 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0x00) && (timeout < 0xFFFF));
+    } while ((r1 == 0x00) && (timeout < T_OUT2));
 
     //SD_CS_DESELECT();
     SpiDriver<Config::SpiBase>::Transfer(0xFF); // // extra cycle
@@ -286,8 +295,10 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
     ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
 
     uint8_t r1;
-    uint16_t timeout;
-
+    uint32_t timeout;
+    constexpr uint32_t T_OUT1 = 1000;
+    constexpr uint32_t T_OUT2 = 2000;
+    constexpr uint32_t T_OUT3 = 2000;
     // CMD25 WRITE_MULTIPLE_BLOCK
     SpiDriver<Config::SpiBase>::Transfer(25 | 0x40);
     SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 24));
@@ -301,7 +312,7 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0xFF) && (timeout < 1000));
+    } while ((r1 == 0xFF) && (timeout < T_OUT1));
 
     if (r1 != 0x00)
         return 0x01;
@@ -334,16 +345,17 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
             return 0x02;
 
 
-        // wait while programming
+        // wait while writing
         timeout = 0;
-        do {
+        do
+        {
             r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
             timeout++;
-        } while ((r1 == 0x00) && (timeout < 0xFFFF));
+        }
+        while (r1 != 0xFF && timeout < T_OUT2);
 
-
-        if (timeout >= 0xFFFF)
-            return 0x03;
+        if (timeout >= T_OUT2)
+            return 0x04;
     }
 
 
@@ -356,14 +368,12 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
         timeout++;
-    } while ((r1 == 0x00) && (timeout < 0xFFFF));
+    } while ((r1 != 0xFF) && (timeout < T_OUT3));
 
+    if (timeout >= T_OUT3)
+        return 0x08;
 
-    if (timeout >= 0xFFFF)
-        return 0x04;
-
-
-    // extra clocks
+    // extra clock
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
     return 0x00;

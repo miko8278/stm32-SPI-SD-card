@@ -5,9 +5,9 @@
 #include "init_conf.hpp"
 
 //Generate pseudorandom testdata
-uint32_t xorshift32(uint32_t rnxg)
+uint32_t xorshift32(uint32_t rng)
 {
-    static uint32_t rng = 0x12345678;   // seed
+    //static uint32_t rng = 0x12345678;   // seed
     rng ^= rng << 13;
     rng ^= rng >> 17;
     rng ^= rng << 5;
@@ -21,10 +21,15 @@ void test_complete()
     // nothing
 }
 
+//Singleblock buffers
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
-//volatile uint8_t sd_block_buffer3[4096];
-//volatile uint8_t sd_block_buffer4[4096];
+
+//Multiblock buffers
+constexpr int BUF3_SIZE = 4096;
+constexpr int BUF4_SIZE = BUF3_SIZE;
+uint8_t sd_block_buffer3[BUF3_SIZE];
+uint8_t sd_block_buffer4[BUF4_SIZE];
 
 //This struct is basically there so gdb can read those values back in a automated script
 static struct{
@@ -72,9 +77,16 @@ void test_sd(){
         SPI_X::Transfer(0xFF);
     }
 
+    //Data for single block write
     for(uint16_t i = 0; i < 512; i++) {
         sd_block_buffer[i] = (uint8_t)xorshift32(0x12345678); 
     }
+
+    //Data for multi block write
+    for(uint16_t i = 0; i < BUF3_SIZE; i++) {
+        sd_block_buffer3[i] = (uint8_t)xorshift32(0x12345670); 
+    }
+
     //Set to higher speed
     //SPI_1::SetHighSpeed(SPI_1::SpiDiv::Div16);
             //check state before write 
@@ -84,7 +96,10 @@ void test_sd(){
     sdtest.writeblock = SD_WriteBlock<Config>(20, sd_block_buffer);
 
     sdtest.readblock = SD_ReadBlock<Config>(20, sd_block_buffer2);
+
+    sdtest.writeblockmulti = SD_WriteBlocks<Config>(20, 8, sd_block_buffer3);
         
+    sdtest.readblockmulti = SD_ReadBlocks<Config>(20, 8, sd_block_buffer4);
 
 
     //check state after write 
