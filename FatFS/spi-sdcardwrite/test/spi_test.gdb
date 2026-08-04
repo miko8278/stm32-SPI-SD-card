@@ -5,6 +5,14 @@ define spi_test
     if sdtest.cur_spi == 1
         printf "TESTING SPI1 PERIPHERAL \n"
 
+        #CARD DETECT
+        if sdtest.carddetect == 1
+            printf "SPI1: CARD NOT DETECTED [FAILED]"
+        end
+        if sdtest.carddetect == 0
+            printf "SPI1: CARD DETECTED [OK]"
+        end
+
         #SD CARD INIT
         if sdtest.initsd == 0x00
             printf "SPI1: SD CARD INIT [OK]\n"

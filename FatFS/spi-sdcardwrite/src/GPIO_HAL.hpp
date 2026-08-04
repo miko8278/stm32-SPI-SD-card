@@ -5,6 +5,17 @@
 #define SD_CS_SELECT()     (GPIOA->BSRR = (1U << (8 + 16))) // PA9 LOW
 #define SD_CS_DESELECT()   (GPIOA->BSRR = (1U << 8))        // PA9 HIGH
 
+//For pullup/down
+//I'd be better if I capsuled it inside the class, but I did that
+//somewhere else and cpp makes the variable completely unreadable with having
+//to call the class first
+enum class Pull
+{
+    None,
+    Up,
+    Down
+};
+
 template<uintptr_t PortBase, uint32_t Pin>
 struct GpioPin
 {
@@ -13,6 +24,7 @@ private:
         reinterpret_cast<GPIO_TypeDef*>(PortBase);
 
 public:
+    //Configure Pin in Outputmode and set it LOW by default
     static void OutputLowInit()
     {
         // Output mode
@@ -30,6 +42,7 @@ public:
         GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
     }
 
+    //Configure Pin in Outputmode and set it HIGH by default
     static void OutputHighInit()
     {
         OutputLowInit();
@@ -45,6 +58,33 @@ public:
     {
         GPIOx->BSRR = (1u << (Pin + 16));
     }
+
+
+    static void InputInit(Pull pull = Pull::None)
+    {
+        // Input mode (00)
+        GPIOx->MODER &= ~(0b11u << (Pin * 2));
+
+        // No pull-up/down (00)
+        GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
+
+        switch (pull)
+        {
+        case Pull::Up:
+            GPIOx->PUPDR |= (0b01u << (Pin * 2));
+            break;
+
+        case Pull::Down:
+            GPIOx->PUPDR |= (0b10u << (Pin * 2));
+            break;
+        }
+    }
+
+    static uint32_t Read()
+    {
+        return (GPIOx->IDR >> Pin) & 1u;
+    }
+
 
     static void AF(uint8_t af)
     {

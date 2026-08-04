@@ -7,7 +7,10 @@
 struct SD1_Config {
     static constexpr uintptr_t SpiBase  = SPI1_BASE;
     static constexpr uintptr_t PortBase = GPIOA_BASE;
-    static constexpr uint32_t  Pin      = 8;
+    static constexpr uint32_t  Pin      = 8; //Pin for Chip Select
+    static constexpr uint32_t CD_Pin = 3; // Pin for Card Detect, a feature of sdcard-slot
+    // Note, we are always having the detect and select on the same
+    // GPIO as used in PortBase in this configuration, although it would be possible to design it freely 
 };
 
 //Note, I messed up my schematic, so where SPI2 should be used
@@ -22,6 +25,7 @@ struct SD3_Config {
     static constexpr uintptr_t SpiBase  = SPI3_BASE;
     static constexpr uintptr_t PortBase = GPIOB_BASE;
     static constexpr uint32_t  Pin      = 11;
+    static constexpr uint32_t CD_Pin = 12;
 };
 
 
@@ -41,6 +45,7 @@ static void GPIO_Init()
     GpioPin<GPIOA_BASE, 6>::AF(5);
     GpioPin<GPIOA_BASE, 7>::AF(5);
 
+    //SPI2 not needed right now
 
     //SPI3 chosen PINs
     // PB3 = SCK PB4 = MISO PB5 = MOSI -> Alternate Function mode
