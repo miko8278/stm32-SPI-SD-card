@@ -1,3 +1,11 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ * SPI-driver for STM32G431.
+ */
+
 #pragma once
 #include "stm32g431xx.h"
 

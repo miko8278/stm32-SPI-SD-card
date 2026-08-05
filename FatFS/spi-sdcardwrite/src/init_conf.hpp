@@ -1,3 +1,10 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ */
+ 
 #pragma once
 #include "stm32g431xx.h"
 #include "GPIO_HAL.hpp"

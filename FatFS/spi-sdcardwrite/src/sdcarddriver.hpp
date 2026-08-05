@@ -1,3 +1,11 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ * SPI-mode SD card driver for STM32G431.
+ */
+
 #pragma once
 #include "stm32g431xx.h"
 #include "spidriver.hpp"
@@ -134,7 +142,6 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     return 0x00; // success
 }
 
-uint8_t rrr;
 
 template<typename Config>
 uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer)
@@ -205,7 +212,6 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     } while (r1 == 0xFF);
 
     if (r1 != 0x00){
-        rrr = r1;
         return 0x04;
     }
 
@@ -379,6 +385,17 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
     return 0x00;
 }
 
+
+//Kind of ended up just using those in diskio.cpp
+enum SD_INIT_RESULT : uint8_t
+{
+    SD_INIT_OK = 0x00,
+    SD_INIT_ERROR_CMD0 = 0x02,
+    SD_INIT_ERROR_CMD8 = 0x04,
+    SD_INIT_ERROR_CMD55ACMD41 = 0x08
+};
+
+
 template<typename Config>
 uint8_t SD_InitSPI()
 {
@@ -387,10 +404,25 @@ uint8_t SD_InitSPI()
     uint8_t cmd55_resp = 0xFF;
     uint8_t acmd41_resp = 0xFF;
 
+    //Without sending some of those it does not properly initialise the first time...
+    // for(int i = 0; i < 10; ++i)
+    // {
+    //     SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    // }
+
     // CMD0
-    cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
+    //cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
+    //Give it some tries, does not work the first time, because card is busy...
+    for (int i = 0; i < 10; ++i)
+    {
+        cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
+
+        if (cmd0_resp == 0x01)
+            break;
+    }
+
     if (cmd0_resp != 0x01)
-        return 0x02;
+    return 0x02;
 
     // CMD8
     SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);

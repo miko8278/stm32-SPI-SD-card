@@ -1,3 +1,12 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ * GPIO-abstractions for STM32G431.
+ */
+
+
 #pragma once
 #include "stm32g431xx.h"
 

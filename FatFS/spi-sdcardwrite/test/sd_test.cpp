@@ -1,8 +1,18 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ * SPI-mode SD card driver tests for STM32G431.
+ */
+
+
 #include "stm32g431xx.h"
 #include "spidriver.hpp"
 #include "sdcarddriver.hpp"
 #include "GPIO_HAL.hpp"
 #include "init_conf.hpp"
+#include "ff.h"
 
 //Generate pseudorandom testdata
 uint32_t xorshift32(uint32_t rng)
@@ -130,6 +140,15 @@ void test_sd(){
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
 }
 
+FATFS fs;
+FRESULT result;
+void FatFS_Test()
+{
+    
+    result = f_mount(&fs, "", 1);
+
+}
+
 int main()
 {
 
@@ -144,9 +163,11 @@ int main()
         // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
 
         GPIO_Init();
-        test_sd<SD1_Config>();
-        test_sd<SD3_Config>();
+        // test_sd<SD1_Config>();
+        // test_sd<SD3_Config>();
 
+        FatFS_Test();
+        test_complete();
         tests_done();
 
         for (volatile uint32_t i = 0; i < 10000; i++);

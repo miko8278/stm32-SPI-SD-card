@@ -48,6 +48,8 @@ add_executable(${TEST_NAME}
     test/sd_test.cpp
     startup_stm32g431xx.s
     system_stm32g4xx.c
+    FatFS/ff.c
+    FatFS/diskio.cpp
 )
 
 
@@ -68,6 +70,7 @@ target_link_options(${TEST_NAME} PRIVATE
 target_include_directories(${TEST_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/FatFS
 )
 
 

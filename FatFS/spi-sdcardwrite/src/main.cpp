@@ -1,3 +1,11 @@
+/*
+ * License: MIT
+ *
+ * Author: Michael Kolorz
+ *
+ * 
+ */
+
 #include "stm32g431xx.h"
 #include "spidriver.hpp"
 #include "sdcarddriver.hpp"
