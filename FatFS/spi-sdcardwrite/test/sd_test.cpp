@@ -21,6 +21,11 @@ void test_complete()
     // nothing
 }
 
+void tests_done()
+{
+    // nothing
+}
+
 //Singleblock buffers
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
@@ -38,16 +43,16 @@ static struct{
     uint8_t initsd;
     uint8_t writeblock;
     uint8_t readblock;
-    uint8_t sameblock;
+    uint16_t sameblock;
     uint8_t writeblockmulti;
     uint8_t readblockmulti;
-    uint8_t sameblockmulti;
+    uint16_t sameblockmulti;
 } sdtest;
 
 
 template<typename Config>
 void test_sd(){
-    sdtest.cur_spi = 1;
+    sdtest.cur_spi = Config::cur_spi;
     using SPI_X = SpiDriver<Config::SpiBase>;
 
     //Configure the CS-Pins as Output
@@ -58,8 +63,6 @@ void test_sd(){
 
     //Read the carddetect Pin
     sdtest.carddetect = static_cast<uint8_t>(GpioPin<Config::PortBase, Config::CD_Pin>::Read());
-
-
 
     //Configure the registers for SPI
     SpiDriver<Config::SpiBase>::Init();
@@ -78,12 +81,14 @@ void test_sd(){
     }
 
     //Data for single block write
-    for(uint16_t i = 0; i < 512; i++) {
+    for(uint16_t i = 0; i < 512; i++) 
+    {
         sd_block_buffer[i] = (uint8_t)xorshift32(0x12345678); 
     }
 
     //Data for multi block write
-    for(uint16_t i = 0; i < BUF3_SIZE; i++) {
+    for(uint16_t i = 0; i < BUF3_SIZE; i++) 
+    {
         sd_block_buffer3[i] = (uint8_t)xorshift32(0x12345670); 
     }
 
@@ -101,7 +106,25 @@ void test_sd(){
         
     sdtest.readblockmulti = SD_ReadBlocks<Config>(20, 8, sd_block_buffer4);
 
+    //Check if written data = read data
 
+    //Single Block
+    sdtest.sameblock = 0;
+    for(int i = 0; i < 512; ++i)
+    {
+        if(sd_block_buffer[i] != sd_block_buffer2[i]) sdtest.sameblock++;
+    }
+
+
+    //Multi Block
+    sdtest.sameblockmulti = 0;
+    for(int i = 0; i < BUF3_SIZE; ++i)
+    {
+        if(sd_block_buffer3[i] != sd_block_buffer4[i]) sdtest.sameblockmulti++;
+    }
+
+
+    test_complete();
     //check state after write 
     // uint8_t status_after[2];
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
@@ -112,9 +135,21 @@ int main()
 
     while (1)
     {
+        
+        //Test for Solderbridges/not connected Pins
+        // RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+        // GpioPin<GPIOB_BASE, 3>::OutputHighInit();
+        // GpioPin<GPIOB_BASE, 4>::OutputHighInit();
+        // GpioPin<GPIOB_BASE, 5>::OutputHighInit();
+        // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
+
         GPIO_Init();
         test_sd<SD1_Config>();
-        test_complete();
+        test_sd<SD3_Config>();
+
+        tests_done();
+
         for (volatile uint32_t i = 0; i < 10000; i++);
+
     }
 }

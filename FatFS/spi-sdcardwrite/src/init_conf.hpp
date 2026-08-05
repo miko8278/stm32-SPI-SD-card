@@ -5,6 +5,7 @@
 #include "sdcarddriver.hpp"
 
 struct SD1_Config {
+    static constexpr uint8_t cur_spi = 1;
     static constexpr uintptr_t SpiBase  = SPI1_BASE;
     static constexpr uintptr_t PortBase = GPIOA_BASE;
     static constexpr uint32_t  Pin      = 8; //Pin for Chip Select
@@ -16,12 +17,14 @@ struct SD1_Config {
 //Note, I messed up my schematic, so where SPI2 should be used
 //SPI 3 is connected... use SD3_Config for the 2. slot
 struct SD2_Config {
+    static constexpr uint8_t cur_spi = 2;
     static constexpr uintptr_t SpiBase  = SPI2_BASE;
     static constexpr uintptr_t PortBase = GPIOB_BASE;
     static constexpr uint32_t  Pin      = 10;
 };
 
 struct SD3_Config {
+    static constexpr uint8_t cur_spi = 3;
     static constexpr uintptr_t SpiBase  = SPI3_BASE;
     static constexpr uintptr_t PortBase = GPIOB_BASE;
     static constexpr uint32_t  Pin      = 11;
