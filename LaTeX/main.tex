@@ -495,7 +495,11 @@ Moderne Sprachfeatures wie \cpp{enum class} und \cpp{namespace} bieten Typensich
 Bedingte Kompilierung mit \cpp{if constexpr} w"ahlt nur relevante Zweige zur Compilezeit aus und kompiliert den Rest erst gar nicht.
 Gleichzeitig besteht Abw"artskompatiblit"at zu C-Code, sodass beispielsweise die in C89 geschriebene
 FatFS-Bibliothek problemlos implementiert werden kann.
- 
+%namespace problematik schreiben, folgender Fehler:
+% [build]  1130 | #define CRC                 ((CRC_TypeDef *) CRC_BASE)
+% [build]       |                              ~            ^
+% [build] /home/alle/Universitaet/BA-stm/FatFS/spi-sdcardwrite/src/sdcarddriver.hpp:556:13: note: in expansion of macro 'CRC'
+% [build]   556 |     uint8_t CRC : 7;                  // [7:1]
 
 \subsection{SPI}
 

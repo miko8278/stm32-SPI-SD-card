@@ -103,6 +103,14 @@ define spi_test
             printf "SPI1: READ MULTIPLE BLOCK NOT SAME AS WRITTEN [FAILED] => %d FAILED BYTES", sdtest.sameblockmulti
         end
 
+        #And here I noticed that gdb indeed can use the defined enums... maybe even enum classes?
+        #GET SECTOR COUNT: CMD9
+        if sdtest.csd == SD_CSD_OK
+            printf "SPI1: GOT CSD [OK]"
+        else
+            printf "SPI1: NOGOT CSD [FAILED]"
+        end
+
     end
 
 
@@ -213,7 +221,12 @@ define spi_test
 
 
 
+end
 
+break debug_gdb_print
+commands
+    printf "%s", str
+    continue
 end
 
 break test_complete

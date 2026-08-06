@@ -36,6 +36,12 @@ void tests_done()
     // nothing
 }
 
+void debug_gdb_print(const char* str)
+{
+    // breakpoint target only
+}
+
+
 //Singleblock buffers
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
@@ -45,6 +51,10 @@ constexpr int BUF3_SIZE = 4096;
 constexpr int BUF4_SIZE = BUF3_SIZE;
 uint8_t sd_block_buffer3[BUF3_SIZE];
 uint8_t sd_block_buffer4[BUF4_SIZE];
+
+//CSD-register buffer for getting information like the card-size with CMD9
+constexpr int CSD_REG_SIZE = 16;
+uint8_t csd_reg[CSD_REG_SIZE];
 
 //This struct is basically there so gdb can read those values back in a automated script
 static struct{
@@ -57,6 +67,7 @@ static struct{
     uint8_t writeblockmulti;
     uint8_t readblockmulti;
     uint16_t sameblockmulti;
+    uint8_t csd;
 } sdtest;
 
 
@@ -134,6 +145,10 @@ void test_sd(){
     }
 
 
+    //Get Sector Count test
+    sdtest.csd = SD_GetCSD<Config>(csd_reg, CSD_REG_SIZE);
+
+
     test_complete();
     //check state after write 
     // uint8_t status_after[2];
@@ -161,13 +176,13 @@ int main()
         // GpioPin<GPIOB_BASE, 4>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 5>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
-
+        debug_gdb_print("Hello Debug\n");
         GPIO_Init();
-        // test_sd<SD1_Config>();
-        // test_sd<SD3_Config>();
+        test_sd<SD1_Config>();
+        test_sd<SD3_Config>();
 
-        FatFS_Test();
-        test_complete();
+        //FatFS_Test();
+
         tests_done();
 
         for (volatile uint32_t i = 0; i < 10000; i++);

@@ -42,10 +42,40 @@ DSTATUS disk_status(BYTE pdrv)
     return 0;
 }
 
+// Dummy for easy testing
+// DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
+// {
+//     return RES_OK;
+// }
+
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
-    return RES_OK;
+    if (pdrv != 0) return RES_PARERR;
+
+    switch (cmd)
+    {
+        //This is important for caching. My driver just waits until everything is written
+        case CTRL_SYNC: return RES_OK;
+
+        // Check out https://elm-chan.org/fsw/ff/doc/dioctl.html for the strange return types FatFS is
+        // expecting. Those are just some int casts in the end, kind of overly complicated, but optimised.
+        case GET_SECTOR_SIZE:
+            *(WORD*)buff = 512;
+            return RES_OK;
+
+        // case GET_SECTOR_COUNT:
+        //     *(LBA_t*)buff = SD_GetSectorCount();
+        //     return RES_OK;
+
+        // case GET_BLOCK_SIZE:
+        //     *(DWORD*)buff = SD_GetEraseBlockSize();
+        //     return RES_OK;
+
+        //Note: FF_USE_TRIM must be 0, trim not implemented
+        default: return RES_PARERR;
+    }
 }
+
 
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
@@ -64,8 +94,29 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
     }
 
     //The SD_INIT_OK is my enum... the other RES stuff is FatFS, just to be clear
-    if (result != SD_INIT_OK) return RES_ERROR;
+    if (result != SD_READ_OK) return RES_ERROR;
 
+
+    return RES_OK;
+}
+
+
+DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
+{
+    if (pdrv != 0) return RES_PARERR;
+
+    uint8_t result;
+
+    if (count == 1)
+    {
+        result = SD_WriteBlock<SD1_Config>(sector, buff);
+    }
+    else
+    {
+        result = SD_WriteBlocks<SD1_Config>(sector, count, buff);
+    }
+
+    if (result != SD_WRITE_OK) return RES_ERROR;
 
     return RES_OK;
 }
