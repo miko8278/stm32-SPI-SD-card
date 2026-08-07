@@ -50,6 +50,7 @@ add_executable(${TEST_NAME}
     system_stm32g4xx.c
     FatFS/ff.c
     FatFS/diskio.cpp
+    FatFS/fatfs_time.cpp
 )
 
 

@@ -39,6 +39,7 @@ void tests_done()
 void debug_gdb_print(const char* str)
 {
     // breakpoint target only
+    //
 }
 
 
@@ -68,9 +69,15 @@ static struct{
     uint8_t readblockmulti;
     uint16_t sameblockmulti;
     uint8_t csd;
+    uint32_t csizeMB;
 } sdtest;
 
-
+//Wasting some ram here, but this is nothing
+//compared to those 4kb buffers for the read write multi.
+//Basically, it's either v1 or v2 depending on what the card says.
+//CSD_V1 csd_v1;
+//CSD_V2 csd_v2;
+Csd_Common csd;
 template<typename Config>
 void test_sd(){
     sdtest.cur_spi = Config::cur_spi;
@@ -119,13 +126,13 @@ void test_sd(){
     // uint8_t status_before[2];
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_before, 1);
 
-    sdtest.writeblock = SD_WriteBlock<Config>(20, sd_block_buffer);
+    sdtest.writeblock = SD_WriteBlock<Config>(200, sd_block_buffer);
 
-    sdtest.readblock = SD_ReadBlock<Config>(20, sd_block_buffer2);
+    sdtest.readblock = SD_ReadBlock<Config>(200, sd_block_buffer2);
 
-    sdtest.writeblockmulti = SD_WriteBlocks<Config>(20, 8, sd_block_buffer3);
+    sdtest.writeblockmulti = SD_WriteBlocks<Config>(200, 8, sd_block_buffer3);
         
-    sdtest.readblockmulti = SD_ReadBlocks<Config>(20, 8, sd_block_buffer4);
+    sdtest.readblockmulti = SD_ReadBlocks<Config>(200, 8, sd_block_buffer4);
 
     //Check if written data = read data
 
@@ -147,21 +154,40 @@ void test_sd(){
 
     //Get Sector Count test
     sdtest.csd = SD_GetCSD<Config>(csd_reg, CSD_REG_SIZE);
-
-
+    parse_csd(csd_reg, &csd);
+    sdtest.csizeMB = csd.capacityMB;
     test_complete();
     //check state after write 
     // uint8_t status_after[2];
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
 }
 
+static struct{
+    FRESULT mount;
+    FRESULT open;
+    FRESULT write;
+    FRESULT close;
+}fat_test;
+
 FATFS fs;
-FRESULT result;
+
 void FatFS_Test()
 {
     
-    result = f_mount(&fs, "", 1);
+    fat_test.mount = f_mount(&fs, "", 1);
 
+    FIL file;
+    UINT written;   
+
+    fat_test.open = f_open(&file, "Bello.txt", FA_WRITE | FA_CREATE_ALWAYS);
+
+    if (fat_test.open == FR_OK)
+    {
+        const char msg[] = "Hello SD!\n";
+
+        fat_test.write = f_write(&file, msg, sizeof(msg) - 1, &written);
+        fat_test.close = f_close(&file);
+    }
 }
 
 int main()
@@ -181,7 +207,7 @@ int main()
         test_sd<SD1_Config>();
         test_sd<SD3_Config>();
 
-        //FatFS_Test();
+        FatFS_Test();
 
         tests_done();
 

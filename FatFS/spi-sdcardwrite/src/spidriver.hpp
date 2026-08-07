@@ -8,6 +8,7 @@
 
 #pragma once
 #include "stm32g431xx.h"
+#include "GPIO_HAL.hpp"
 
 //static class
 template<uintptr_t Base>
@@ -18,15 +19,21 @@ struct SpiDriver {
     static inline SPI_TypeDef* const SPIx = reinterpret_cast<SPI_TypeDef*>(Base);
 
     //Each SPI-Device needs clock enabled seperately
+    //Also we pull up the MISO-line
+    //This is still kind of unclean, I'd rather use my init_conf.hpp
+    //instead of hardcoding it here
     static void EnableClock() {
         if constexpr (Base == SPI1_BASE) {
             RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
+            //GpioPin<GPIOA_BASE,6>::PullUpDown(Pull::Up);
         }
         else if constexpr (Base == SPI2_BASE) {
             RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;
+            //GpioPin<GPIOB_BASE,14>::PullUpDown(Pull::Up);
         }
         else if constexpr (Base == SPI3_BASE) {
             RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;
+            //GpioPin<GPIOB_BASE,4>::PullUpDown(Pull::Up);
         }
     }
 

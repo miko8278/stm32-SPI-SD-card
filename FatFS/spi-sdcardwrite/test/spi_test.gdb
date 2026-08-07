@@ -107,8 +107,16 @@ define spi_test
         #GET SECTOR COUNT: CMD9
         if sdtest.csd == SD_CSD_OK
             printf "SPI1: GOT CSD [OK]"
-        else
-            printf "SPI1: NOGOT CSD [FAILED]"
+            printf "SPI1: CARD SIZE IN MB: %d", sdtest.csizeMB
+        end
+        if sdtest.csd == SD_CSD_ERROR_CMD9
+            printf "SPI1: GET CSD [FAILED] => CMD9 FAILED"
+        end
+        if sdtest.csd == SD_CSD_ERROR_DATATRANS
+            "SPI1: GET CSD [FAILED] => ERROR DURING DATA TRANSMISSION"
+        end
+        if sdtest.csd == SD_CSD_ERROR_WRONGBUFSIZE
+            printf "SPI1: GET CSD [FAILED] => BUFFER SHOULD BE (AT LEAST) 16 BYTES"
         end
 
     end
@@ -217,6 +225,21 @@ define spi_test
             printf "SPI3: READ MULTIPLE BLOCK NOT SAME AS WRITTEN [FAILED] => %d FAILED BYTES", sdtest.sameblockmulti
         end
 
+
+        #GET SECTOR COUNT: CMD9
+        if sdtest.csd == SD_CSD_OK
+            printf "SPI3: GOT CSD [OK]"
+            printf "SPI3: CARD SIZE IN MB: %d", sdtest.csizeMB
+        end
+        if sdtest.csd == SD_CSD_ERROR_CMD9
+            printf "SPI3: GET CSD [FAILED] => CMD9 FAILED"
+        end
+        if sdtest.csd == SD_CSD_ERROR_DATATRANS
+            printf "SPI3: GET CSD [FAILED] => ERROR DURING DATA TRANSMISSION"
+        end
+        if sdtest.csd == SD_CSD_ERROR_WRONGBUFSIZE
+            printf "SPI3: GET CSD [FAILED] => BUFFER SHOULD BE (AT LEAST) 16 BYTES"
+        end
     end
 
 

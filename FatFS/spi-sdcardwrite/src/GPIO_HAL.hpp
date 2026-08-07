@@ -68,6 +68,19 @@ public:
         GPIOx->BSRR = (1u << (Pin + 16));
     }
 
+    static void PullUpDown(Pull pull = Pull::None)
+    {
+        switch (pull)
+        {
+            case Pull::Up:
+                GPIOx->PUPDR |= (0b01u << (Pin * 2));
+                break;
+
+            case Pull::Down:
+                GPIOx->PUPDR |= (0b10u << (Pin * 2));
+                break;
+        }
+    }
 
     static void InputInit(Pull pull = Pull::None)
     {
@@ -77,16 +90,17 @@ public:
         // No pull-up/down (00)
         GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
 
-        switch (pull)
-        {
-        case Pull::Up:
-            GPIOx->PUPDR |= (0b01u << (Pin * 2));
-            break;
+        PullUpDown(pull);
+        // switch (pull)
+        // {
+        // case Pull::Up:
+        //     GPIOx->PUPDR |= (0b01u << (Pin * 2));
+        //     break;
 
-        case Pull::Down:
-            GPIOx->PUPDR |= (0b10u << (Pin * 2));
-            break;
-        }
+        // case Pull::Down:
+        //     GPIOx->PUPDR |= (0b10u << (Pin * 2));
+        //     break;
+        // }
     }
 
     static uint32_t Read()

@@ -12,6 +12,7 @@
 #include "init_conf.hpp"
 
 #include "ff.h"			/* Basic definitions of FatFs */
+#include <cstdint>
 #include "diskio.h"		/* Declarations FatFs MAI */
 
 extern "C" {
@@ -50,8 +51,10 @@ DSTATUS disk_status(BYTE pdrv)
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
+    constexpr int SD_SECTOR_SIZE = 512;
     if (pdrv != 0) return RES_PARERR;
 
+    
     switch (cmd)
     {
         //This is important for caching. My driver just waits until everything is written
@@ -60,19 +63,36 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
         // Check out https://elm-chan.org/fsw/ff/doc/dioctl.html for the strange return types FatFS is
         // expecting. Those are just some int casts in the end, kind of overly complicated, but optimised.
         case GET_SECTOR_SIZE:
-            *(WORD*)buff = 512;
+            *(WORD*)buff = SD_SECTOR_SIZE;
             return RES_OK;
+        break;
 
-        // case GET_SECTOR_COUNT:
-        //     *(LBA_t*)buff = SD_GetSectorCount();
-        //     return RES_OK;
-
-        // case GET_BLOCK_SIZE:
-        //     *(DWORD*)buff = SD_GetEraseBlockSize();
-        //     return RES_OK;
-
+        case GET_SECTOR_COUNT:
+        {
+            uint8_t buffer[16];
+            Csd_Common csd;
+            uint8_t sd_csd_result = SD_GetCSD<SD1_Config>(buffer, 16);
+            if(sd_csd_result == SD_CSD_OK){
+                parse_csd(buffer, &csd);
+                *(LBA_t*)buff = csd.capacity / SD_SECTOR_SIZE; //
+                return RES_OK;
+            }
+            return RES_ERROR;
+        break;
+        }
+        
+        case GET_BLOCK_SIZE:
+            //*(DWORD*)buff = SD_GetEraseBlockSize();
+            //The damn blocksize is written in CMD55+ACMD13, I'll leave this for when I have time 
+            //in the end...
+            *(DWORD*)buff = 1;
+            return RES_OK;
+        break;
         //Note: FF_USE_TRIM must be 0, trim not implemented
-        default: return RES_PARERR;
+
+        default: 
+            return RES_PARERR;
+        break;
     }
 }
 

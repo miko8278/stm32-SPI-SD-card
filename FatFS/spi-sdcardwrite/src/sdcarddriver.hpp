@@ -508,19 +508,26 @@ struct CSD_V1
 
 struct CSD_V2
 {
+    //[0]
     uint8_t CSD_STRUCTURE : 2;       // [127:126]
     //uint8_t RESERVED_125_120 : 6;    // [125:120]
+    //[1]
     uint8_t TAAC : 8;                // [119:112]
+    //[2]
     uint8_t NSAC : 8;                // [111:104]
+    //[3]
     uint8_t TRAN_SPEED : 8;          // [103:96]
+    //[4..5]
     uint16_t CCC : 12;               // [95:84]
     uint16_t READ_BL_LEN : 4;        // [83:80]
+    //[6..7..8..9]
     uint8_t READ_BL_PARTIAL : 1;     // [79]
     uint8_t WRITE_BLK_MISALIGN : 1;  // [78]
     uint8_t READ_BLK_MISALIGN : 1;   // [77]
     uint8_t DSR_IMP : 1;             // [76]
     //uint8_t RESERVED_75_70 : 6;    // [75:70]
     uint32_t C_SIZE : 22;            // [69:48]
+
     uint8_t RESERVED_47 : 1;         // [47]
     uint8_t ERASE_BLK_EN : 1;        // [46]
     uint8_t SECTOR_SIZE : 7;         // [45:39]
@@ -541,6 +548,19 @@ struct CSD_V2
     //uint8_t NOT_USED_ALWAYS_ONE : 1; // [0]
 };
 
+//Ok, let's keep it low, here just goes in what 
+//I need right now and can parse easily
+//Keeping the V1 and V2 structs for documentation though
+struct Csd_Common{
+    uint8_t CSD_STRUCTURE : 2; 
+    uint32_t CSIZE;
+    uint8_t READ_BL_LEN : 4;
+    uint8_t C_SIZE_MULT : 3;
+    uint8_t ERASE_BLK_EN : 1; 
+    uint8_t SECTOR_SIZE : 7;
+    uint64_t capacity; // this is calculated using CSIZE
+    uint32_t capacityMB;
+};
 
 
 enum SD_CSD_RESULT : uint8_t
@@ -563,7 +583,7 @@ uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)
 
     ChipSelect<Config::PortBase,Config::Pin> chipselect_tmp;
 
-    uint8_t r1;
+    uint8_t r1 = 0xFF;
     uint32_t timeout = 0;
     constexpr uint32_t T_OUT1 = 1000;
     constexpr uint32_t T_OUT2 = 2000;
@@ -586,8 +606,10 @@ uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)
         timeout++;
     } while ((r1 == 0xFF) && (timeout < T_OUT1));
 
-    if (r1 != 0x00) {
+    if (r1 != 0x00 || timeout >= T_OUT1) {
         //SD_CS_DESELECT();
+        //This does not trigger when sd-card slot is empty... why?
+        //Proably miso-line low => gets a 0 when transfered
         return SD_CSD_ERROR_CMD9; // did not accept command
     }
 
@@ -617,7 +639,73 @@ uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)
     //SD_CS_DESELECT();
     SpiDriver<Config::SpiBase>::Transfer(0xFF); // extra cycle
 
-    return 0x00; // success
+    return SD_CSD_OK; // success
 
 
 }
+
+//Don't forget to inline inside a .hpp when using non-template functions!
+inline void parse_csd_v1(const uint8_t* rawcsd, Csd_Common* csd){
+    //V1 is terrible, i don't know if this is correct, I've no csd_v1 card here...
+    //Don't know if they are even sold right now
+    csd->CSIZE = ((rawcsd[7] & 0x03) << 10) | (rawcsd[8] << 2) | ((rawcsd[9] & 0xC0) >> 6);
+
+    csd->READ_BL_LEN = rawcsd[5] & 0x0F;
+
+    csd->C_SIZE_MULT =((rawcsd[10] & 0x03) << 1) | ((rawcsd[11] & 0x80) >> 7);
+
+    uint32_t block_len = 1 << csd->READ_BL_LEN;
+    uint32_t mult = 1 << (csd->C_SIZE_MULT + 2);
+
+    csd->capacity =(uint64_t)(csd->CSIZE + 1) * mult * block_len;
+
+    //It'll still work, this is mainly for letting mkfs make smart decisions
+    csd->SECTOR_SIZE = 1;
+}
+
+inline void parse_csd_v2(const uint8_t* rawcsd, Csd_Common* csd){
+    //V2 is much easier
+    //csize for card size calculation (they call it capacity though)
+    csd->CSIZE = ((rawcsd[7] & 0x3F) << 16) | (rawcsd[8] << 8) | rawcsd[9];
+
+    //This is how big the erase blocks are... NOT... this damn block is just 
+    //for V1 and not used in V2... what a SCAM, I'd need CMD55 + ACMD13
+    //The naming is not my fault, it's from the SD protocol
+    //csd->ERASE_BLK_EN  = (csd[10] >> 6) & 0x01;
+    //csd->SECTOR_SIZE = ((csd[10] & 0x3F) << 1) | ((csd[11] >> 7) & 0x01);
+    //this is directly from the protocol
+    csd->capacityMB = (uint64_t)(csd->CSIZE + 1) * 512 * 1024 / 1000000; //Marketing: This is really how it's calculated, a lie kind of :D
+    csd->capacity = (uint64_t)(csd->CSIZE + 1) * 512 * 1024;
+}
+
+enum PARSE_CSD_RESULT : uint8_t
+{
+    PARSE_CSD_V1 = 0x00,
+    PARSE_CSD_V2 = 0x01,
+    PARSE_CSD_RESERVED1 = 0x02,
+    PARSE_CSD_RESERVED2 = 0x03,
+};
+inline uint8_t parse_csd(const uint8_t* rawcsd, Csd_Common* csd)
+{
+    //Find out V1 or V2
+    csd->CSD_STRUCTURE = (rawcsd[0] >> 6) & 0x03;
+
+    switch(csd->CSD_STRUCTURE)
+    {
+        case PARSE_CSD_V1:
+            parse_csd_v1(rawcsd, csd);
+            return PARSE_CSD_V1;
+        break;
+
+        case PARSE_CSD_V2:
+            parse_csd_v2(rawcsd, csd);
+            return PARSE_CSD_V2;
+        break;
+
+        case PARSE_CSD_RESERVED1:
+        case PARSE_CSD_RESERVED2:
+            return PARSE_CSD_RESERVED1;
+        break;
+    }
+}
+
