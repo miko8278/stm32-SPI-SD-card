@@ -44,7 +44,7 @@ struct SpiDriver {
         SPIx->CR2 = 0;
 
         // Master, Software NSS, Baud = APBCLK / 128
-        SPIx->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | (6U << SPI_CR1_BR_Pos);
+        SPIx->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | (5U << SPI_CR1_BR_Pos);
         
         // 8-Bit
         SPIx->CR2 = (7U << SPI_CR2_DS_Pos) | SPI_CR2_FRXTH;
@@ -86,11 +86,12 @@ struct SpiDriver {
         while (!(SPIx->SR & SPI_SR_TXE));
 
         // force an 8-bit write to the data register.
-        *(__IO uint8_t *)&SPIx->DR = data;
-
+        //*(volatile uint8_t *)&SPIx->DR = data;
+        *reinterpret_cast<volatile uint8_t *>(&SPIx->DR) = data;
         // wait until a received byte is available.
         while (!(SPIx->SR & SPI_SR_RXNE));
 
-        return *(__IO uint8_t *)&SPIx->DR;
+        //return *(volatile uint8_t *)&SPIx->DR;
+        return *reinterpret_cast<volatile uint8_t *>(&SPIx->DR);
     }
 };

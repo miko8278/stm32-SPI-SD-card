@@ -199,24 +199,36 @@ void test_sd(){
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
 }
 
+uint8_t initres1;
+uint8_t initres2;
 
 int main()
 {
-
+    debug_gdb_print("Hello Debug\n");
+    GPIO_Init();
     while (1)
     {
         
         //Test for Solderbridges/not connected Pins
-        // RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+        //RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
         // GpioPin<GPIOB_BASE, 3>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 4>::OutputHighInit();
-        // GpioPin<GPIOB_BASE, 5>::OutputHighInit();
+        //GpioPin<GPIOB_BASE, 5>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
-        debug_gdb_print("Hello Debug\n");
-        GPIO_Init();
+
         test_sd<SD1_Config>();
         test_sd<SD3_Config>();
 
+        //manual spi3 test...
+        // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputHighInit();
+        // SpiDriver<SPI1_BASE>::Init();
+        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+        //initres1 = SD_InitSPI<SD1_Config>();
+
+        // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputHighInit();
+        // SpiDriver<SPI3_BASE>::Init();
+        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+        //initres2 = SD_InitSPI<SD3_Config>();
         
 
         tests_done();

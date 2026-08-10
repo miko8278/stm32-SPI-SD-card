@@ -22,6 +22,7 @@ public:
     }
 
     ~ChipSelect() {
+        //port->BSRR = (1U << (Pin + 16));
         port->BSRR = (1U << Pin);
     }
 };
@@ -32,7 +33,7 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
 {
 
     //This gets automatically destructed when leaving the function at any point
-    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+    //ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
 
 
     uint8_t r1;
@@ -74,7 +75,7 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
     //SD_CS_DESELECT();
 
     //Maybe a filler Byte is needed later
-    //SpiDriver<Base>::Transfer(0xFF);
+    //SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
     return r1; //always return r1, even when there is more
 }
@@ -411,17 +412,19 @@ enum SD_INIT_RESULT : uint8_t
 template<typename Config>
 uint8_t SD_InitSPI()
 {
+    
     uint8_t cmd8_resp[5];
     uint8_t cmd0_resp = 0xFF;
     uint8_t cmd55_resp = 0xFF;
     uint8_t acmd41_resp = 0xFF;
 
-    //Without sending some of those it does not properly initialise the first time...
-    // for(int i = 0; i < 10; ++i)
-    // {
-    //     SpiDriver<Config::SpiBase>::Transfer(0xFF);
-    // }
+    //Without sending some of those it does not properly initialise
+    for(int i = 0; i < 1000; ++i)
+    {
+        SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    }
 
+    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
     // CMD0
     //cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
     //Give it some tries, does not work the first time, because card is busy...
@@ -458,7 +461,7 @@ uint8_t SD_InitSPI()
         }
 
         //pause, probably fine without
-        //for (volatile uint32_t i = 0; i < 1000; i++);
+        for (volatile uint32_t i = 0; i < 1000; i++);
         //SD_DelayMs(1);
     }
 
