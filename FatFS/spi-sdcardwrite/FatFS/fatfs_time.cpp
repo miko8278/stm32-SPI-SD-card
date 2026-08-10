@@ -1,6 +1,6 @@
 #include "ff.h"
 
-extern "C" DWORD get_fattime(void)
+extern "C" DWORD get_fattime()
 {
     // Dummy timestamp: 2026-01-01 00:00:00
 

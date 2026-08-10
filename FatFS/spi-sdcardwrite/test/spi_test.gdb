@@ -14,7 +14,7 @@ define spi_test
         end
 
         #SD CARD INIT
-        if sdtest.initsd == 0x00
+        if sdtest.initsd == SD_INIT_OK
             printf "SPI1: SD CARD INIT [OK]\n"
         end
         if sdtest.initsd == 0x02
@@ -113,10 +113,36 @@ define spi_test
             printf "SPI1: GET CSD [FAILED] => CMD9 FAILED"
         end
         if sdtest.csd == SD_CSD_ERROR_DATATRANS
-            "SPI1: GET CSD [FAILED] => ERROR DURING DATA TRANSMISSION"
+            printf "SPI1: GET CSD [FAILED] => ERROR DURING DATA TRANSMISSION"
         end
         if sdtest.csd == SD_CSD_ERROR_WRONGBUFSIZE
             printf "SPI1: GET CSD [FAILED] => BUFFER SHOULD BE (AT LEAST) 16 BYTES"
+        end
+
+
+        #FATFS TEST
+        if sdtest.initsd == SD_INIT_OK
+            if fat_test.mount == FR_OK
+                printf "SPI1, FatFS: MOUNT [OK]"
+            else
+                printf "SPI1, FatFS: MOUNT [FAILED]"
+            end
+            if fat_test.open == FR_OK
+                printf "SPI1, FatFS: FOPEN [OK]"
+            else
+                printf "SPI1, FatFS: FOPEN [FAILED]"
+            end
+            if fat_test.write == FR_OK
+                printf "SPI1, FatFS: FWRITE [OK]"
+            else
+                printf "SPI1, FatFS: FWRITE [FAILED]"
+            end
+            if fat_test.close == FR_OK
+                printf "SPI1, FatFS: CLOSE [OK]"
+            else
+                printf "SPI1, FatFS: CLOSE [FAILED]"
+            end
+
         end
 
     end

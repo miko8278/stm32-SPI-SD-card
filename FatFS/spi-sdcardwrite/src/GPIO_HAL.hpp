@@ -70,6 +70,7 @@ public:
 
     static void PullUpDown(Pull pull = Pull::None)
     {
+        GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
         switch (pull)
         {
             case Pull::Up:

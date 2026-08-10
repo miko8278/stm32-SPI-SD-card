@@ -25,7 +25,7 @@ struct SpiDriver {
     static void EnableClock() {
         if constexpr (Base == SPI1_BASE) {
             RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
-            //GpioPin<GPIOA_BASE,6>::PullUpDown(Pull::Up);
+            GpioPin<GPIOA_BASE,6>::PullUpDown(Pull::None);
         }
         else if constexpr (Base == SPI2_BASE) {
             RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;
@@ -33,7 +33,7 @@ struct SpiDriver {
         }
         else if constexpr (Base == SPI3_BASE) {
             RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;
-            //GpioPin<GPIOB_BASE,4>::PullUpDown(Pull::Up);
+            GpioPin<GPIOB_BASE,4>::PullUpDown(Pull::None);
         }
     }
 

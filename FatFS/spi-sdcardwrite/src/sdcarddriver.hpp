@@ -425,7 +425,7 @@ uint8_t SD_InitSPI()
     // CMD0
     //cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
     //Give it some tries, does not work the first time, because card is busy...
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 20; ++i)
     {
         cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
 
@@ -434,13 +434,13 @@ uint8_t SD_InitSPI()
     }
 
     if (cmd0_resp != 0x01)
-    return 0x02;
+    return SD_INIT_ERROR_CMD0;
 
     // CMD8
     SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
 
     if (cmd8_resp[0] != 0x01 || cmd8_resp[4] != 0xAA)
-        return 0x04;
+        return SD_INIT_ERROR_CMD8;
 
     // ACMD41
     uint32_t timeout = 1000;
@@ -454,7 +454,7 @@ uint8_t SD_InitSPI()
             acmd41_resp = SD_SendCmd<Config>(41, 0x40000000, 0xFF, nullptr, 0);
 
             if (acmd41_resp == 0x00)
-                return 0x00;
+                return SD_INIT_OK;
         }
 
         //pause, probably fine without
@@ -463,7 +463,7 @@ uint8_t SD_InitSPI()
     }
 
     //Timeout: loop of CMD55 and ACMD41 failed
-    return 0x08;
+    return SD_INIT_ERROR_CMD55ACMD41;
 }
 
 //This is a little terrible, there are 2 versions of this struct depending on 

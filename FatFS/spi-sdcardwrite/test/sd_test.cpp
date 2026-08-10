@@ -42,6 +42,35 @@ void debug_gdb_print(const char* str)
     //
 }
 
+static struct{
+    FRESULT mount = FR_NOT_READY;
+    FRESULT open = FR_NOT_READY;
+    FRESULT write = FR_NOT_READY;
+    FRESULT close = FR_NOT_READY;
+}fat_test;
+FATFS fs;
+template<typename Config>
+void FatFS_Test()
+{
+    
+    fat_test.mount = f_mount(&fs, "", 1);
+
+    if(fat_test.mount == FR_OK){
+        FIL file;
+        UINT written;   
+
+        fat_test.open = f_open(&file, "Bello.txt", FA_WRITE | FA_CREATE_ALWAYS);
+
+        if (fat_test.open == FR_OK)
+        {
+            const char msg[] = "Hello SD!\n";
+
+            fat_test.write = f_write(&file, msg, sizeof(msg) - 1, &written);
+            fat_test.close = f_close(&file);
+        }
+    }
+}
+
 
 //Singleblock buffers
 uint8_t sd_block_buffer[512]; 
@@ -156,39 +185,20 @@ void test_sd(){
     sdtest.csd = SD_GetCSD<Config>(csd_reg, CSD_REG_SIZE);
     parse_csd(csd_reg, &csd);
     sdtest.csizeMB = csd.capacityMB;
+
+
+    //If sdcard-initialisation worked, then test FatFS
+    if(sdtest.initsd)
+    {
+        FatFS_Test<Config>();
+    }
+
     test_complete();
     //check state after write 
     // uint8_t status_after[2];
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_after, 1);
 }
 
-static struct{
-    FRESULT mount;
-    FRESULT open;
-    FRESULT write;
-    FRESULT close;
-}fat_test;
-
-FATFS fs;
-
-void FatFS_Test()
-{
-    
-    fat_test.mount = f_mount(&fs, "", 1);
-
-    FIL file;
-    UINT written;   
-
-    fat_test.open = f_open(&file, "Bello.txt", FA_WRITE | FA_CREATE_ALWAYS);
-
-    if (fat_test.open == FR_OK)
-    {
-        const char msg[] = "Hello SD!\n";
-
-        fat_test.write = f_write(&file, msg, sizeof(msg) - 1, &written);
-        fat_test.close = f_close(&file);
-    }
-}
 
 int main()
 {
@@ -207,7 +217,7 @@ int main()
         test_sd<SD1_Config>();
         test_sd<SD3_Config>();
 
-        FatFS_Test();
+        
 
         tests_done();
 
