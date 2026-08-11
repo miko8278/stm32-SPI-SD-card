@@ -88,8 +88,6 @@ public:
         // Input mode (00)
         GPIOx->MODER &= ~(0b11u << (Pin * 2));
 
-        // No pull-up/down (00)
-        GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
 
         PullUpDown(pull);
         // switch (pull)

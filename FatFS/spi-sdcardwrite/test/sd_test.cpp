@@ -99,6 +99,7 @@ static struct{
     uint16_t sameblockmulti;
     uint8_t csd;
     uint32_t csizeMB;
+    int timeout = 0;
 } sdtest;
 
 //Wasting some ram here, but this is nothing
@@ -201,7 +202,7 @@ void test_sd(){
 
 uint8_t initres1;
 uint8_t initres2;
-
+uint8_t r1;
 int main()
 {
     debug_gdb_print("Hello Debug\n");
@@ -216,21 +217,59 @@ int main()
         //GpioPin<GPIOB_BASE, 5>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
 
-        test_sd<SD1_Config>();
-        test_sd<SD3_Config>();
+        GpioPin<GPIOC_BASE, 13>::InputInit(Pull::Up);
+        GpioPin<GPIOC_BASE, 14>::InputInit(Pull::Up);
+
+        // test_sd<SD1_Config>();
+        // test_sd<SD3_Config>();
 
         //manual spi3 test...
         // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputHighInit();
         // SpiDriver<SPI1_BASE>::Init();
         // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI1_BASE>::Transfer(0x55);
+        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI1_BASE>::Transfer(0x55);
+        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI1_BASE>::Transfer(0x55);
         //initres1 = SD_InitSPI<SD1_Config>();
 
         // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputHighInit();
         // SpiDriver<SPI3_BASE>::Init();
         // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI3_BASE>::Transfer(0x55);
+        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI3_BASE>::Transfer(0x55);
+        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+        // SpiDriver<SPI3_BASE>::Transfer(0x55);
         //initres2 = SD_InitSPI<SD3_Config>();
-        
-
+        {
+            int timeout = 0;
+            GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputHighInit();
+            SpiDriver<SPI3_BASE>::Init();
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            ChipSelect<GPIOB_BASE, 11> chipselect_tmp;
+            //manual cmd0-test SPI3, why does this s**t not work
+            SpiDriver<SPI3_BASE>::Transfer(0x40);
+            SpiDriver<SPI3_BASE>::Transfer(0x00);
+            SpiDriver<SPI3_BASE>::Transfer(0x00);
+            SpiDriver<SPI3_BASE>::Transfer(0x00);
+            SpiDriver<SPI3_BASE>::Transfer(0x00);
+            SpiDriver<SPI3_BASE>::Transfer(0x95);
+            do {
+                r1 = SpiDriver<SPI3_BASE>::Transfer(0xFF);
+                sdtest.timeout++;
+            } while (((r1 == 0xFF)) && (sdtest.timeout < 255));
+        }
         tests_done();
 
         for (volatile uint32_t i = 0; i < 10000; i++);

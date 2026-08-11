@@ -419,7 +419,7 @@ uint8_t SD_InitSPI()
     uint8_t acmd41_resp = 0xFF;
 
     //Without sending some of those it does not properly initialise
-    for(int i = 0; i < 1000; ++i)
+    for(int i = 0; i < 10; ++i)
     {
         SpiDriver<Config::SpiBase>::Transfer(0xFF);
     }
