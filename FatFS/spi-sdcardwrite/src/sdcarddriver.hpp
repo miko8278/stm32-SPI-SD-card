@@ -32,15 +32,9 @@ template<typename Config>
 uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf, uint8_t extra_bytes)
 {
 
-    //This gets automatically destructed when leaving the function at any point
-    //ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
-
 
     uint8_t r1;
     uint16_t timeout = 0;
-
-    //chip select
-    //SD_CS_SELECT();
 
     // send cmd
     SpiDriver<Config::SpiBase>::Transfer(cmd | 0x40);
@@ -51,7 +45,7 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
     SpiDriver<Config::SpiBase>::Transfer((uint8_t)(arg >> 8));
     SpiDriver<Config::SpiBase>::Transfer((uint8_t)arg);
     
-    // 1 byte CRC (SPI-Mode ignores it, but still needed even then)
+    // 1 byte CRC (SPI-Mode ignores it, but still needed even then... Needed for CMD0 and CMD8 though!)
     SpiDriver<Config::SpiBase>::Transfer(crc);
 
     // wait for first answer byte
@@ -71,11 +65,6 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf
             }
         }
     }
-
-    //SD_CS_DESELECT();
-
-    //Maybe a filler Byte is needed later
-    //SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
     return r1; //always return r1, even when there is more
 }
@@ -427,7 +416,7 @@ uint8_t SD_InitSPI()
     ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
     // CMD0
     //cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
-    //Give it some tries, does not work the first time, because card is busy...
+    //Give it some tries, might not work the first time, because card is busy...
     for (int i = 0; i < 20; ++i)
     {
         cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);

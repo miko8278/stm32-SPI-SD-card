@@ -1,0 +1,22 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename}\PYG{+w}{ }\PYG{n+nc}{Config}\PYG{o}{\PYGZgt{}}
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}SendCmd}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{cmd}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{uint32\PYGZus{}t}\PYG{+w}{ }\PYG{n}{arg}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{crc}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{response\PYGZus{}buf}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{extra\PYGZus{}bytes}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{r1}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k+kt}{uint16\PYGZus{}t}\PYG{+w}{ }\PYG{n}{timeout}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{c+c1}{// send cmd}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{n}{cmd}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{l+m+mh}{0x40}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{c+c1}{// 4 byte argument}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{p}{)}\PYG{p}{(}\PYG{n}{arg}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{24}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{p}{)}\PYG{p}{(}\PYG{n}{arg}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{16}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{p}{)}\PYG{p}{(}\PYG{n}{arg}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{p}{)}\PYG{n}{arg}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{c+c1}{// 1 byte CRC (SPI\PYGZhy{}Mode ignores it, but still needed even then... Needed for CMD0 and CMD8 though!)}
+\PYG{+w}{    }\PYG{n}{SpiDriver}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{SpiBase}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Transfer}\PYG{p}{(}\PYG{n}{crc}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

@@ -25,6 +25,13 @@ enum class Pull
     Down
 };
 
+enum class Level
+{
+    Low,
+    High,
+};
+
+
 template<uintptr_t PortBase, uint32_t Pin>
 struct GpioPin
 {
@@ -34,7 +41,7 @@ private:
 
 public:
     //Configure Pin in Outputmode and set it LOW by default
-    static void OutputLowInit()
+    static void OutputInit(Level level = Level::Low)
     {
         // Output mode
         GPIOx->MODER &= ~(0b11u << (Pin * 2));
@@ -49,14 +56,7 @@ public:
 
         // No pull-up/down
         GPIOx->PUPDR &= ~(0b11u << (Pin * 2));
-    }
-
-    //Configure Pin in Outputmode and set it HIGH by default
-    static void OutputHighInit()
-    {
-        OutputLowInit();
-        // Default HIGH (CS inactive in SDcard context)
-        GPIOx->BSRR = (1u << Pin);
+        if(level == Level::High) GPIOx->BSRR = (1u << Pin);
     }
 
     static void setHigh()

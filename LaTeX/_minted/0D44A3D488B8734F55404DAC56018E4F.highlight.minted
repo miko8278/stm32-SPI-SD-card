@@ -1,0 +1,27 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename}\PYG{+w}{ }\PYG{n+nc}{Config}\PYG{o}{\PYGZgt{}}
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}InitSPI}\PYG{p}{(}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{ChipSelect}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{PortBase}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Config}\PYG{o}{:}\PYG{o}{:}\PYG{n}{Pin}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{chipselect\PYGZus{}tmp}\PYG{p}{;}
+\PYG{+w}{    }\PYG{c+c1}{// CMD0}
+\PYG{+w}{    }\PYG{c+c1}{//Give it some tries, does not work the first time, because card is busy...}
+\PYG{+w}{    }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{20}\PYG{p}{;}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{+}\PYG{n}{i}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n}{cmd0\PYGZus{}resp}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}SendCmd}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0x95}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cmd0\PYGZus{}resp}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mh}{0x01}\PYG{p}{)}
+\PYG{+w}{            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cmd0\PYGZus{}resp}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mh}{0x01}\PYG{p}{)}
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}INIT\PYGZus{}ERROR\PYGZus{}CMD0}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{c+c1}{// CMD8}
+\PYG{+w}{    }\PYG{n}{SD\PYGZus{}SendCmd}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{l+m+mi}{8}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0x000001AA}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0x87}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cmd8\PYGZus{}resp}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cmd8\PYGZus{}resp}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mh}{0x01}\PYG{+w}{ }\PYG{o}{|}\PYG{o}{|}\PYG{+w}{ }\PYG{n}{cmd8\PYGZus{}resp}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mh}{0xAA}\PYG{p}{)}
+\PYG{+w}{        }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}INIT\PYGZus{}ERROR\PYGZus{}CMD8}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

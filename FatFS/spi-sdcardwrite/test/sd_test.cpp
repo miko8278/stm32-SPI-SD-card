@@ -114,7 +114,7 @@ void test_sd(){
     using SPI_X = SpiDriver<Config::SpiBase>;
 
     //Configure the CS-Pins as Output
-    GpioPin<Config::PortBase, Config::Pin>::OutputHighInit();
+    GpioPin<Config::PortBase, Config::Pin>::OutputInit(Level::High);
 
     //Configure the CD-Pin as Input, we need Pullup
     GpioPin<Config::PortBase, Config::CD_Pin>::InputInit(Pull::Up);
@@ -226,7 +226,7 @@ int main()
         test_sd<SD3_Config>();
 
         //manual spi3 test...
-        // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputHighInit();
+        // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputInit(Level::High);
         // SpiDriver<SPI1_BASE>::Init();
         // SpiDriver<SPI1_BASE>::Transfer(0xAA);
         // SpiDriver<SPI1_BASE>::Transfer(0x55);
@@ -236,7 +236,7 @@ int main()
         // SpiDriver<SPI1_BASE>::Transfer(0x55);
         //initres1 = SD_InitSPI<SD1_Config>();
 
-        // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputHighInit();
+        // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
         // SpiDriver<SPI3_BASE>::Init();
         // SpiDriver<SPI3_BASE>::Transfer(0xAA);
         // SpiDriver<SPI3_BASE>::Transfer(0x55);
@@ -247,7 +247,7 @@ int main()
         //initres2 = SD_InitSPI<SD3_Config>();
         // {
         //     int timeout = 0;
-        //     GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputHighInit();
+        //     GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
         //     SpiDriver<SPI3_BASE>::Init();
         //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
         //     SpiDriver<SPI3_BASE>::Transfer(0xFF);

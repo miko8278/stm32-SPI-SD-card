@@ -60,7 +60,7 @@
 \newcommand*{\tab}[1]{\textit{Tabelle~\ref{#1}}}
 \newcommand*{\fig}[1]{\textit{Abbildung~\ref{#1}}}
 \newcommand*{\Fig}[1]{\textit{Abbildungen~\ref{#1}}}
-\newcommand*{\coderef}[1]{\textit{Source Code~\ref{#1}}}
+\newcommand*{\coderef}[1]{\textit{Quellcode~\ref{#1}}}
 %\newcommand*{\code}{\textit{Source Code}}
 
 \newcommand{\uaus}{$U\!\_\!aus\!\_\!GND$ }
@@ -139,7 +139,11 @@
 }
 
 
+
 \newcommand*{\ABB}{{\Large \textbf{ABBILDUNGFILLER }}}
+
+
+
 
 \begin{document}
 %
@@ -171,12 +175,12 @@
     
     {\large Fachbereich VII: Elektrotechnik - Mechatronik - Optometrie} \\
     
-    \vspace{3.0cm}
+    \vspace{2.5cm}
     
 
     {\Huge Bachelorarbeit}
     
-    \vspace{0.7cm}
+    \vspace{0.6cm}
     
     %------------------------------------------------
     % Titel
@@ -184,11 +188,11 @@
     
     {\Huge\bfseries
     Vergleich verschiedener Dateisysteme\\
-    für den SD-Karten-Einsatz\\[0.3em]
+    für den SD-Karten-Einsatz\\
     in eingebetteten Systemen
     }
     
-    \vspace{2.5cm}
+    \vspace{2.0cm}
     
     %------------------------------------------------
     % Informationen
@@ -446,6 +450,34 @@ Die Kupferdicke liegt bei den "ublichen $35\um$. \\
 Alle weiteren M"oglichkeiten sind Spezialoptionen f"ur Sonderanwendungen wie beispielsweise galvanisierte Kanten und sind f"ur diese Platine
 nicht relevant.
 
+\subsubsection{Best"uckung}
+Die Best"uckung der Platine von Hand hat sich wie erwartet als gro"se Herausforderung dargestellt.
+Vor allem das LQFP48 Geh"ause und der USB-C-Stecker konnten erst mit neu bestelltem NC-559 Flussmittel
+richtig gel"otet werden. Stannol Flux X32-10i hingegen hat zu sehr vielen Br"ucken zwischen den Pins 
+gef"uhrt. Weiterhin ist die Wahl der richtigen L"otspitze f"ur die Drag-Soldering-Technik entscheidend.
+Entgegen der Intuition hat sich eine gr"o"sere L"otspitze als besser herausgestellt, weil diese die
+Hitze, besonders in Kombination mit dem dickfl"ussigen Flussmittel, "uber eine gr"o"sere Fl"ache gleichm"a"siger 
+verteilt.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Hard_Bilder/LQFP48_bruecke.jpg}
+    \caption{L"otbr"ucke bei einem der LQFP48-Pins des STM32G431}
+    \label{fig:loetproblem}
+\end{figure}
+
+\fig{fig:loetproblem} zeigt eine Mikroskopaufnahme einer ungewollten Br"ucke zwischen
+zwei Pins, die durch das Benutzen von Entl"otlitze entstanden ist.
+Ohne ein Mikroskop ist dieses Dr"ahtchen mit blo"sem Auge nicht zu sehen.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Hard_Bilder/Platine_bestueckt.jpg}
+    \caption{Platine in fast vollst"andiger Best"uckung}
+    \label{fig:platbest}
+\end{figure}
+\fig{fig:platbest} zeigt eine der fertig gel"oteten Platinen.
+
 
 \subsubsection{Inbetriebnahme und Probleme}
 Neben dem bereits erw"ahnten Problem der falsch beschalteten Pull-Up Widerst"ande wurden ebenfalls
@@ -458,17 +490,17 @@ hat sich insbesondere der SD-Kartenslot, der an der SPI3-Peripherie angeschlosse
 besonders unzuverl"assig herausgestellt. Dieser Fehler ist f"ur den SPI3 SD-Kartenslot fatal und l"asst sich ohne
 ein neues Design kaum beheben.\\
 
-/fig{fig:misodip} zeigt den Kanal MISO, also die Antwort der SD-Karte auf eine Initialisierungsanfrage.
+\fig{fig:misodip} zeigt den Kanal MISO, also die Antwort der SD-Karte auf eine Initialisierungsanfrage.
 Die erwartete Antwort w"are 0xFF, also ein Signal, das durchgehend 3,3 V ist. Tats"achlich l"asst
 sich aber ein kleine Kondensatorentladungskurve messen. Diese Entladungskurve war noch gr"o"ser,
-als noch keine zus"atzlichen Kondensatoren provisorisch in der N"ahe der SD-Kartenadapterversorung und Masse gel"otet wurden.
-Aber auch diese zus"atzlichen Kondensatoren befinden sich zu weit weg vom Pin, um dein Einbruch g"anzlich zu verhindern.
+als noch keine zus"atzlichen 2,2 uF Kondensatoren provisorisch in der N"ahe der SD-Kartenadapterversorung gel"otet wurden.
+Aber auch diese zus"atzlichen, provisorischen Kondensatoren sind nicht in der Lage den Einbruch g"anzlich wegzupuffern.
 Tats"achlich h"angt der Spike auch vom verwendeten Netzteil ab, auch wenn sich an der Spannungsversorgung
 des Netzteils, sowie am TI Linearregler kein nennenswerter Einbruch messen l"asst.
-Ohne einen 10 uF Kondensator nah am SD-Kartenslot ist dieser leider nicht benutzbar.
+Ohne einen 10 uF Kondensator ist der mit der SPI3 verbundene SD-Kartenslot daher leider nicht stabil benutzbar.\\
 
 Die Peripherie an SPI1 hingegen macht weniger Probleme, da sie sich physisch n"aher an der Spannungsversorgung
-befindet.
+befindet und die Regelschleife des Linearreglers hier schnell genug die Versorgung nachregeln kann.
 
 \begin{figure}[H]
     \centering
@@ -478,7 +510,7 @@ befindet.
 \end{figure}
 
 
-Ein schwer aufzufindbarer Fehle, aber leicht l"osbarer Fehler, hing mit der Teilbest"uckung der Platine zusammen. F"ur
+Ein schwer aufzufindbarer, leicht l"osbarer Fehler hing mit der Teilbest"uckung der Platine zusammen. F"ur
 erste Tests wurde die Platine nicht vollst"andig mit allem best"uckt. So wurde der Widerstand R3
 zun"achst vergessen zu l"oten. \fig{fig:schalt_main} macht deutlich, dass dies allerdings ein Pull-Down Widerstand 
 f"ur den Boot-Pin PB8 ist.
@@ -541,7 +573,7 @@ da sich einzelne Str"ange des Litzenkabels gel"ost haben und zu Kurzschl"ussen g
 \subsection{Embedded C++20}
 F"ur die Entwicklung des SPI- und SD-Karten-Treibers wurde bewusst auf modernes C++20 zur"uckgegriffen.
 Die Sprache erlaubt Hardware-Abstraktionen mit Templates und Berechnungen zur Compilezeit mit \cpp{constexpr} 
-vollkommen ohne Laufzeitoverhead, sogenannte ''zero-cost abstractions''.
+vollkommen ohne Laufzeitoverhead, sogenannte Zero-Cost-Abstractions.
 Moderne Sprachfeatures wie \cpp{enum class} und \cpp{namespace} bieten Typensicherheit und erh"ohen die Lesbarkeit.
 Bedingte Kompilierung mit \cpp{if constexpr} w"ahlt nur relevante Zweige zur Compilezeit aus und kompiliert den Rest erst gar nicht.
 Gleichzeitig besteht Abw"artskompatiblit"at zu C-Code, sodass beispielsweise die in C89 geschriebene
@@ -551,6 +583,57 @@ FatFS-Bibliothek problemlos implementiert werden kann.
 % [build]       |                              ~            ^
 % [build] /home/alle/Universitaet/BA-stm/FatFS/spi-sdcardwrite/src/sdcarddriver.hpp:556:13: note: in expansion of macro 'CRC'
 % [build]   556 |     uint8_t CRC : 7;                  // [7:1]
+
+\subsection{GPIO HAL}
+Um nicht st"andig direkte und dadurch schwer lesbare Registerzugriffe
+ innerhalb der Treiber vornehmen zu müssen, wurde eine kleine Zero-Cost-Abstraction
+für die Konfiguration und Ansteuerung der GPIOs implementiert.
+Die in ''GPIO\_HAL.hpp'' verwendete Template-Klasse \cpp{GpioPin} erh"alt die Basisadresse des verwendeten GPIO-Ports sowie die Pinnummer als Compile-Time-Parameter. 
+Dadurch k"onnen konkrete GPIO-Pins typsicher beschrieben
+und über eine einheitliche Schnittstelle konfiguriert werden.
+Die Klasse stellt unter anderem Funktionen zur Konfiguration als Ein- oder Ausgang, 
+zur Auswahl von Pull-Up- bzw. Pull-Down-Widerständen sowie zur Konfiguration von Alternate Functions bereit.
+Da Port und Pin bereits zur Compile-Zeit feststehen und die bereitgestellten Funktionen als \cpp{static} implementiert sind,
+ist zur Laufzeit keine Objektinstanz erforderlich. 
+Bei entsprechender Compileroptimierung können die Methoden daher auf die für den jeweiligen Pin notwendigen direkten Registerzugriffe reduziert werden. 
+Die Abstraktion dient somit prim"ar der Lesbarkeit und Wartbarkeit des Quellcodes, ohne einen relevanten Laufzeit- oder Speicher-Overhead einzuführen.
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    static void AF(uint8_t af)
+    {
+        // Alternate function mode
+        GPIOx->MODER &= ~(0b11 << (Pin * 2));
+        GPIOx->MODER |=  (0b10 << (Pin * 2));
+
+        // AFRL or AFRH
+        if constexpr (Pin < 8)
+        {   
+            
+            GPIOx->AFR[0] &= ~(0xF << (Pin * 4));
+            GPIOx->AFR[0] |=  (static_cast<uint32_t>(af) << (Pin * 4));
+        }
+        else
+        {
+            constexpr uint32_t shift = (Pin - 8) * 4;
+            GPIOx->AFR[1] &= ~(0xF << shift);
+            GPIOx->AFR[1] |=  (static_cast<uint32_t>(af) << shift);
+        }
+    }
+    \end{minted}
+\caption{if constexpr bei der Alternate Function Implementation}
+\label{listing:AF}
+\end{listing}
+
+\coderef{listing:AF} zeigt beispielhaft den Code f"ur die Implementierung der Alternate Function.
+Hier gestaltet sich \cpp{if constexpr} vorteilhaft, da die Pinnummer Pin bereits zur Compile-Zeit als Template-Parameter bekannt ist. 
+Dadurch wird nur der tatsächlich benötigte Zweig für AFR[0] oder AFR[1] kompiliert, während der andere Zweig vollständig entfällt.
 
 \subsection{SPI}
 
@@ -602,19 +685,30 @@ Die neue Belegung f"ur SPI1, mit der die Platine arbeitet, findet sich in \tab{t
         \end{tabular}
     \end{table}
 
+    \fig{fig:sd_num} zeigt die Nummerierungsweise bei den beiden Gr"o"sen von SD-Karten. 
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[height=6cm]{BilderExt/microchip_sdcards.jpg}
+        \caption{Pinnummerierung SD-Karten\cite{microchip_sd}}
+        \label{fig:sd_num}
+    \end{figure}
+
 
 \subsubsection{SPI-Peripherie des STM32G431}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{SPI-Treiber-Bilder/st-blockdiagram.png}
+    \includegraphics[width=0.7\linewidth]{BilderExt/st-blockdiagram.png}
     \caption{Blockdiagramm f"ur die SPI-Peripherie des STMG431\cite{st3}}
     \label{fig:stblock}
 \end{figure}
 \fig{fig:stblock} zeigt das Blockdiagramm f"ur die SPI-Peripherie der STMG4-Serie.
 Der relevanteste Teil ist das Shiftregister. Das oberste Bit des Shift-Registers wird auf MOSI ausgegeben.
-Gleichzeitig wird das Bit auf MISO eingelesen. Es liegt immer eine Full-Duplex "Ubertragung vor.
-M"ochte man ein Byte empfangen, so muss immer auch eines gesendet werden. Aus dem Rx-FIFO k"onnen Daten gelesen werden,
-sobald das RXP-Flag gesetzt ist. Dieses Flag wird gesetzt, wenn so viele Bits wie im Feld ''Data size'' des \texttt{SPIx\_CR2} Registers
+Gleichzeitig wird das Bit auf MISO eingelesen. Es liegt in der verwendeten Konfiguration immer eine Full-Duplex "Ubertragung vor.
+Um Daten über MISO zu empfangen, muss der Master eine Übertragung initiieren und entsprechend Taktzyklen erzeugen. 
+Dabei werden gleichzeitig Daten über MOSI übertragen.
+Aus dem Rx-FIFO k"onnen Daten gelesen werden,
+sobald das RXP-Flag gesetzt ist. Dieses Flag wird gesetzt, wenn so viele Bits wie im Feld ''Data size'' des \texttt{SPIx\_CR2} Registers spezifiziert
 mit Daten gef"ullt wurden. \\
 Der Baudratencontroller ist f"ur die SCLK und somit f"ur die "Ubertragungsgeschwindigkeit zust"andig.
 Er nutzt den APB-Bus-Takt und teilt ihn, falls im BR-Register konfiguriert, durch einen Prescaler. \\
@@ -648,6 +742,8 @@ public:
 \caption{Chip select als Klasse}
 \label{listing:chipselect}
 \end{listing}
+
+
 Der Quellcode \ref{listing:chipselect} zeigt die St"arke von C++ im Gegensatz zu C in diesem Kontext.
 Der NSS-Pin muss am Anfang der meisten SD-Funktionen wie \cpp{SD_ReadBlock(...)}
 oder \cpp{SD_SendCmd(...)} auf Low konfiguriert werden und beim Verlassen der Funktion wieder auf High.
@@ -660,24 +756,146 @@ Cast ist \cpp{static inline const},
 sodass ein guter C++-Compiler die gesamte Klasse vollständig auf zwei direkte Registerzugriffe reduzieren kann.
 
 
-
+\subsubsection{SPI Treiber}
+''spidriver.hpp'' kapselt die hardwarenahe Konfiguration und Kommunikation über die SPI-Peripherie des STM32G431.
+Die Initialisierung konfiguriert den jeweiligen SPI-Controller als Master mit softwaregesteuertem NSS
+und einer Datenbreite von acht Bit. Die Methode \cpp{static uint8_t Transfer(uint8_t data)} kapselt schließlich das Senden und Empfangen eines Bytes 
+und übernimmt dabei die notwendige Synchronisation mit den Statusflags der SPI-Peripherie.
+Zus"atzlich kann der verwendete Baudratenteiler über die Methode \cpp{static void SetHighSpeed(SpiDiv div)} verwendet werden,
+um zwischen einer Initialisierung mit niedriger und einer sp"ateren Kommunikation mit höherer "Ubertragungsgeschwindigkeit zu wechseln.
 
 \subsection{Initialisierung der SD-Karte in den SPI-Modus}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=12cm]{BilderExt/sd_spec_SPIINIT.png}
+    \caption{Initialisierung der SD-Karte in den SPI-Modus\cite{sd_spec}}
+    \label{fig:sd_spiinit}
+\end{figure}
+
+\fig{fig:sd_spiinit} zeigt den vollst"andigen Initialisierungsprozess als Flussdiagramm aus der SD-Spezifikation.
+Die Initialiserung und Treiberfunktionen finden sich in der Datei \texttt{sdcarddriver.hpp}. Die Initialisierung
+ist etwas verk"urzt, wie auf der Abbildung zu sehen ist CMD58 nur notwendig, wenn Interesse an den unterst"utzten Spannungsbereichen
+der SD-Karte besteht. 3,3 V Betriebsspannung ist aber f"ur praktisch jede auf dem Markt gebr"auchliche SD-Karte zul"assig.
+Zumal die Spezifikation den Nutzer hier vor ein klares Henne-Ei-Problem stellt. Ohne eine geeignete Spannungsversorgung l"asst sich 
+der unterst"utzte Spannungsversorgungsbereich der Karte nicht auslesen.\\
+Weiterhin unterschl"agt die Abbildung die Tatsache, dass f"ur die Benutzung von ACMD41 zun"achst einmal CMD55 gesendet
+werden muss. Diese Tatsache muss aus einem anderen Teil der Dokumentation entnommen werden. 
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    template<typename Config>
+    uint8_t SD_InitSPI()
+    {
+    (...)
+    ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
+    // CMD0
+    //Give it some tries, does not work the first time, because card is busy...
+    for (int i = 0; i < 20; ++i)
+    {
+        cmd0_resp = SD_SendCmd<Config>(0, 0, 0x95, nullptr, 0);
+
+        if (cmd0_resp == 0x01)
+            break;
+    }
+
+    if (cmd0_resp != 0x01)
+    return SD_INIT_ERROR_CMD0;
+
+    // CMD8
+    SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
+
+    if (cmd8_resp[0] != 0x01 || cmd8_resp[4] != 0xAA)
+        return SD_INIT_ERROR_CMD8;
+    (...)
+    }
+    \end{minted}
+    \caption{Auszug aus der Funktion SD\_InitSPI()}
+    \label{listing:sdcardinit}
+\end{listing}
+
+\coderef{listing:sdcardinit} zeigt einen Auszug aus der Initialisierungsfunktion,
+\coderef{listing:sdcardsendcmd} beschreibt die verwendete \cpp{SD_SendCmd} Funktion.
+\cpp{SD_SendCmd} nutzt den zugrundeliegenden SPI-Treiber, um auf der im Templateparameter Config
+spezifizierten Peripherie die korrekten Daten "uber
+die bereits implementierte \cpp{Transfer(uint8_t Data)} Funktion zu senden.
+Die Daten f"ur die Peripherien k"onnen in der Datei \texttt{init\_conf.hpp} konfiguriert werden.
+F"ur die vorliegende Arbeit und Platine sind diese nat"urlich fix, allerdings l"asst der 
+STM32G431 einiges an Spielraum zu was variable Peripheriekonfiguration angeht.\\
+Wichtig ist hierbei, dass bei CMD0 und CMD8 zun"acht korrekte CRC-Werte f"ur ihre Befehle
+ben"otigen. Das SD-Protokoll spezifiziert hier f"ur den SPI-Modus etwas anderes als
+f"ur den SD-Modus: Im normalen SD-Modus wird bei grunds"atzlich jedem CMD die Pr"ufsumme
+gepr"uft und muss daher mitgesendet werden. Im SPI-Modus ist diese Pr"ufsummenberechnung
+grunds"atzlich deaktiviert und kann optional mit CMD59 aktiviert werden. Dies gilt
+aber nicht f"ur CMD0 und CMD8, diese Befehle brauchen immer einen korrekten CRC7-Wert.
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    template<typename Config>
+    uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *response_buf, uint8_t extra_bytes)
+    {
+
+    uint8_t r1;
+    uint16_t timeout = 0;
+
+    // send cmd
+    SpiDriver<Config::SpiBase>::Transfer(cmd | 0x40);
+    
+    // 4 byte argument
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(arg >> 24));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(arg >> 16));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)(arg >> 8));
+    SpiDriver<Config::SpiBase>::Transfer((uint8_t)arg);
+    
+    // 1 byte CRC (SPI-Mode ignores it, but still needed even then... Needed for CMD0 and CMD8 though!)
+    SpiDriver<Config::SpiBase>::Transfer(crc);
+    (...)
+    }
+    \end{minted}
+\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
+\label{listing:sdcardsendcmd}
+\end{listing}
 
 %Das ist f"ur die Funktion des Treibers wichtig, da dieser in der Initialisierungsphase
 
 \subsection{Lese- und Schreiboperationen}
 %Sektor => physisch hardware kleinste Einheit
 %Block => logisch Software kleinste Einheit
-
+\subsubsection{Begriffskl"arung Sektor, Block, Cluster, Page}
 Ein Sektor bezeichnet die kleinste physikalisch adressierbare Speichereinheit eines Datenträgers.
 Ein Block bezeichnet dagegen die kleinste logische Speichereinheit, 
-die von einem Betriebssystem oder Dateisystem adressiert wird.
+die von einem Betriebssystem oder Dateisystem adressiert wird. Ein Block kann also gr"o"ser
+sein als ein Sektor, aber nicht anders rum.\\
+Ein Cluster ist genau dasselbe wie ein Block, taucht aber im Zusammenhang mit dem
+FAT-Dateisystem auf, wohingegen der Block in der Unixwelt gel"aufiger ist.\\
 Im Zusammenhang von Flashspeicher wird die Page als kleinste programmierbare Einheit beschrieben,
 wohingegen der Erase Block die kleinste löschbare Einheit beschreibt.
 Leider werden in Spezifikationen und Literatur die Begrifflichkeiten nicht eindeutig verwendet.
 So spricht man im Zusammenhang von SD-Karten meist von Bl"ocken, die beschrieben werden,
-obwohl der Begriff des Sektors hier manchmal synonym verwendet wird.
+obwohl der Begriff des Sektors hier manchmal synonym verwendet wird. 
+Hier wird im Folgenden von Bl"ocken die Rede sein, womit aber die kleinste vor 
+der SD-Karte adressierbare Einheit gemeint ist. \\
+
+\subsubsection{Bl"ocke lesen/schreiben}
+Die essenzielle Funktionalit"at der SD-Karte ist das Lesen und Schreiben von Bl"ocken.
+F"ur die kommenden Dateisysteme ist die SD-Karte als Blockspeicher
+abstrahiert worden. \\
+Alle folgenden Funktionen finden sich in der Datei ''sdcarddriver.hpp''.
+\cpp{uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)} 
+
 
 \section{Dateisysteme}
 \subsection{Einleitung}
@@ -806,7 +1024,7 @@ Die Dateigr"o"se bei FAT32-Systemen ist durch ein 32 Bit-Adressierungsfeld limit
 die charakteristischen 4 GB Dateigr"o"se ergeben, die f"ur heutige Zwecke manchmal nicht ausreichend sind\cite{MSLearnFS}\cite{FAT32}.
 Zu diesem Zweck wurde mit exFAT als moderne FAT-Variante 2006 eingef"uhrt.
 
-\subsection{FatFS}
+\subsection{FatFs}
 \subsubsection{Einleitung}
 FatFs ist ein plattformunabhängiges, quelloffenes Software-Modul zur Implementierung von FAT/exFAT-Dateisystemen in ressourcenbeschränkten, eingebetteten Systemen. 
 Es wurde von dem Entwickler ChaN\cite{fatfs} entworfen und zeichnet sich durch einen extrem geringen Speicherbedarf sowohl im Programm- als auch im Arbeitsspeicher aus.
@@ -818,6 +1036,24 @@ Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zu
 während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Dateisystem entkoppelt. 
 
 \subsubsection{Implementierung}
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Diagramme/FatFSstack.png}
+    \caption{Implementierungsstack f"ur das FatFS-Dateisystem}
+    \label{fig:fatfsimplement}
+\end{figure}
+%  zeigt den gesamten Implementierungsstack f"ur FatFS und somit FAT-Dateisysteme
+% auf einem STM32G431. Alles, was sich in der Abbildung unter FatFS befindet muss auf die ein oder andere
+% weise bereitgestellt und/oder implementiert werden. Dabei implementiert die Datei diskio.cpp (in den allermeisten
+% F"allen ist es diskio.c) die n"otigen Funktionen, damit FatFS den Blockspeicher bedienen kann.
+\fig{fig:fatfsimplement} zeigt den vollständigen Implementierungsstack für die Verwendung 
+von FatFs und damit für den Zugriff auf ein FAT-Dateisystem auf dem STM32G431. 
+Alle in der Abbildung unterhalb von FatFs dargestellten Schichten m"ussen implementiert bzw. bereitgestellt werden. 
+Die Datei \texttt{diskio.cpp} (in den meisten Implementierungen \texttt{diskio.c})
+stellt dabei die von FatFs ben"otigte Schnittstelle zum darunterliegenden Blockgerät, hier SD-Karte, bereit.
+Sie übersetzt die von FatFs angeforderten Lese-, Schreib- und Statusoperationen in die entsprechenden Funktionen
+des verwendeten Treibers.
+
 \begin{listing}[H]
         \begin{minted}[
             frame=lines,      % Rahmenlinien oben und unten
@@ -897,90 +1133,9 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 \section{LittleFS}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
-
-\renewcommand{\refname}{Quellenverzeichnis} %Umbenennen, sonst "Literatur", zu faul fuer bibtex
-\begin{thebibliography}{9}
-\addcontentsline{toc}{section}{Quellenverzeichnis}
-
-\bibitem{tanenbaum2015}
-Tanenbaum, A. S. \& Bos, H. (2015). 
-\textit{Modern Operating Systems} (4. Aufl.). 
-Vrije Universiteit Amsterdam, The Netherlands: Prentice Hall.
-
-\bibitem{st1} STMicroelectronics. (2026). 
-\textit{STM32G431RB Mainstream Arm Cortex-M4 MCU Product Page}. 
-Offizielle Produkt Information. 
-Abgerufen von \url{https://www.st.com/en/microcontrollers-microprocessors/stm32g431rb.html} 
-(Besucht am 26. Juli 2026).
-
-\bibitem{st2} STMicroelectronics. (2021). 
-\textit{STM32G431x6 STM32G431x8 STM32G431xB Datasheet (DS12589 Rev 6)}. 
-Offizielle Spezifikation. 
-Abgerufen von \url{https://www.st.com/resource/en/datasheet/stm32g431rb.pdf} 
-(Besucht am 26. Juli 2026).
-
-\bibitem{st3} STMicroelectronics. (2025). 
-\textit{RM0440 Reference manual: STM32G4 series advanced Arm-based 32-bit MCUs (Rev 9)}. 
-Offizielle Spezifikation. 
-Abgerufen von \url{https://www.st.com/resource/en/reference_manual/rm0440-stm32g4-series-advanced-armbased-32bit-mcus-stmicroelectronics.pdf} 
-(Besucht am 26. Juli 2026).
-
-\bibitem{spi1}
-Ababei, C. (2013). 
-\textit{Lecture 12: SPI and SD cards}. 
-Vorlesungsskript, EE-379 Embedded Systems and Applications, University at Buffalo. 
-Abgerufen von \url{https://www.dejazzer.com/ee379/lecture_notes/lec12_sd_card.pdf} 
-(Besucht am 6. Juli 2026).
-
-\bibitem{sd_spec}
-SD Group
-Matsushita Electric Industrial Co., Ltd. (Panasonic)  (2006). 
-\textit{SD Specifications Part 1: Physical Layer Simplified Specification, Version 2.00}. 
-Technische Spezifikation, SD Card Association. 
-Abgerufen von \url{https://users.ece.utexas.edu/~valvano/EE345M/SD_Physical_Layer_Spec.pdf} 
-(Besucht am 8. Juli 2026).
-
-\bibitem{fatfs} ChaN (2024).  
-\textit{FatFs - Generic FAT Filesystem Module}.
-Software-Dokumentation, Electronic Lives Manufacturing.
-Abgerufen von \url{https://elm-chan.org/fsw/ff/}  
-(Besucht am 23. Juli 2026).
-
-\bibitem{FAT32} ChaN (2020).  
-\textit{FAT Filesystem}.
-Software-Dokumentation, Electronic Lives Manufacturing.
-Abgerufen von \url{https://elm-chan.org/docs/fat_e.html}  
-(Besucht am 24. Juli 2026).
-
-\bibitem{MSLearnFS} Microsoft (2023).  
-\textit{File System Functionality Comparison}.Software-Dokumentation, Microsoft Learn.
-Abgerufen von \url{https://learn.microsoft.com/en-us/windows/win32/fileio/filesystem-functionality-comparison}
-(Besucht am 24. Juli 2026).
-
-
-\bibitem{microchip1} Microchip Technology Inc. (2024). 
-\textit{How to interface a microSD media with Microchip SD/MMC Card Readers}. 
-Support Knowledge Base. Abgerufen von 
-\url{https://support.microchip.com/s/article/How-to-interface-a-microSD-media-with-Microchip-SD-MMC-Card-Readers} 
-(Besucht am 8. Juli 2026).
-
-\bibitem{gpt} UEFI Forum. (2024). 
-\textit{UEFI Specification Version 2.11 (Chapter 5: GUID Partition Table Format)}. 
-Official Specification. 
-Abgerufen von \url{https://uefi.org/specs/UEFI/2.11/05_GUID_Partition_Table_Format.html} 
-(Besucht am 24. Juli 2026).
-
-
-
-\bibitem{coro1}
-Michael Eiler, \textit{C++20: Building a Thread-Pool With Coroutines} \\
-\url{https://blog.eiler.eu/posts/20210512/}
-
-
-\end{thebibliography}
-
-
+\input{Quellenverzeichnis.tex}
 
 
 \end{document}

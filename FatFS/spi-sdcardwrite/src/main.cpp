@@ -50,10 +50,10 @@ int main()
     GPIO_Init();
 
     //Configure the CS-Pins as Output
-    GpioPin<GPIOA_BASE, SD1_Config::Pin>::OutputHighInit();
+    GpioPin<GPIOA_BASE, SD1_Config::Pin>::OutputInit(Level::High);
 
     //Configure as indicatorpin
-    GpioPin<GPIOA_BASE, 4>::OutputLowInit();
+    GpioPin<GPIOA_BASE, 4>::OutputInit(Level::Low);
 
     //Configure the registers for SPI
     SpiDriver<SPI1_BASE>::Init();

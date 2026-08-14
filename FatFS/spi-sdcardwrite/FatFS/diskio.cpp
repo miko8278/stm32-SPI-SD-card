@@ -20,7 +20,7 @@
 template<typename Config>
 DSTATUS SD_disk_initialize()
 {
-    GpioPin<Config::PortBase, Config::Pin>::OutputHighInit();
+    GpioPin<Config::PortBase, Config::Pin>::OutputInit(Level::High);
     SpiDriver<Config::SpiBase>::Init();
 
     if (SD_InitSPI<Config>() != SD_INIT_OK)
