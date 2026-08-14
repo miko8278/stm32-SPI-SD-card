@@ -9,7 +9,7 @@
 %\usepackage{lmodern}
 %\usepackage{icomma}
 
-
+\usepackage[onehalfspacing]{setspace} 
 
 %Mathematik
 \usepackage{amsfonts,amssymb,amsmath}
@@ -450,14 +450,64 @@ nicht relevant.
 \subsubsection{Inbetriebnahme und Probleme}
 Neben dem bereits erw"ahnten Problem der falsch beschalteten Pull-Up Widerst"ande wurden ebenfalls
 die Pins f"ur die SPI2 und SPI3 Peripherien vertauscht. Dieser Fehler l"asst sich durch eine 
-Umkonfigurierung softwareseitig aber l"osen. 
+Umkonfigurierung softwareseitig aber l"osen.\\
+\\
+Der mit Abstand unintuitivste und am schwierigsten auszumachende Fehler der Platine h"angt 
+allerdings mit der Spannungsversorgung f"ur die SD-Kartenslots zusammen. W"ahrend den Testungen
+hat sich insbesondere der SD-Kartenslot, der an der SPI3-Peripherie angeschlossen ist, als 
+besonders unzuverl"assig herausgestellt. Dieser Fehler ist f"ur den SPI3 SD-Kartenslot fatal und l"asst sich ohne
+ein neues Design kaum beheben.\\
+
+/fig{fig:misodip} zeigt den Kanal MISO, also die Antwort der SD-Karte auf eine Initialisierungsanfrage.
+Die erwartete Antwort w"are 0xFF, also ein Signal, das durchgehend 3,3 V ist. Tats"achlich l"asst
+sich aber ein kleine Kondensatorentladungskurve messen. Diese Entladungskurve war noch gr"o"ser,
+als noch keine zus"atzlichen Kondensatoren provisorisch in der N"ahe der SD-Kartenadapterversorung und Masse gel"otet wurden.
+Aber auch diese zus"atzlichen Kondensatoren befinden sich zu weit weg vom Pin, um dein Einbruch g"anzlich zu verhindern.
+Tats"achlich h"angt der Spike auch vom verwendeten Netzteil ab, auch wenn sich an der Spannungsversorgung
+des Netzteils, sowie am TI Linearregler kein nennenswerter Einbruch messen l"asst.
+Ohne einen 10 uF Kondensator nah am SD-Kartenslot ist dieser leider nicht benutzbar.
+
+Die Peripherie an SPI1 hingegen macht weniger Probleme, da sie sich physisch n"aher an der Spannungsversorgung
+befindet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=9cm]{Hard_Bilder/MISO_dip.png}
+    \caption{MISO: SD-Kartenantwort auf CMD0}
+    \label{fig:misodip}
+\end{figure}
+
+
+Ein schwer aufzufindbarer Fehle, aber leicht l"osbarer Fehler, hing mit der Teilbest"uckung der Platine zusammen. F"ur
+erste Tests wurde die Platine nicht vollst"andig mit allem best"uckt. So wurde der Widerstand R3
+zun"achst vergessen zu l"oten. \fig{fig:schalt_main} macht deutlich, dass dies allerdings ein Pull-Down Widerstand 
+f"ur den Boot-Pin PB8 ist.
+Wenn sich PB8 auf HIGH befindet, so l"adt der STM32 in seinen internen Bootloader, um "uber
+die UART-Schnittstelle programmierbar zu sein. Wenn der Pin allerdings unverbunden keinen
+definierten Pegel erh"alt, so l"adt er mal in den Bootloader und mal nicht, sodass sich die
+Platine in einem schwer diagnostizierbaren Zustand befindet. 
 
 
 \subsection{Fazit}
 
+Alles in allem ist das Design f"ur einen ersten Prototypen sehr gelungen und funktional.
+Der STM32 wird stabil mit Spannung versorgt und l"asst sich "uber ein speziell konfiguriertes Nucleo-Board
+debuggen und programmieren.
+Die SPI1- und mit Einschr"ankungen auch die SPI3-Peripherien lassen sich f"ur die weitere Arbeit verwenden. 
+Eine gro"se Lektion ist, dass schon beim Schaltungsdesign das sp"atere Layout mitbedacht werden muss,
+um vorrausschauene Entscheidungen bez"uglich der Pinwahl treffen zu k"onnen.\\
+SD-Karten scheinen durch ihren internen Aufbau phasenweise sehr kurzfristige Stromspitzen zu verursachen,
+die der verwendete LDO-Regler nicht ausregeln kann, wenn sich das Bauteil zu weit weg befindet. 
+Daher ist es g"unstig diese in der N"ahe der Spannungsversorgung zu platzieren und mit dezidierten Kondensatoren
+auszustatten. \\
+Ein gro"ses "Argernis bei der Fehlersuche, insbesondere im Hinblick auf die SPI-Peripherie, die die Grundlage
+des SD-Kartentreibers bildet, ist eine fehlende Pinleiste f"ur das Debugging. Ohne diese war es nur
+mit gr"o"ster M"uhe und Pr"azision m"oglich einzelne SPI-Pins mit dem Oszilloskop zu messen. Ein Anschluss
+an einen Logikanalyser w"are hingegen gar nicht m"oglich gewesen. \\
+All diese Punkte w"aren in einer zweiten Version der Platine aber leicht nachzubessern. 
+
 \subsection{Testhardware}
 Bestellungen aus China ben"otigen mehrere Wochen Zeit.
-
 
 \MP{b}{0.5}{
     \begin{figure}[H]
@@ -484,6 +534,7 @@ und haben den Zweck die kleine Karte in ein gr"o"seres Format zu "uberf"uhren.
 Wie so oft sind improvisierte L"osungen aber nicht sehr zuverl"assig:
 Schon nach zwei Wochen musste ein neuer Adapter, diesmal mit gecrimpten Aderendh"ulsen, gel"otet werden,
 da sich einzelne Str"ange des Litzenkabels gel"ost haben und zu Kurzschl"ussen gef"uhrt haben.
+
 
 \section{SPI- und SD-Karten-Treiber} \label{sec:spi} 
 
