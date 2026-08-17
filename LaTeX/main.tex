@@ -1100,7 +1100,84 @@ und alle relevanten Datei-Metadaten enthält.
 Danach schließt sich das Wurzelverzeichnis (Root Directory) an, 
 welches die Wurzel der gesamten Dateisystemstruktur bildet. 
 Der verbleibende Speicherplatz des Datenträgers steht schließlich für alle weiteren Verzeichnisse
- und die eigentlichen Dateien zur Verfügung\cite[S. 282]{tanenbaum2015}.
+ und die eigentlichen Dateien zur Verfügung\cite[S. 282]{tanenbaum2015}.\\
+ Im folgenden Abschnitt soll es um eben diesen verbleibenden Speicherplatz und dessen m"ogliche
+ Organisation gehen.
+
+\subsection{Design eines Dateisystems}
+Die Autoren des littlefs-Dateisystems kategorisieren auf ihrer \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{GitHub Seite} 
+Dateisysteme sehr "ubersichtlich in vier Gruppen\cite{littlefs}:
+\subsubsection{Nicht-resiliente, blockbasierte Dateisysteme}
+Bekannte Vertreter sind hier FAT f"ur Microsoftsysteme und ext2 f"ur Linux-Betriebssysteme.
+Diese grundlegenden Systeme führen Aktualisierungen direkt an Ort und Stelle
+und ohne Absicherungsmechanismen durch. Dadurch sind sie bei pl"otzlichen Stromausf"allen 
+sehr anf"allig für Datenkorruption. Im Zusammenhang mit Flashspeicher ist ein weiterer Nachteil,
+dass derselbe Block somit mehrfach beschrieben wird und es zur einer schnellen Abnutzung des Speichers kommt.
+Vorteile sind jedoch, dass diese Dateisysteme meistens 
+sehr schnell und klein sind, sowie einfach in der Implementation.
+\subsubsection{Logging-Dateisysteme}
+Reine Logging-Dateisysteme sind heutzutage selten in Benutzung. 
+Vertreter hiervon hei"sen JFFS, YAFFS, SPIFFS.
+Anstatt Daten direkt zu "uberschreiben, 
+behandeln diese Systeme das Speichermedium als fortlaufendes, 
+anhängendes Protokoll. Hier ist der Speicherort nicht an einen bestimmten
+Speicherblock gebunden.
+Mit einer Pr"ufsumme l"asst sich ein Stromausfall leicht erkennen
+und auf den vorherigen Zustand zur"ucksetzen, indem man fehlgeschlagene Anhänge einfach ignoriert.
+Au"serdem sorgt die zyklische Natur dafür, dass Logging-Dateisysteme den Verschleiß
+perfekt über den Speicher verteilen.
+Dies minimiert die Löschzyklen auf Flash-Speichern 
+und garantiert eine hohe Ausfallsicherheit.
+Nachteile sind die verh"altnism"asig hohen Laufzeitkosten und der hohe RAM-Verbrauch,
+was sie f"ur Embeddedanwendungen eher ungeeignet macht.
+\subsubsection{Journaling-Dateisysteme}
+Bekannte und moderne Vertreter sind hier ext3, ext4 f"ur Linuxbetriebssysteme oder
+NTFS f"ur Windows. Diese Systeme schlagen die Br"ucke zwischen blockbasierten und logging-strukturierten Designs
+und haben gro"se Vorteile, was die Korruption von Daten im Falle eines Stromausfalls angeht.
+Der Prozess findet im Falle von ext4 dabei konzeptionell vereinfacht wie folgt statt:
+Zunächst werden die für die "Anderung wichtigen Informationen in das sogenannte Journal des Dateisystems geschrieben.
+Sobald diese Informationen vollst"andig auf dem Datentr"ager gespeichert wurden, 
+wird die Transaktion durch einen Commit-Eintrag im Journal bestätigt.
+Anschließend werden die Änderungen an ihre endgültige Position im Dateisystem geschrieben.
+Nach erfolgreicher Übertragung wird der Commit-Eintrag nicht mehr benötigt und kann entfernt werden.
+Kommt es während dieses Vorgangs zu einem Systemabsturz,
+kann das Dateisystem beim nächsten Start das Journal auswerten. 
+Transaktionen mit einem gültigen Commit-Eintrag können erneut an ihre endgültige Position geschrieben werden. 
+Dadurch wird verhindert, dass eine Dateisystemänderung nur teilweise übernommen wird.
+Der Prozess ist wie erw"ahnt nur schematisch dargestellt,
+beispielsweise sichert ext4 standardm"a"sig nur seine Metadaten auf diese Weise
+"uber Journals, tr"agt somit aber erheblich zur Konsistenz des Dateisystems bei\cite{kernel1}. \\
+Leider bringen Journaling-Dateisysteme einige Probleme mit sich.
+Sie sind ziemlich umfangreich in der Implementation, da im Grunde zwei Konzepte von Dateisystemen parallel benutzt werden,
+was zu Lasten der Codekomplexit"at geht.
+Zudem bieten sie aufgrund der engen Verbindung zwischen Speicherort und Daten keinen Schutz vor Verschlei"s im
+Zusammenhang mit Flashspeichern. Dennoch sind sie seit Jahrzehnten der absolute Standard auf gew"ohnlichen Desktop-Systemen.
+
+
+\subsubsection{Copy-on-Write (COW) Dateisysteme}
+Den letzten Typ von Dateisystemen bilden die copy-on-write (COW) Dateisysteme wie btrfs, ZFS oder
+das moderne Dateisystem von Windows ReFS.
+Diese sind den anderen blockbasierten Dateisystemen sehr "ahnlich,
+aber anstatt Blöcke direkt an Ort und Stelle zu aktualisieren,
+werden alle Aktualisierungen durchgeführt,
+indem eine Kopie der "Anderungen erstellt 
+und die Verweise auf den neuen Block umgelenkt werden.
+COW-Dateisysteme bieten eine sehr ähnliche Performance wie blockbasierte Dateisysteme, 
+w"ahrend sie es gleichzeitig schaffen Aktualisierungen durchzuführen,
+ohne Datenänderungen direkt in einem Log oder Journal zu speichern. \\
+Der gro"se Nachteil ist allerdings, dass immer ein gesamter Baum kopiert werden muss,
+egal wie klein die "Anderung ist:
+Wenn man beispielsweise Daten in Block D ändert, passiert folgendes:
+Es wird eine komplett neue Kopie erstellt namens ''D neu''.
+Weil „D neu“ jetzt an einer ganz anderen Stelle auf dem Speichermedium liegt als das alte „D“,
+stimmt der Verweis im übergeordneten Ordner (Block B) nicht mehr.
+Also muss auch ein neuer Ordnerblock ''B neu'' geschrieben werden,
+der auf ''D neu'' zeigt.
+Weil jetzt aber ''B neu'' an einer neuen Stelle liegt,
+stimmt der Verweis im Root-Block nicht mehr.
+Das System muss also zwingend auch einen brandneuen „root neu“-Block schreiben.
+Eine Aktualisierung kann also zu einer weitaus größeren Menge an Schreibvorgängen kaskadieren,
+als f"r die urspr"unglichen Daten eigentlich n"otig gewesen w"are.
 \subsection{FAT-Dateisysteme}
 Das FAT-Dateisystem wurde 1980 von Microsoft entwickelt und erstmals von MS-DOS unterstützt.
 Es wurde ursprünglich als einfaches Dateisystem entwickelt, 
