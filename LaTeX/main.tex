@@ -642,7 +642,7 @@ F"ur das Debugging wurde diese Arbeit inspiriert vom Rustprojekt \href{https://d
 das Debuggingnachrichten direkt "uber die Debug Probe ST-Link ohne einen zus"atzlichen UART-Kanal oder
 den SWO-Pin senden kann. Dies ist besonders n"utzlich, da der ST-Link zum Flashen der Programme ohnehin am 
 Mikrocontroller angeschlossen sein muss. \\ 
-Die L"osung f"ur diese Arbeit nutzt letztlich aus, dass GDB im angehaltenen Zustand immer den Speicher des
+Die minimale L"osung f"ur diese Arbeit nutzt letztlich aus, dass GDB im angehaltenen Zustand immer den Speicher des
 Mikrocontrollers auslesen kann. Damit ist es m"oglich f"ur Testprogramme GDB-Skripte zu entwerfen, die
 bestimmte Flags von Variablen oder ganze Variablen auswerten.
 
@@ -703,7 +703,7 @@ Eine typische Ausgabe in der GDB-Debug Konsole s"ahe dann wie folgt aus:
         bgcolor=lightgray!20, % Hintergrundfarbe
         fontsize=\footnotesize,
         linenos           % Zeilennummern aktivieren
-    ]{cpp}
+    ]{text}
 AUSGABE AUSGABE
 AUSGABE AUSGABE
 AUSGABE AUSGABE
@@ -713,8 +713,8 @@ AUSGABE AUSGABE
 \end{listing}
 
 
-GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen. 
-
+GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen. Mit dieser Funktion l"asst sich 
+ein einfaches Debug-Print in der GDB-Debug-Konsole realisieren.
 
 
 \begin{listing}[H]
@@ -726,11 +726,45 @@ GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen.
         fontsize=\footnotesize,
         linenos           % Zeilennummern aktivieren
     ]{cpp}
-
+    break debug_gdb_print
+    commands
+        printf "%s", str
+        continue
+    end
     \end{minted}
 \caption{Auszug aus \texttt{spi\_test.gdb}}
-\label{listing:gdbdebug1}
+\label{listing:gdbdebug2}
 \end{listing}
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+void debug_gdb_print(const char* str)
+{
+    // breakpoint target only
+    //
+}
+    \end{minted}
+\caption{Auszug aus \texttt{sd\_test.cpp}}
+\label{listing:gdbdebug3}
+\end{listing}
+
+
+\coderef{listing:gdbdebug2} zeigt einen weiteren Auszug aus dem erstellten GDB-Skript \texttt{spi\_test.gdb}.
+Dieser Code setzt einen Breakpoint bei der Funktion \cpp{debug_gdb_print} und gibt dessen str-Variable aus.
+\coderef{listing:gdbdebug3} zeigt den vollst"andigen Code der Funktion \cpp{debug_gdb_print}. Mit dieser
+Kombination ist es m"oglich die Funktion im Code aufzurufen. Diese macht codetechnisch nichts, veranlasst
+den Debugger aber kurz bei ihr anzuhalten, die Variable str ausgeben und sofort den Programmablauf fortzuf"uhren.
+W"ahrend diese Funktionalit"at nicht in zeitkritischen Schleifen zum Einsatz kommen kann, ist sie f"ur
+allgemeine Debuggingnachrichten sehr gut anwendbar. Gleichzeitig ist kein zus"atzliches, externes Modul
+notwendig, sondern es nutzt die bereits vorhandenen Funktionalit"aten des GDB-Debuggers aus. 
 
 
 \subsection{SPI}

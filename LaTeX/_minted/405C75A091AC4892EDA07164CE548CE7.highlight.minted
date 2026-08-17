@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{debug\PYGZus{}gdb\PYGZus{}print}\PYG{p}{(}\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{char}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{str}\PYG{p}{)}
+\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{c+c1}{// breakpoint target only}
+\PYG{+w}{    }\PYG{c+c1}{//}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}
