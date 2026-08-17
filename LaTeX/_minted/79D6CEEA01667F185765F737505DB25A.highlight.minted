@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+
+\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename}\PYG{+w}{ }\PYG{n+nc}{Config}\PYG{o}{\PYGZgt{}}
+\PYG{n}{DRESULT}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}disk\PYGZus{}read}\PYG{p}{(}\PYG{n}{BYTE}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{buff}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{LBA\PYGZus{}t}\PYG{+w}{ }\PYG{n}{sector}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{UINT}\PYG{+w}{ }\PYG{n}{count}\PYG{p}{)}
+\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{result}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{count}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n}{result}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}ReadBlock}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{sector}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{buff}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{k}{else}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n}{result}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}ReadBlocks}\PYG{o}{\PYGZlt{}}\PYG{n}{Config}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{sector}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{count}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{buff}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{c+c1}{//The SD\PYGZus{}INIT\PYGZus{}OK is my enum... the other RES stuff is FatFS, just to be clear}
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{result}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}READ\PYGZus{}OK}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{RES\PYGZus{}ERROR}\PYG{p}{;}
+
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{RES\PYGZus{}OK}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

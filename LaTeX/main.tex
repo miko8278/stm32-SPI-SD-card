@@ -180,15 +180,15 @@
 
     {\Huge Bachelorarbeit}
     
-    \vspace{0.6cm}
+    \vspace{1cm}
     
     %------------------------------------------------
     % Titel
     %------------------------------------------------
     
     {\Huge\bfseries
-    Vergleich verschiedener Dateisysteme\\
-    für den SD-Karten-Einsatz\\
+    Vergleich verschiedener Dateisysteme
+    für den SD-Karten-Einsatz
     in eingebetteten Systemen
     }
     
@@ -266,21 +266,14 @@
 %\listoffigures
 % Wiederherstellung der Seitenzahlen
 \newpage % Neue Seite
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\linewidth]{example-image}
-    \caption{Loram Ipsum und so weiter}
-    \label{fig:REPLACE}
-\end{figure}
 
 \section{Einleitung}
 
 
-Blah blub
 
 
-Die gesamte Bachelorarbeit befindet sich "offentlich auf Github unter \url{https://github.com/miko8278/stm32-SPI-SD-card}.
-
+Der zu dieser Bachelorarbeit geh"orende Quellcode ist auf GitHub verf"ugbar unter \url{https://github.com/miko8278/stm32-SPI-SD-card} und wird dort in englischer Sprache geführt.
+Dadurch soll der Code einer breiteren Gruppe von Interessierten zug"anglich sein.
 \section{Hardware-Design und Schnittstellen}
 
 \subsection{Einleitung}
@@ -634,6 +627,111 @@ Die Abstraktion dient somit prim"ar der Lesbarkeit und Wartbarkeit des Quellcode
 \coderef{listing:AF} zeigt beispielhaft den Code f"ur die Implementierung der Alternate Function.
 Hier gestaltet sich \cpp{if constexpr} vorteilhaft, da die Pinnummer Pin bereits zur Compile-Zeit als Template-Parameter bekannt ist. 
 Dadurch wird nur der tatsächlich benötigte Zweig für AFR[0] oder AFR[1] kompiliert, während der andere Zweig vollständig entfällt.
+
+
+\subsection{Debugging mit GDB}
+Ein absolut wesentlicher und sehr zeitintensiver Teil der Arbeit ist das Debugging der Hard- und Software.
+Zum Debugging wurde die VS Code Erweiterung \href{https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug}{Cortex-Debug}
+verwendet. Diese nutzt im Hintergrund den \href{https://www.sourceware.org/gdb/}{GNU Project Debugger GDB}. \\
+Mit der Erweiterung und der richtigen .svd Datei f"ur den STM32G431 lassen sich direkt aus dem Editor Programme 
+auf den STM32 flashen und Register und Variablen auslesen. Durch die Nutzung von CMake lassen sich ausserdem
+bequem mehrere ausf"uhrbare Programme kompilieren und leicht wechseln.\\
+So war recht schnell erreicht, dass das Projekt eine f"ur das direkte Auslesen
+von Variablen unhandliche Gr"o"se angenommen hat. 
+F"ur das Debugging wurde diese Arbeit inspiriert vom Rustprojekt \href{https://defmt.ferrous-systems.com/}{defmt},
+das Debuggingnachrichten direkt "uber die Debug Probe ST-Link ohne einen zus"atzlichen UART-Kanal oder
+den SWO-Pin senden kann. Dies ist besonders n"utzlich, da der ST-Link zum Flashen der Programme ohnehin am 
+Mikrocontroller angeschlossen sein muss. \\ 
+Die L"osung f"ur diese Arbeit nutzt letztlich aus, dass GDB im angehaltenen Zustand immer den Speicher des
+Mikrocontrollers auslesen kann. Damit ist es m"oglich f"ur Testprogramme GDB-Skripte zu entwerfen, die
+bestimmte Flags von Variablen oder ganze Variablen auswerten.
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    define spi_test
+    printf "\n\n SD Card Test:\n\n"
+
+    ###SPI1###
+    if sdtest.cur_spi == 1
+        printf "TESTING SPI1 PERIPHERAL \n"
+
+        #CARD DETECT
+        if sdtest.carddetect == 1
+            printf "SPI1: CARD NOT DETECTED [FAILED]"
+        end
+        if sdtest.carddetect == 0
+            printf "SPI1: CARD DETECTED [OK]"
+        end
+
+        #SD CARD INIT
+        if sdtest.initsd == SD_INIT_OK
+            printf "SPI1: SD CARD INIT [OK]\n"
+        end
+        if sdtest.initsd == 0x02
+            printf "SPI1: SD CARD INIT [FAILED: 0x02] => CMD0 FAILED\n"
+        end
+        if sdtest.initsd == 0x04
+            printf "SPI1: SD CARD INIT [FAILED: 0x04] => CMD8 FAILED\n"
+        end
+        if sdtest.initsd == 0x08
+            printf "SPI1: SD CARD INIT [FAILED: 0x08] => TIMEOUT: CMD55 + ACMD41 LOOP FAILED\n"
+        end
+        (...)
+    end
+    \end{minted}
+\caption{Auszug aus \texttt{spi\_test.gdb}}
+\label{listing:gdbdebug1}
+\end{listing}
+
+
+\fig{listing:gdbdebug1} zeigt einen Auszug aus dem erstellten GDB-Skript, welches die beiden SD-Kartenslots
+auf ihre Funktionsf"ahigkeit pr"uft.
+Eine typische Ausgabe in der GDB-Debug Konsole s"ahe dann wie folgt aus:
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+AUSGABE AUSGABE
+AUSGABE AUSGABE
+AUSGABE AUSGABE
+    \end{minted}
+%\caption{Auszug aus \texttt{spi\_test.gdb}}
+%\label{listing:gdbdebug1}
+\end{listing}
+
+
+GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen. 
+
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+
+    \end{minted}
+\caption{Auszug aus \texttt{spi\_test.gdb}}
+\label{listing:gdbdebug1}
+\end{listing}
+
 
 \subsection{SPI}
 
@@ -1030,7 +1128,7 @@ FatFs ist ein plattformunabhängiges, quelloffenes Software-Modul zur Implementi
 Es wurde von dem Entwickler ChaN\cite{fatfs} entworfen und zeichnet sich durch einen extrem geringen Speicherbedarf sowohl im Programm- als auch im Arbeitsspeicher aus.
 Das Modul ist vollständig in ANSI C (C89) geschrieben. 
 Dadurch ist es hardwareunabhängig auf praktisch jedem gängigen Mikrocontroller 
-(z. B. ARM, AVR, PIC oder STM32) ohne "Anderungen des Codes direkt lauffähig.\\ 
+(z. B. AVR, PIC oder STM32) ohne "Anderungen des Codes direkt lauffähig.\\ 
 Die Architektur trennt das Dateisystem strikt in zwei logische Schichten: 
 Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zur Datei- und Verzeichnisverwaltung wie f\_open, f\_read, f\_write und f\_close zur Verfügung, 
 während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Dateisystem entkoppelt. 
@@ -1065,13 +1163,74 @@ des verwendeten Treibers.
         ]{cpp}
     DSTATUS disk_initialize(BYTE pdrv);
     DSTATUS disk_status(BYTE pdrv);
-    DRESULT disk_read(...);
-    DRESULT disk_write(...);
-    DRESULT disk_ioctl(...);
+    DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count);
+    DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count);
+    DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff);
+    
         \end{minted}
 \caption{Funktionen, die in der diskio.cpp implementiert werden mussten}
-\label{listing:cpp-example}
+\label{listing:diskioimplement}
 \end{listing}
+
+\coderef{listing:diskioimplement} zeigt die Funktionen, die f"ur FatFs implementiert werden m"ussen.
+Zus"atzlich musste auch noch \cpp{DWORD get_fattime()} implementiert werden, da jede FAT-Datei einen 
+Zeitstempel braucht. Da die vorhandene Platine keine Echtzeituhr mitbringt, besitzt jede geschriebene
+Datei einen fixen Zeitstempel, der auf den 1. Januar 2026 datiert wurde. Die Funktion findet sich in der Datei \texttt{fatfs\_time.cpp},
+da sie thematisch nicht zu den anderen Funktionen in der \texttt{diskio.cpp} passt. \\
+Bei den restlichen Funktionen ist die Hauptaufgabe die Funktionen aus der \texttt{sdcarddriver.hpp} korrekt
+aufzurufen.
+
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+
+template<typename Config>
+DRESULT SD_disk_read(BYTE* buff, LBA_t sector, UINT count)
+{
+
+    uint8_t result;
+
+    if (count == 1)
+    {
+        result = SD_ReadBlock<Config>(sector, buff);
+    }
+    else
+    {
+        result = SD_ReadBlocks<Config>(sector, count, buff);
+    }
+
+    //The SD_INIT_OK is my enum... the other RES stuff is FatFS, just to be clear
+    if (result != SD_READ_OK) return RES_ERROR;
+
+
+    return RES_OK;
+}
+    \end{minted}
+\caption{Implementierung SD\_disk\_read}
+\label{listing:cpp-diskread}
+\end{listing}
+
+\coderef{listing:cpp-diskread} zeigt beispielhaft die Implementation von \cpp{SD_disk_read},
+welches wiederrum in der urspr"unglichen Funktion \cpp{disk_read} aufgerufen wird. Da im
+Treiber Template-Funktionen verwendet werden, die urspr"unglich von FatFs zur Verf"ugung gestellten
+Funktionen sich aber in einer \cpp{extern "C"} Umgebung befinden, ist ein zweistufiger Prozess
+mit einer Helferfunktion notwendig. In der eigentlichen \cpp{disk_read} wird noch das Argument
+\cpp{BYTE pdrv} implementiert, was entscheidet, welches physische Laufwerk benutzt werden soll.
+In unserem Falle bleibt die Wahl zwischen den beiden SD-Kartenslots: Der SPI1-Peripherie bei \cpp{pdrv=0}
+und der SPI3-Peripherie mit \cpp{pdrv=1}.\\
+Der \coderef{listing:cpp-diskread} hingegen zeigt, dass sich die ben"otigten Aufrufe f"ur FatFs fast
+direkt in Funktionsaufrufe aus der \texttt{sdcarddriver.hpp} "ubersetzen lassen. \\
+An dieser Stelle kommt es auch zu dem bereits erw"ahnten Namenskonflikt bei den Argumenten:
+So wird bei der Funktion \cpp{SD_ReadBlock} das Argument \texttt{sector} eingef"ugt, 
+obwohl die Funktion das Argument \texttt{block} verlangt. In diesem Zusammenhang sind beide gleichbedeutend.
 
 
 \subsubsection*{ffconf.h}
