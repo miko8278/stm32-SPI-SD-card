@@ -120,8 +120,9 @@ define spi_test
         end
 
 
-        #FATFS TEST
+        #FATFS + LITTLEFS TEST
         if sdtest.initsd == SD_INIT_OK
+            #####FATFS####
             if fat_test.mount == FR_OK
                 printf "SPI1, FatFS: MOUNT [OK]"
             else
@@ -141,6 +142,30 @@ define spi_test
                 printf "SPI1, FatFS: CLOSE [OK]"
             else
                 printf "SPI1, FatFS: CLOSE [FAILED]"
+            end
+
+
+            #####LITTLEFS####
+            if lfs_test.init_res == LFSINIT_OK
+                printf "SPI1, littlefs: INIT [OK]"
+            end
+            if lfs_test.init_res == LFSINIT_SPIINIT_FAIL
+                printf "SPI1, littlefs: SPI INIT [FAILED]"
+            end
+            if lfs_test.init_res == LFSINIT_GETCSD_FAIL
+                printf "SPI1, littlefs: SD GETCSD [FAILED]"
+            end
+
+            if lfs_test.format_err == 0
+                printf "SPI1, littlefs: FORMAT [OK]"
+            else
+                printf "SPI1, littlefs: FORMAT [FAILED]"
+            end
+
+            if lfs_test.mount_err == 0
+                printf "SPI1, littlefs: MOUNT [OK]"
+            else
+                printf "SPI1, littlefs: MOUNT [FAILED]"
             end
 
         end

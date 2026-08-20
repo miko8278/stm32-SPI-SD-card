@@ -13,6 +13,7 @@
 #include "GPIO_HAL.hpp"
 #include "init_conf.hpp"
 #include "ff.h"
+#include "sdcardlittlefs.hpp"
 
 //Generate pseudorandom testdata
 uint32_t xorshift32(uint32_t rng)
@@ -47,7 +48,7 @@ static struct{
     FRESULT open = FR_NOT_READY;
     FRESULT write = FR_NOT_READY;
     FRESULT close = FR_NOT_READY;
-}fat_test;
+}volatile fat_test __attribute__((used));
 FATFS fs;
 template<typename Config>
 void FatFS_Test()
@@ -72,6 +73,35 @@ void FatFS_Test()
 }
 
 
+
+static struct{
+    uint8_t init_res;
+    int format_err;
+    int mount_err;
+}lfs_test;
+
+void littlefs_Test()
+{
+
+    lfs_test.init_res = lfs_sdinit();
+
+    lfs_t lfs_inst;
+    const lfs_config& cfg = lfs_sdconfig();
+
+    lfs_test.format_err = lfs_format(&lfs_inst, &cfg);
+
+    if (lfs_test.format_err != 0)
+    {
+        return; // format failed
+    }
+
+    lfs_test.mount_err = lfs_mount(&lfs_inst, &cfg);
+
+    if (lfs_test.mount_err != 0)
+    {
+        return; //mount failed
+    }
+}
 //Singleblock buffers
 uint8_t sd_block_buffer[512]; 
 uint8_t sd_block_buffer2[512];
@@ -187,12 +217,26 @@ void test_sd(){
     parse_csd(csd_reg, &csd);
     sdtest.csizeMB = csd.capacityMB;
 
+    //Doing this so the debugger knows the symbols
+    //even if not testing for FatFs...
+    fat_test.mount = FR_NOT_READY;
+    fat_test.open = FR_NOT_READY;
+    fat_test.write = FR_NOT_READY;
+    fat_test.close = FR_NOT_READY;
 
     //If sdcard-initialisation worked, then test FatFS
+    // if(sdtest.initsd)
+    // {
+    //     FatFS_Test<Config>();
+    // }
+
+    //If sdcard-initialisation worked, then test littlefs
     if(sdtest.initsd)
     {
-        FatFS_Test<Config>();
+        littlefs_Test();
     }
+
+
 
     test_complete();
     //check state after write 

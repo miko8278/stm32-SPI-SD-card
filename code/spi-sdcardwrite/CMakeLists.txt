@@ -49,8 +49,11 @@ add_executable(${TEST_NAME}
     startup_stm32g431xx.s
     system_stm32g4xx.c
     FatFs/ff.c
-    FatFs/diskio.cpp
-    FatFs/fatfs_time.cpp
+    src/diskio.cpp
+    src/fatfs_time.cpp
+    src/sdcardlittlefs.cpp
+    littlefs/lfs.c
+    littlefs/lfs_util.c
 )
 
 
@@ -72,6 +75,7 @@ target_include_directories(${TEST_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/FatFs
+    ${CMAKE_SOURCE_DIR}/littlefs
 )
 
 
