@@ -7,17 +7,14 @@
 #include "init_conf.hpp"
 
 #include <cstdint>
+#include <cstring>
 
 namespace {
 
 constexpr uint32_t SD_SECTOR_SIZE = 512;
 
 // LittleFS block-device callbacks
-int lfs_read(const struct lfs_config*,
-             lfs_block_t block,
-             lfs_off_t off,
-             void* buffer,
-             lfs_size_t size)
+int lfs_read(const struct lfs_config*, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
     if (off + size > SD_SECTOR_SIZE)
         return LFS_ERR_INVAL;
@@ -37,26 +34,21 @@ int lfs_read(const struct lfs_config*,
     return 0;
 }
 
-int lfs_prog(const struct lfs_config*,
-             lfs_block_t block,
-             lfs_off_t off,
-             const void* buffer,
-             lfs_size_t size)
+int lfs_prog(const struct lfs_config*, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
     if (off + size > SD_SECTOR_SIZE)
         return LFS_ERR_INVAL;
 
     uint8_t sector[SD_SECTOR_SIZE];
     const uint8_t* src = static_cast<const uint8_t*>(buffer);
-
-    if (SD_ReadBlock<SD1_Config>(block, sector) != SD_READ_OK)
-        return LFS_ERR_IO;
-
+    if(off != 0 || size != SD_SECTOR_SIZE){
+        if (SD_ReadBlock<SD1_Config>(block, sector) != SD_READ_OK)
+            return LFS_ERR_IO;
+    }
     for (lfs_size_t i = 0; i < size; ++i)
     {
         sector[off + i] = src[i];
     }
-
     if (SD_WriteBlock<SD1_Config>(block, sector) != SD_WRITE_OK)
         return LFS_ERR_IO;
 
@@ -71,9 +63,12 @@ int lfs_erase(const struct lfs_config*, lfs_block_t)
 
 int lfs_sync(const struct lfs_config*)
 {
+    //write also syncs...
     return 0;
 }
 
+
+}
 
 lfs_config lfsconfig{
     .read = lfs_read,
@@ -90,15 +85,6 @@ lfs_config lfsconfig{
     
     .cache_size = SD_SECTOR_SIZE,
     .lookahead_size = 16,
-};
-
-}
-
-enum LFSINIT_RES : uint8_t
-{
-    LFSINIT_OK = 0x00,
-    LFSINIT_SPIINIT_FAIL = 0x01,
-    LFSINIT_GETCSD_FAIL = 0x02,
 };
 
 uint8_t lfs_sdinit()

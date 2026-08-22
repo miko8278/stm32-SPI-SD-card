@@ -15,6 +15,8 @@
 #include "ff.h"
 #include "sdcardlittlefs.hpp"
 
+
+
 //Generate pseudorandom testdata
 uint32_t xorshift32(uint32_t rng)
 {
@@ -23,6 +25,19 @@ uint32_t xorshift32(uint32_t rng)
     rng ^= rng >> 17;
     rng ^= rng << 5;
     return rng;
+}
+
+//Compare two buffers
+//return the index of mismatch,
+//if successful return -1
+int bufcmp(const char* a, const char* b, int size)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        if (a[i] != b[i])
+            return i;
+    }
+    return -1;
 }
 
 //This is just for gdb to have a 
@@ -48,7 +63,8 @@ static struct{
     FRESULT open = FR_NOT_READY;
     FRESULT write = FR_NOT_READY;
     FRESULT close = FR_NOT_READY;
-}volatile fat_test __attribute__((used));
+}fat_test;
+
 FATFS fs;
 template<typename Config>
 void FatFS_Test()
@@ -73,34 +89,71 @@ void FatFS_Test()
 }
 
 
-
 static struct{
     uint8_t init_res;
-    int format_err;
-    int mount_err;
+    int format_res;
+    int mount_res;
+    int open_res;
+    lfs_ssize_t read_res;
+    lfs_ssize_t write_res;
+    int rewind_res;
+    int close_res;
+    int unmount_res;
+    int readwrite_res;
 }lfs_test;
 
-void littlefs_Test()
-{
-
+void format_littlefs(){
     lfs_test.init_res = lfs_sdinit();
-
     lfs_t lfs_inst;
     const lfs_config& cfg = lfs_sdconfig();
+    lfs_test.format_res = lfs_format(&lfs_inst, &cfg);
 
-    lfs_test.format_err = lfs_format(&lfs_inst, &cfg);
-
-    if (lfs_test.format_err != 0)
+    if (lfs_test.format_res != 0)
     {
         return; // format failed
     }
+}
 
-    lfs_test.mount_err = lfs_mount(&lfs_inst, &cfg);
 
-    if (lfs_test.mount_err != 0)
+//Fusewrapper for testing/mounting on PC
+//https://github.com/littlefs-project/littlefs-fuse
+void littlefs_Test()
+{
+    constexpr int BUFSIZE = 32;
+    lfs_test.init_res = lfs_sdinit();
+    char lfswritebuf[BUFSIZE] = "Hello littlefs";
+    char lfsreadbuf[BUFSIZE];
+
+    lfs_t lfs_inst;
+    lfs_file_t file;
+    const lfs_config& cfg = lfs_sdconfig();
+
+    // Format obviously just needed once...
+    // lfs_test.format_res = lfs_format(&lfs_inst, &cfg);
+    // if (lfs_test.format_res != 0)
+    // {
+    //     return; // format failed
+    // }
+
+    lfs_test.mount_res = lfs_mount(&lfs_inst, &cfg);
+    if (lfs_test.mount_res != 0)
     {
         return; //mount failed
     }
+    lfs_test.open_res = lfs_file_open(&lfs_inst, &file, "hellolittlefs.txt", LFS_O_RDWR | LFS_O_CREAT);
+
+    lfs_test.write_res = lfs_file_write(&lfs_inst, &file, &lfswritebuf, sizeof(lfswritebuf));
+    lfs_test.rewind_res = lfs_file_rewind(&lfs_inst, &file);
+    lfs_test.read_res = lfs_file_read(&lfs_inst, &file, &lfsreadbuf, sizeof(lfsreadbuf));
+
+    lfs_test.readwrite_res = bufcmp(lfswritebuf, lfsreadbuf, sizeof(lfsreadbuf));
+    
+    // remember the storage is not updated until the file is closed successfully
+    lfs_test.close_res = lfs_file_close(&lfs_inst, &file);
+
+    // release any resources we were using
+    lfs_test.unmount_res = lfs_unmount(&lfs_inst);
+
 }
 //Singleblock buffers
 uint8_t sd_block_buffer[512]; 
@@ -137,9 +190,16 @@ static struct{
 //Basically, it's either v1 or v2 depending on what the card says.
 //CSD_V1 csd_v1;
 //CSD_V2 csd_v2;
+enum class Testfilesystem
+{
+    None,
+    FatFs,
+    littlefs,
+};
+
 Csd_Common csd;
 template<typename Config>
-void test_sd(){
+void test_sd(Testfilesystem testfilesystem = Testfilesystem::None){
     sdtest.cur_spi = Config::cur_spi;
     using SPI_X = SpiDriver<Config::SpiBase>;
 
@@ -218,20 +278,33 @@ void test_sd(){
     sdtest.csizeMB = csd.capacityMB;
 
     //Doing this so the debugger knows the symbols
-    //even if not testing for FatFs...
+    //even if not testing for FatFs... is this a little annoying
     fat_test.mount = FR_NOT_READY;
     fat_test.open = FR_NOT_READY;
     fat_test.write = FR_NOT_READY;
     fat_test.close = FR_NOT_READY;
 
     //If sdcard-initialisation worked, then test FatFS
-    // if(sdtest.initsd)
-    // {
-    //     FatFS_Test<Config>();
-    // }
+    if(sdtest.initsd == SD_INIT_OK && testfilesystem == Testfilesystem::FatFs)
+    {
+        FatFS_Test<Config>();
+    }
 
+
+    //Doing this so the debugger knows the symbols
+    //even if not testing for littlefs...
+    lfs_test.init_res = LFSINIT_NOT_INIT;
+    lfs_test.format_res = 0xFE;
+    lfs_test.mount_res = 0xFE;
+    lfs_test.open_res = 0xFE;
+    lfs_test.read_res = -1;
+    lfs_test.write_res = -1;
+    lfs_test.rewind_res = 0xFE;
+    lfs_test.close_res = 0xFE;
+    lfs_test.unmount_res = 0xFE;
+    lfs_test.readwrite_res = 0xFE;
     //If sdcard-initialisation worked, then test littlefs
-    if(sdtest.initsd)
+    if(sdtest.initsd == SD_INIT_OK && testfilesystem == Testfilesystem::littlefs)
     {
         littlefs_Test();
     }
@@ -261,13 +334,12 @@ int main()
         //GpioPin<GPIOB_BASE, 5>::OutputHighInit();
         // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
 
-        GpioPin<GPIOC_BASE, 13>::InputInit(Pull::Up);
-        GpioPin<GPIOC_BASE, 14>::InputInit(Pull::Up);
-
-        GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
+        // GpioPin<GPIOC_BASE, 13>::InputInit(Pull::Up);
+        // GpioPin<GPIOC_BASE, 14>::InputInit(Pull::Up);
+        // GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
         
-        test_sd<SD1_Config>();
-        test_sd<SD3_Config>();
+        test_sd<SD1_Config>(Testfilesystem::littlefs);
+        //test_sd<SD3_Config>();
 
         //manual spi3 test...
         // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputInit(Level::High);

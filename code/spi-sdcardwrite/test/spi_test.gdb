@@ -156,16 +156,62 @@ define spi_test
                 printf "SPI1, littlefs: SD GETCSD [FAILED]"
             end
 
-            if lfs_test.format_err == 0
+            if lfs_test.format_res == 0
                 printf "SPI1, littlefs: FORMAT [OK]"
             else
-                printf "SPI1, littlefs: FORMAT [FAILED]"
+                if lfs_test.format_res == 0xFE
+                    printf "SPI1, littlefs: FORMAT [NONE]"
+                else
+                    printf "SPI1, littlefs: FORMAT [FAILED]"
+                end
             end
 
-            if lfs_test.mount_err == 0
+            if lfs_test.mount_res == 0
                 printf "SPI1, littlefs: MOUNT [OK]"
             else
                 printf "SPI1, littlefs: MOUNT [FAILED]"
+            end
+
+            if lfs_test.open_res == 0
+                printf "SPI1, littlefs: OPEN [OK]"
+            else
+                printf "SPI1, littlefs: OPEN [FAILED]"
+            end
+
+            if lfs_test.write_res == -1
+                printf "SPI1, littlefs: WRITE [FAILED]"
+            else
+                printf "SPI1, littlefs: WROTE %d BYTES", lfs_test.write_res
+            end
+
+            if lfs_test.rewind_res == 0
+                printf "SPI1, littlefs: REWIND [OK]"
+            else
+                printf "SPI1, littlefs: REWIND [FAILED]"
+            end
+
+            if lfs_test.read_res == -1
+                printf "SPI1, littlefs: READ [FAILED]"
+            else
+                printf "SPI1, littlefs: READ %d BYTES", lfs_test.write_res
+            end
+
+            if lfs_test.readwrite_res == -1
+                printf "SPI1, littlefs: READBUFFER IS SAME AS WRITEBUFFER [OK]"
+            else
+                printf "SPI1, littlefs: READBUFFER NOT SAME AS WRITEBUFFER, FAILED INDEX: %d [FAILED] ", lfs_test.readwrite_res
+            end
+
+            if lfs_test.close_res == 0
+                printf "SPI1, littlefs: CLOSE [OK]"
+            else
+                printf "SPI1, littlefs: CLOSE [FAILED]"
+            end
+
+            if lfs_test.unmount_res == 0
+                printf "SPI1, littlefs: UNMOUNT [OK]"
+            else
+                printf "SPI1, littlefs: UNMOUNT [FAILED]"
             end
 
         end
