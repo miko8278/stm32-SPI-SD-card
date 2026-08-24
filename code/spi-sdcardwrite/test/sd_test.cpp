@@ -102,10 +102,10 @@ static struct{
     int readwrite_res;
 }lfs_test;
 
-void format_littlefs(){
-    lfs_test.init_res = lfs_sdinit();
+void format_littlefs(SdSlot slot){
+    lfs_test.init_res = lfs_sdinit(slot);
     lfs_t lfs_inst;
-    const lfs_config& cfg = lfs_sdconfig();
+    const lfs_config& cfg = lfs_sdconfig(slot);
     lfs_test.format_res = lfs_format(&lfs_inst, &cfg);
 
     if (lfs_test.format_res != 0)
@@ -117,16 +117,31 @@ void format_littlefs(){
 
 //Fusewrapper for testing/mounting on PC
 //https://github.com/littlefs-project/littlefs-fuse
+template<typename Config>
 void littlefs_Test()
 {
+
+    constexpr SdSlot slot = [] {
+        if constexpr (Config::cur_spi == 1)
+        {
+            return SdSlot::SD1;
+        }
+        else if constexpr (Config::cur_spi == 3)
+        {
+            //the prime sin of mixing up spi2 and spi3 
+            //appears everywhere, probably should've just named it SD3 for it to be less confusing
+            return SdSlot::SD2;
+        }
+    }();
+
     constexpr int BUFSIZE = 32;
-    lfs_test.init_res = lfs_sdinit();
+    lfs_test.init_res = lfs_sdinit(slot);
     char lfswritebuf[BUFSIZE] = "Hello littlefs";
     char lfsreadbuf[BUFSIZE];
 
     lfs_t lfs_inst;
     lfs_file_t file;
-    const lfs_config& cfg = lfs_sdconfig();
+    const lfs_config& cfg = lfs_sdconfig(slot);
 
     // Format obviously just needed once...
     // lfs_test.format_res = lfs_format(&lfs_inst, &cfg);
@@ -306,7 +321,7 @@ void test_sd(Testfilesystem testfilesystem = Testfilesystem::None){
     //If sdcard-initialisation worked, then test littlefs
     if(sdtest.initsd == SD_INIT_OK && testfilesystem == Testfilesystem::littlefs)
     {
-        littlefs_Test();
+        littlefs_Test<Config>();
     }
 
 
