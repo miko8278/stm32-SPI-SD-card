@@ -402,6 +402,10 @@ template<typename Config>
 uint8_t SD_InitSPI()
 {
     
+    //For safety: When initialising more than once put
+    //the CS-Pins into low state...
+     
+
     uint8_t cmd8_resp[5];
     uint8_t cmd0_resp = 0xFF;
     uint8_t cmd55_resp = 0xFF;
@@ -426,7 +430,7 @@ uint8_t SD_InitSPI()
     }
 
     if (cmd0_resp != 0x01)
-    return SD_INIT_ERROR_CMD0;
+        return SD_INIT_ERROR_CMD0;
 
     // CMD8
     SD_SendCmd<Config>(8, 0x000001AA, 0x87, cmd8_resp, 4);
@@ -450,7 +454,10 @@ uint8_t SD_InitSPI()
         }
 
         //pause, probably fine without
-        for (volatile uint32_t i = 0; i < 1000; i++);
+        for (uint32_t i = 0; i < 1000; i++) 
+        { 
+            asm volatile("");
+        }
         //SD_DelayMs(1);
     }
 

@@ -14,14 +14,15 @@ namespace {
 constexpr uint32_t SD_SECTOR_SIZE = 512;
 
 // LittleFS block-device callbacks
-int lfs_read(const struct lfs_config*, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
+template<typename Config>
+int __lfs_read(const struct lfs_config*, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
     if (off + size > SD_SECTOR_SIZE)
         return LFS_ERR_INVAL;
 
     uint8_t sector[SD_SECTOR_SIZE];
 
-    if (SD_ReadBlock<SD1_Config>(block, sector) != SD_READ_OK)
+    if (SD_ReadBlock<Config>(block, sector) != SD_READ_OK)
         return LFS_ERR_IO;
 
     uint8_t* dst = static_cast<uint8_t*>(buffer);
@@ -34,7 +35,26 @@ int lfs_read(const struct lfs_config*, lfs_block_t block, lfs_off_t off, void* b
     return 0;
 }
 
-int lfs_prog(const struct lfs_config*, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
+
+// LittleFS block-device callbacks
+int lfs_read(const struct lfs_config* lfs_cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
+{
+    SdSlot* slot_ptr = static_cast<SdSlot*>(lfs_cfg->context);
+
+    if(*slot_ptr == SdSlot::SD1)
+    {
+        return __lfs_read<SD1_Config>(lfs_cfg, block, off, buffer, size);
+    }
+
+    else if(*slot_ptr == SdSlot::SD2)
+    {
+        return __lfs_read<SD3_Config>(lfs_cfg, block, off, buffer, size);
+    }
+}
+
+
+template<typename Config>
+int __lfs_prog(const struct lfs_config*, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
     if (off + size > SD_SECTOR_SIZE)
         return LFS_ERR_INVAL;
@@ -42,17 +62,33 @@ int lfs_prog(const struct lfs_config*, lfs_block_t block, lfs_off_t off, const v
     uint8_t sector[SD_SECTOR_SIZE];
     const uint8_t* src = static_cast<const uint8_t*>(buffer);
     if(off != 0 || size != SD_SECTOR_SIZE){
-        if (SD_ReadBlock<SD1_Config>(block, sector) != SD_READ_OK)
+        if (SD_ReadBlock<Config>(block, sector) != SD_READ_OK)
             return LFS_ERR_IO;
     }
     for (lfs_size_t i = 0; i < size; ++i)
     {
         sector[off + i] = src[i];
     }
-    if (SD_WriteBlock<SD1_Config>(block, sector) != SD_WRITE_OK)
+    if (SD_WriteBlock<Config>(block, sector) != SD_WRITE_OK)
         return LFS_ERR_IO;
 
     return 0;
+}
+
+
+int lfs_prog(const struct lfs_config* lfs_cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+    SdSlot* slot_ptr = static_cast<SdSlot*>(lfs_cfg->context);
+
+    if(*slot_ptr == SdSlot::SD1)
+    {
+        return __lfs_prog<SD1_Config>(lfs_cfg, block, off, buffer, size);
+    }
+
+    else if(*slot_ptr == SdSlot::SD2)
+    {
+        return __lfs_prog<SD3_Config>(lfs_cfg, block, off, buffer, size);
+    }
 }
 
 int lfs_erase(const struct lfs_config*, lfs_block_t)

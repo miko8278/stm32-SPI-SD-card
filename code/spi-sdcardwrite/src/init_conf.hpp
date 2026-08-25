@@ -67,6 +67,9 @@ static void GPIO_Init()
     // GPIOB->OSPEEDR &= ~(3U << (4*2));
     // GPIOB->OSPEEDR |=  (3U << (4*2));
 
+    //Set the CS-Pins to Low
+    GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputInit(Level::High);
+    GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
     // GPIOB->PUPDR &= ~(3U << (4*2));
     // GPIOB->PUPDR |=  (1U << (4*2)); // pull-up
     // GPIOB->MODER &= ~(3U << (4 * 2));

@@ -58,6 +58,11 @@ void debug_gdb_print(const char* str)
     //
 }
 
+void test_breakpoint()
+{
+    //nothing
+}
+
 static struct{
     FRESULT mount = FR_NOT_READY;
     FRESULT open = FR_NOT_READY;
@@ -318,7 +323,9 @@ void test_sd(Testfilesystem testfilesystem = Testfilesystem::None){
     lfs_test.close_res = 0xFE;
     lfs_test.unmount_res = 0xFE;
     lfs_test.readwrite_res = 0xFE;
+
     //If sdcard-initialisation worked, then test littlefs
+    test_breakpoint();
     if(sdtest.initsd == SD_INIT_OK && testfilesystem == Testfilesystem::littlefs)
     {
         littlefs_Test<Config>();
@@ -337,72 +344,83 @@ uint8_t initres2;
 uint8_t r1;
 int main()
 {
-    debug_gdb_print("Hello Debug\n");
+    //Some startup delay
+    for(int i = 0; i < 10000; i++)
+    {
+        asm volatile("");
+    }
+    //debug_gdb_print("Hello Debug\n");
     GPIO_Init();
-    while (1)
+
+    //Don't run this forever, not good for the hardware!
+    //When started without gdb-debug, this'll loop endlessly!
+    for(int i = 0; i < 10; i++)
     {
         
         //Test for Solderbridges/not connected Pins
-        //RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-        // GpioPin<GPIOB_BASE, 3>::OutputHighInit();
-        // GpioPin<GPIOB_BASE, 4>::OutputHighInit();
-        //GpioPin<GPIOB_BASE, 5>::OutputHighInit();
-        // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
+            //{
+            //RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+            // GpioPin<GPIOB_BASE, 3>::OutputHighInit();
+            // GpioPin<GPIOB_BASE, 4>::OutputHighInit();
+            //GpioPin<GPIOB_BASE, 5>::OutputHighInit();
+            // GpioPin<GPIOB_BASE, 11>::OutputHighInit();
 
-        // GpioPin<GPIOC_BASE, 13>::InputInit(Pull::Up);
-        // GpioPin<GPIOC_BASE, 14>::InputInit(Pull::Up);
-        // GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
-        
+            // GpioPin<GPIOC_BASE, 13>::InputInit(Pull::Up);
+            // GpioPin<GPIOC_BASE, 14>::InputInit(Pull::Up);
+            // GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
+            //}
+
         test_sd<SD1_Config>(Testfilesystem::littlefs);
         //test_sd<SD3_Config>();
 
-        //manual spi3 test...
-        // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputInit(Level::High);
-        // SpiDriver<SPI1_BASE>::Init();
-        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI1_BASE>::Transfer(0x55);
-        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI1_BASE>::Transfer(0x55);
-        // SpiDriver<SPI1_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI1_BASE>::Transfer(0x55);
-        //initres1 = SD_InitSPI<SD1_Config>();
+        // manual spi3 test...
+            // GpioPin<SD1_Config::PortBase, SD1_Config::Pin>::OutputInit(Level::High);
+            // SpiDriver<SPI1_BASE>::Init();
+            // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI1_BASE>::Transfer(0x55);
+            // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI1_BASE>::Transfer(0x55);
+            // SpiDriver<SPI1_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI1_BASE>::Transfer(0x55);
+            //initres1 = SD_InitSPI<SD1_Config>();
 
-        // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
-        // SpiDriver<SPI3_BASE>::Init();
-        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI3_BASE>::Transfer(0x55);
-        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI3_BASE>::Transfer(0x55);
-        // SpiDriver<SPI3_BASE>::Transfer(0xAA);
-        // SpiDriver<SPI3_BASE>::Transfer(0x55);
-        //initres2 = SD_InitSPI<SD3_Config>();
-        // {
-        //     int timeout = 0;
-        //     GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
-        //     SpiDriver<SPI3_BASE>::Init();
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //     ChipSelect<GPIOB_BASE, 11> chipselect_tmp;
-        //     //manual cmd0-test SPI3, why does this s**t not work
-        //     SpiDriver<SPI3_BASE>::Transfer(0x40);
-        //     SpiDriver<SPI3_BASE>::Transfer(0x00);
-        //     SpiDriver<SPI3_BASE>::Transfer(0x00);
-        //     SpiDriver<SPI3_BASE>::Transfer(0x00);
-        //     SpiDriver<SPI3_BASE>::Transfer(0x00);
-        //     SpiDriver<SPI3_BASE>::Transfer(0x95);
-        //     do {
-        //         r1 = SpiDriver<SPI3_BASE>::Transfer(0xFF);
-        //         sdtest.timeout++;
-        //     } while (((r1 == 0xFF)) && (sdtest.timeout < 255));
-        // }
+            // GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
+            // SpiDriver<SPI3_BASE>::Init();
+            // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI3_BASE>::Transfer(0x55);
+            // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI3_BASE>::Transfer(0x55);
+            // SpiDriver<SPI3_BASE>::Transfer(0xAA);
+            // SpiDriver<SPI3_BASE>::Transfer(0x55);
+            //initres2 = SD_InitSPI<SD3_Config>();
+            // {
+            //     int timeout = 0;
+            //     GpioPin<SD3_Config::PortBase, SD3_Config::Pin>::OutputInit(Level::High);
+            //     SpiDriver<SPI3_BASE>::Init();
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //     ChipSelect<GPIOB_BASE, 11> chipselect_tmp;
+            //     //manual cmd0-test SPI3, why does this s**t not work
+            //     SpiDriver<SPI3_BASE>::Transfer(0x40);
+            //     SpiDriver<SPI3_BASE>::Transfer(0x00);
+            //     SpiDriver<SPI3_BASE>::Transfer(0x00);
+            //     SpiDriver<SPI3_BASE>::Transfer(0x00);
+            //     SpiDriver<SPI3_BASE>::Transfer(0x00);
+            //     SpiDriver<SPI3_BASE>::Transfer(0x95);
+            //     do {
+            //         r1 = SpiDriver<SPI3_BASE>::Transfer(0xFF);
+            //         sdtest.timeout++;
+            //     } while (((r1 == 0xFF)) && (sdtest.timeout < 255));
+            // }
+            
         tests_done();
 
         for (volatile uint32_t i = 0; i < 10000; i++);
