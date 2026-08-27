@@ -84,9 +84,12 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     ChipSelect<Config::PortBase,Config::Pin> chipselect_tmp;
 
     uint8_t r1;
-    uint32_t timeout = 0;
-    constexpr uint32_t T_OUT1 = 1000;
-    constexpr uint32_t T_OUT2 = 2000;
+    
+
+    //100 ms seems reasonable timeout, haven't really found something
+    //in the specification...
+    constexpr uint32_t T_OUT1_US = 100000; 
+    constexpr uint32_t T_OUT2_US = 100000;
     //SD_CS_SELECT();
 
     // send CMD17
@@ -99,11 +102,10 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     SpiDriver<Config::SpiBase>::Transfer(0xFF); 
 
     // waiting for answer... it has to be 0x00
-    timeout = 0;
+    uint32_t start_time = TIM2->CNT;
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
-        timeout++;
-    } while ((r1 == 0xFF) && (timeout < T_OUT1));
+    } while ((r1 == 0xFF) && (static_cast<uint32_t>(TIM2->CNT - start_time) < T_OUT1_US));
 
     if (r1 != 0x00) {
         //SD_CS_DESELECT();
@@ -111,11 +113,10 @@ uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)
     }
 
     // wait for start 0xFE
-    timeout = 0;
+    start_time = TIM2->CNT;
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
-        timeout++;
-    } while ((r1 != 0xFE) && (timeout < T_OUT2));
+    } while ((r1 != 0xFE) && (static_cast<uint32_t>(TIM2->CNT - start_time) < T_OUT2_US));
 
     if (r1 != 0xFE) {
         //SD_CS_DESELECT();
@@ -145,9 +146,10 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     ChipSelect<Config::PortBase, Config::Pin> chipselect_tmp;
 
     uint8_t r1;
-    uint32_t timeout;
-    constexpr uint32_t T_OUT1 = 1000;
-    constexpr uint32_t T_OUT2 = 2000;
+    uint32_t start_time = TIM2->CNT;
+    constexpr uint32_t T_OUT1_US = 100000;
+    constexpr uint32_t T_OUT2_US = 100000;
+    constexpr uint32_t T_OUT3_US = 100000;
     // CMD18
     SpiDriver<Config::SpiBase>::Transfer(18 | 0x40);
     SpiDriver<Config::SpiBase>::Transfer((uint8_t)(block_addr >> 24));
@@ -157,25 +159,24 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
     // Wait for R1
-    timeout = 0;
+
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
-        timeout++;
-    } while ((r1 == 0xFF) && timeout < T_OUT1);
+    } while ((r1 == 0xFF) && (static_cast<uint32_t>(TIM2->CNT - start_time) < T_OUT1_US));
 
     if (r1 != 0x00)
         return 0x01;
 
     uint8_t *ptr = buffer;
 
+    start_time = TIM2->CNT;
     for (uint32_t block = 0; block < block_count; block++)
     {
         // Wait for data token
-        timeout = 0;
+        start_time = TIM2->CNT;
         do {
             r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
-            timeout++;
-        } while ((r1 != 0xFE) && timeout < T_OUT2);
+        } while ((r1 != 0xFE) && (static_cast<uint32_t>(TIM2->CNT - start_time) < T_OUT2_US));
 
         if (r1 != 0xFE)
             return 0x02;
@@ -201,11 +202,13 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     SpiDriver<Config::SpiBase>::Transfer(0x00);
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
 
+
+    start_time = TIM2->CNT;
     // CMD12 has a stuff byte before R1, bizarre, but does not work without it properly
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
-    } while (r1 == 0xFF);
+    } while (r1 == 0xFF && (static_cast<uint32_t>(TIM2->CNT - start_time) < T_OUT3_US));
 
     if (r1 != 0x00){
         return 0x04;

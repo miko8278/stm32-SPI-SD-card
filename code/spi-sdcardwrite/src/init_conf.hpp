@@ -10,6 +10,7 @@
 #include "GPIO_HAL.hpp"
 #include "spidriver.hpp"
 #include "sdcarddriver.hpp"
+#include <cstdint>
 
 struct SD1_Config {
     static constexpr uint8_t cur_spi = 1;
@@ -103,4 +104,60 @@ static void GPIO_Init()
     //     (3U << GPIO_OSPEEDR_OSPEED5_Pos) |
     //     (3U << GPIO_OSPEEDR_OSPEED7_Pos);
 
+}
+
+
+//Free running 32-bit Timer... 
+//Timer_HAL.hpp is a project for another time
+static void TIM2_Init()
+{
+    // Enable clock TIM2
+    RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
+
+    // 16 MHz / (15 + 1) = 1 MHz
+    TIM2->PSC = 15;
+
+    //update prescaler, this seems a thing with the new stms...
+    TIM2->EGR = TIM_EGR_UG;
+
+    // Maximum period
+    TIM2->ARR = 0xFFFFFFFF;
+
+    TIM2->CNT = 0;
+    // Start timer
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+
+
+
+constexpr uint32_t TIM2_MAX_DELAY_US = 0xFFFFFFFFUL;
+//This depends on TIM2 going in microsecond steps
+template<uint32_t us>
+static void delay_us()
+{
+    //if someone specifies more than 71 min
+    static_assert(us <= 0xFFFFFFFFUL, "delay_us(): duration exceeds TIM2 range");
+
+    const uint32_t start = TIM2->CNT;
+
+    while (static_cast<uint32_t>(TIM2->CNT - start) < us)
+    {
+    }
+}
+
+template<uint32_t ms>
+static void delay_ms()
+{
+    static_assert(ms <= TIM2_MAX_DELAY_US / 1000ULL, "Delay_ms(): duration exceeds TIM2 range");
+
+    delay_us<static_cast<uint64_t>(ms) * 1000ULL>();
+}
+
+template<uint32_t s>
+static void delay_s()
+{
+    static_assert(s <= TIM2_MAX_DELAY_US / 1000000ULL, "Delay_s(): duration exceeds TIM2 range");
+
+    delay_us<static_cast<uint64_t>(s) * 1000000ULL>();
 }

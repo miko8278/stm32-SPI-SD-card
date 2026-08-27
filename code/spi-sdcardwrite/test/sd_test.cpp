@@ -342,16 +342,16 @@ void test_sd(Testfilesystem testfilesystem = Testfilesystem::None){
 uint8_t initres1;
 uint8_t initres2;
 uint8_t r1;
+//static volatile uint32_t TIM2CNT;
+
 int main()
 {
+    TIM2_Init();
     //Some startup delay
-    for(int i = 0; i < 10000; i++)
-    {
-        asm volatile("");
-    }
+    delay_ms<500>();
     //debug_gdb_print("Hello Debug\n");
     GPIO_Init();
-
+    
     //Don't run this forever, not good for the hardware!
     //When started without gdb-debug, this'll loop endlessly!
     for(int i = 0; i < 10; i++)
@@ -420,7 +420,10 @@ int main()
             //         sdtest.timeout++;
             //     } while (((r1 == 0xFF)) && (sdtest.timeout < 255));
             // }
-            
+
+        //my .svd file seems wrong, the CNT register for TIM2 is not 32bit.
+        //TIM2CNT = TIM2->CNT;
+
         tests_done();
 
         for (volatile uint32_t i = 0; i < 10000; i++);
