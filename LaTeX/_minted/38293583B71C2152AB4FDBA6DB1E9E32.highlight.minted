@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+     SD Card Test:
+    TESTING SPI1 PERIPHERAL
+    SPI1: CARD DETECTED [OK]
+    SPI1: SD CARD INIT [OK]
+    SPI1: SD CARD WRITE SINGLE BLOCK [OK]
+    SPI1: SD CARD READ SINGLE BLOCK [OK]
+    SPI1: SD CARD READ MULTIPLE BLOCK [OK]
+    SPI1: SD CARD WRITE MULTIPLE BLOCK [OK]
+    SPI1: READ SINGLE BLOCK SAME AS WRITTEN [OK]
+    SPI1: READ MULTIPLE BLOCK SAME AS WRITTEN [OK]
+    SPI1: GOT CSD [OK]
+    SPI1: CARD SIZE IN MB: 31268
+    SPI1, FatFS: MOUNT [FAILED]
+    SPI1, FatFS: FOPEN [FAILED]
+    SPI1, FatFS: FWRITE [FAILED]
+    SPI1, FatFS: CLOSE [FAILED]
+    SPI1, littlefs: INIT [OK]
+    SPI1, littlefs: FORMAT [NONE]
+    SPI1, littlefs: MOUNT [OK]
+    SPI1, littlefs: OPEN [OK]
+    SPI1, littlefs: WROTE 32 BYTES
+    SPI1, littlefs: REWIND [OK]
+    SPI1, littlefs: READ 32 BYTES
+    SPI1, littlefs: READBUFFER IS SAME AS WRITEBUFFER [OK]
+    SPI1, littlefs: CLOSE [OK]
+    SPI1, littlefs: UNMOUNT [OK]
+\end{MintedVerbatim}

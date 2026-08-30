@@ -694,7 +694,7 @@ bestimmte Flags von Variablen oder ganze Variablen auswerten.
 
 \fig{listing:gdbdebug1} zeigt einen Auszug aus dem erstellten GDB-Skript, welches die beiden SD-Kartenslots
 auf ihre Funktionsf"ahigkeit pr"uft.
-Eine typische Ausgabe in der GDB-Debug Konsole s"ahe dann wie folgt aus:
+
 \begin{listing}[H]
     \begin{minted}[
         frame=lines,      % Rahmenlinien oben und unten
@@ -704,15 +704,42 @@ Eine typische Ausgabe in der GDB-Debug Konsole s"ahe dann wie folgt aus:
         fontsize=\footnotesize,
         linenos           % Zeilennummern aktivieren
     ]{text}
-AUSGABE AUSGABE
-AUSGABE AUSGABE
-AUSGABE AUSGABE
+     SD Card Test:
+    TESTING SPI1 PERIPHERAL
+    SPI1: CARD DETECTED [OK]
+    SPI1: SD CARD INIT [OK]
+    SPI1: SD CARD WRITE SINGLE BLOCK [OK]
+    SPI1: SD CARD READ SINGLE BLOCK [OK]
+    SPI1: SD CARD READ MULTIPLE BLOCK [OK]
+    SPI1: SD CARD WRITE MULTIPLE BLOCK [OK]
+    SPI1: READ SINGLE BLOCK SAME AS WRITTEN [OK]
+    SPI1: READ MULTIPLE BLOCK SAME AS WRITTEN [OK]
+    SPI1: GOT CSD [OK]
+    SPI1: CARD SIZE IN MB: 31268
+    SPI1, FatFS: MOUNT [FAILED]
+    SPI1, FatFS: FOPEN [FAILED]
+    SPI1, FatFS: FWRITE [FAILED]
+    SPI1, FatFS: CLOSE [FAILED]
+    SPI1, littlefs: INIT [OK]
+    SPI1, littlefs: FORMAT [NONE]
+    SPI1, littlefs: MOUNT [OK]
+    SPI1, littlefs: OPEN [OK]
+    SPI1, littlefs: WROTE 32 BYTES
+    SPI1, littlefs: REWIND [OK]
+    SPI1, littlefs: READ 32 BYTES
+    SPI1, littlefs: READBUFFER IS SAME AS WRITEBUFFER [OK]
+    SPI1, littlefs: CLOSE [OK]
+    SPI1, littlefs: UNMOUNT [OK]
     \end{minted}
-%\caption{Auszug aus \texttt{spi\_test.gdb}}
-%\label{listing:gdbdebug1}
+\caption{Debugausgabe von \texttt{spi\_test.cpp} durch Anwendung von \texttt{spi\_test.gdb}}
+\label{listing:gdbdebugausgabe}
 \end{listing}
 
-
+Eine typische Ausgabe in der GDB-Debug Konsole zeigt \coderef{listing:gdbdebugausgabe}.
+Damit lässt sich mit einem Durchlauf des Programms feststellen, ob die zugrundeliegenden
+Funktionen des SPI/SD-Treibers alle ordnungsgemä"s funktionieren und ob die Karte sich mit 
+einem der beiden Dateisysteme mounten l"asst und ob die grundlegenden Funktionen des Dateisystems, wie zum Beispiel das Lesen und Schreiben, fehlerfrei ausf"uhrbar sind.
+\\  
 GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen. Mit dieser Funktion l"asst sich 
 ein einfaches Debug-Print in der GDB-Debug-Konsole realisieren.
 
@@ -1402,6 +1429,15 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 
 \section{LittleFS}
+
+
+
+\section{Vergleich littlefs, FatFs und direkter Blockadressierung}
+
+\subsection{RAM- und Flashverbrauch}
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
