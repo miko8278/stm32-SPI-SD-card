@@ -5,6 +5,7 @@
 %Fuer Deutschsupport
 \usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
+\usepackage[autostyle=true]{csquotes}
 \usepackage[T1]{fontenc}
 %\usepackage{lmodern}
 %\usepackage{icomma}
@@ -1430,14 +1431,72 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 \section{LittleFS}
 
-
+\subsection{Implementierung}
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Diagramme/littlefsstack.png}
+    \caption{Implementierungsstack f"ur das littlefs-Dateisystem}
+    \label{fig:littlefsimplement}
+\end{figure}
 
 \section{Vergleich littlefs, FatFs und direkter Blockadressierung}
+Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.
 
 \subsection{RAM- und Flashverbrauch}
+\tab{tab:flash-ram} ist die Auswertung der Ausgabe des Compilers \enquote{arm-none-eabi-gcc} bei
+unterschiedlichen Optimierungsstufen. F"ur FatFs wurde eine minimale Konfiguration verwendet.
+Der statische RAM-Verbrauch h"alt sich "uber alle Dateisysteme
+recht stabil im Bereich von 2 kB und schwankt auch nach der Compileroptimierung nicht sonderlich.
+Hiervon ausgenommen ist FatFs, dessen statischer RAM-Verbrauch in optimierten Builds um fast 500 kB sinkt
+im Vergleich zum unoptimierten Build, sodass lediglich 1,5 kB an statischem RAM verbraucht werden.
+Da auch FatFs intern dieselben Treiber verwendet wie NoFs und littlefs, ist dies ein Hinweis darauf,
+dass die internen Buffer f"ur FatFs auf dem Stack allokiert werden, w"ahrend NoFs und littlefs statische
+Buffer nutzt, die der Compiler beim Build im .data oder .bss Segment verordnen und somit anzeigen kann.\\
+Der Flashverbrauch entspricht den Erwartungen:
+Er ist bei NoFs am kleinsten und bei littlefs am h"ochsten. Das h"angt mit der Komplexit"at
+des Dateisystems zusammen. W"ahrend FatFs ein relativ simples, blockbasiertes Dateisystem ist,
+fusioniert littlefs die Ideen der Journaling and Copy-on-Write Dateisysteme f"ur mehr Ausfallresilienz
+und Wear-Leveling. Dies spiegelt sich im Speicherverbrauch f"ur den Programmspeicher wider.
+NoFs verwendet in der kleinsten Variante etwa 2 kB, FatFs etwa 15 kB und littlefs etwa 35 kB Speicher auf dem Flash.
+W"ahrend das f"ur den verwendeten STM32-G431 mit 128 kB Flashspeicher kein Problem darstellt, so
+gibt es zahlreiche kosteng"unstige STM-Modelle wie beispielsweise Modelle aus der STM32C0-Serie,
+die nur "uber 32 kB Programmspeicher verf"ugen und somit kein littlefs in dieser Konfiguration nutzen k"onnen. \\
+Ebenfalls interessant ist zu sehen, dass die Programmgr"o"se bei der Optimierung \enquote{-O3} gr"o"ser ist als 
+bei \enquote{-O2}. Dies h"angt damit zusammen, dass auf Ausf"uhrungsgeschwindigkeit optimiert wird statt auf Gr"o"se.
+So werden beispielsweise Funktionen aggressiver geinlined, um Funktionsaufrufe zu sparen, was sich aber wiederum 
+in einer h"oheren Programmgr"o"se widerspiegelt.
 
 
-
+            \begin{table}[H]
+                \centering
+                \caption{Flash und statischer RAM der verschiedenen Dateisysteme bei unterschiedlicher Compiler-Optimierungsstufe}
+                \label{tab:flash-ram}
+                \begin{tabular}{|l|c|c|c|}
+                \hline
+                \textbf{Optimierungsstufe} & \textbf{Dateisystem} & \textbf{Flash (kB)} & \textbf{Statischer RAM (kB)} \\
+                \hline
+                \multirow{3}{*}{-O0} & littlefs & 57,504 & 2,184 \\
+                                      & NoFs     & 13,424 & 2,512 \\
+                                      & FatFs    & 28,304 & 2,008 \\
+                \hline
+                \multirow{3}{*}{-O1} & littlefs & 39,716 & 2,168 \\
+                                      & NoFs     &  3,120 & 2,080 \\
+                                      & FatFs    & 19,316 & 1,576 \\
+                \hline
+                \multirow{3}{*}{-O2} & littlefs & 39,308 & 2,168 \\
+                                      & NoFs     &  2,404 & 2,080 \\
+                                      & FatFs    & 17,536 & 1,576 \\
+                \hline
+                \multirow{3}{*}{-O3} & littlefs & 47,596 & 2,168 \\
+                                      & NoFs     &  2,720 & 2,080 \\
+                                      & FatFs    & 18,612 & 1,576 \\
+                \hline
+                \multirow{3}{*}{-Os} & littlefs & 35,148 & 2,168 \\
+                                      & NoFs     &  2,124 & 2,080 \\
+                                      & FatFs    & 15,044 & 1,576 \\
+                \hline
+                \end{tabular}
+                \end{table}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%

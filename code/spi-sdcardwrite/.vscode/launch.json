@@ -15,9 +15,9 @@
             "servertype": "stlink",
             "interface": "swd",
             "svdFile": "STM32G431xx.svd",
-            "preLaunchCommands": [
-                "source test/spi_test.gdb"
-            ]
+            // "preLaunchCommands": [
+            //     "source test/spi_test.gdb"
+            // ]
         }
     ]
 }

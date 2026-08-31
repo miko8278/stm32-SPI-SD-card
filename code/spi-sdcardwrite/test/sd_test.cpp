@@ -370,7 +370,8 @@ int main()
             // GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
             //}
 
-        test_sd<SD1_Config>(Testfilesystem::littlefs);
+        //test_sd<SD1_Config>(Testfilesystem::littlefs);
+        test_sd<SD1_Config>(Testfilesystem::FatFs);
         //test_sd<SD3_Config>();
 
         // manual spi3 test...
@@ -429,4 +430,5 @@ int main()
         for (volatile uint32_t i = 0; i < 10000; i++);
 
     }
+    return 0;
 }

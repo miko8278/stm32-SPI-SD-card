@@ -18,7 +18,7 @@ set(MCU_FLAGS
 
 add_compile_options(
     ${MCU_FLAGS}
-    -Wall -Wextra -O0 -g3                     
+    -Wall -Wextra -Os -g0                     
     -ffunction-sections -fdata-sections       
 )
 
@@ -33,21 +33,40 @@ add_link_options(
 add_compile_definitions(STM32G431xx)
 set_source_files_properties(startup_stm32g431xx.s PROPERTIES LANGUAGE ASM) 
 
-set(BINARY_NAME SPI-SDCard)
-set(TEST_NAME Test-SPI-SDCard)
 
-# Main Executable
-add_executable(${BINARY_NAME}
-    src/main.cpp
-    startup_stm32g431xx.s
-    system_stm32g4xx.c
-)
+function(add_stm32_executable TARGET)
 
-# Test Executable
-add_executable(${TEST_NAME}
+    add_executable(${TARGET}
+        ${ARGN}
+        startup_stm32g431xx.s
+        system_stm32g4xx.c
+    )
+
+    target_link_options(${TARGET} PRIVATE
+        -T${CMAKE_SOURCE_DIR}/linker/STM32G431RBTX_FLASH.ld
+    )
+
+    target_include_directories(${TARGET} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/littlefs
+        ${CMAKE_SOURCE_DIR}/FatFs
+    )
+
+    add_custom_command(TARGET ${TARGET} POST_BUILD
+        COMMAND arm-none-eabi-objcopy
+            -O ihex
+            $<TARGET_FILE:${TARGET}>
+            ${CMAKE_BINARY_DIR}/${TARGET}.hex
+
+        COMMAND arm-none-eabi-size
+            $<TARGET_FILE:${TARGET}>
+    )
+
+endfunction()
+
+add_stm32_executable(Test-SPI-SDCard
     test/sd_test.cpp
-    startup_stm32g431xx.s
-    system_stm32g4xx.c
     FatFs/ff.c
     src/diskio.cpp
     src/fatfs_time.cpp
@@ -56,51 +75,20 @@ add_executable(${TEST_NAME}
     littlefs/lfs_util.c
 )
 
-
-# Linker script main
-target_link_options(${BINARY_NAME} PRIVATE
-    -T${CMAKE_SOURCE_DIR}/linker/STM32G431RBTX_FLASH.ld
+add_stm32_executable(Size-FatFs
+    size/size_fatfs.cpp
+    FatFs/ff.c
+    src/diskio.cpp
+    src/fatfs_time.cpp
 )
 
-target_include_directories(${BINARY_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
+add_stm32_executable(Size-littlefs
+    size/size_littlefs.cpp
+    src/sdcardlittlefs.cpp
+    littlefs/lfs.c
+    littlefs/lfs_util.c
 )
 
-# Linker script Test
-target_link_options(${TEST_NAME} PRIVATE
-    -T${CMAKE_SOURCE_DIR}/linker/STM32G431RBTX_FLASH.ld
-)
-
-target_include_directories(${TEST_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/FatFs
-    ${CMAKE_SOURCE_DIR}/littlefs
-)
-
-
-# Post-build commands main
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${BINARY_NAME}> ${CMAKE_BINARY_DIR}/${BINARY_NAME}.elf
-)
-
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-    COMMAND arm-none-eabi-objcopy -O ihex $<TARGET_FILE:${BINARY_NAME}> ${CMAKE_BINARY_DIR}/${BINARY_NAME}.hex
-)
-
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-    COMMAND arm-none-eabi-size $<TARGET_FILE:${BINARY_NAME}>
-)
-
-# Post-build commands test
-add_custom_command(TARGET ${TEST_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TEST_NAME}> ${CMAKE_BINARY_DIR}/${TEST_NAME}.elf
-)
-
-add_custom_command(TARGET ${TEST_NAME} POST_BUILD
-    COMMAND arm-none-eabi-objcopy -O ihex $<TARGET_FILE:${TEST_NAME}> ${CMAKE_BINARY_DIR}/${TEST_NAME}.hex
-)
-
-add_custom_command(TARGET ${TEST_NAME} POST_BUILD
-    COMMAND arm-none-eabi-size $<TARGET_FILE:${TEST_NAME}>
+add_stm32_executable(Size-nofs
+    size/size_nofs.cpp
 )

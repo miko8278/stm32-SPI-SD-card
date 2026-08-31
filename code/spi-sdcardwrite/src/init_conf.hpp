@@ -8,9 +8,7 @@
 #pragma once
 #include "stm32g431xx.h"
 #include "GPIO_HAL.hpp"
-#include "spidriver.hpp"
-#include "sdcarddriver.hpp"
-#include <cstdint>
+#include <stdint.h>
 
 struct SD1_Config {
     static constexpr uint8_t cur_spi = 1;
@@ -134,7 +132,7 @@ static void TIM2_Init()
 constexpr uint32_t TIM2_MAX_DELAY_US = 0xFFFFFFFFUL;
 //This depends on TIM2 going in microsecond steps
 template<uint32_t us>
-static void delay_us()
+void delay_us()
 {
     //if someone specifies more than 71 min
     static_assert(us <= 0xFFFFFFFFUL, "delay_us(): duration exceeds TIM2 range");
@@ -147,7 +145,7 @@ static void delay_us()
 }
 
 template<uint32_t ms>
-static void delay_ms()
+void delay_ms()
 {
     static_assert(ms <= TIM2_MAX_DELAY_US / 1000ULL, "Delay_ms(): duration exceeds TIM2 range");
 
@@ -155,7 +153,7 @@ static void delay_ms()
 }
 
 template<uint32_t s>
-static void delay_s()
+void delay_s()
 {
     static_assert(s <= TIM2_MAX_DELAY_US / 1000000ULL, "Delay_s(): duration exceeds TIM2 range");
 

@@ -10,8 +10,7 @@
 #include "init_conf.hpp"
 #include "stm32g431xx.h"
 #include "spidriver.hpp"
-#include <cstdint>
-
+#include <stdint.h>
 
 template<uintptr_t PortBase, uint32_t Pin>
 struct ChipSelect {
@@ -663,7 +662,7 @@ inline void parse_csd_v1(const uint8_t* rawcsd, Csd_Common* csd){
 
     csd->capacity =(uint64_t)(csd->CSIZE + 1) * mult * block_len;
 
-    //It'll still work, this is mainly for letting mkfs make smart decisions
+    //It'll still work, this is mainly for letting fatfs mkfs make smart decisions
     csd->SECTOR_SIZE = 1;
 }
 
