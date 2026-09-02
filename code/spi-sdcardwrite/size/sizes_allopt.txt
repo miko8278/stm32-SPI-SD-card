@@ -1,47 +1,54 @@
 -O0:
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   57400	    104	   2080	  59584	   e8c0	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
-
-
-[build]    text	   data	    bss	    dec	    hex	filename
-[build]   13336	     88	   2424	  15848	   3de8	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+[build]   57400	    104	   2080	  59584	   e8c0	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   28216	     88	   1920	  30224	   7610	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
+[build]   13336	     88	   2424	  15848	   3de8	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+
+[build]    text	   data	    bss	    dec	    hex	filename
+[build]   28216	     88	   1920	  30224	   7610	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
 
 -O1
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   39620	     96	   2072	  41788	   a33c	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
+[build]   39620	     96	   2072	  41788	   a33c	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]    3120	      0	   2080	   5200	   1450	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+[build]    3120	      0	   2080	   5200	   1450	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   19316	      0	   1576	  20892	   519c	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
+[build]   19316	      0	   1576	  20892	   519c	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
 
 
 -O2
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   39212	     96	   2072	  41380	   a1a4	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
+[build]   39212	     96	   2072	  41380	   a1a4	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]    2404	      0	   2080	   4484	   1184	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+[build]    2404	      0	   2080	   4484	   1184	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   17536	      0	   1576	  19112	   4aa8	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
+[build]   17536	      0	   1576	  19112	   4aa8	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
 
 -O3
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   47500	     96	   2072	  49668	   c204	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
+[build]   47500	     96	   2072	  49668	   c204	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]    2720	      0	   2080	   4800	   12c0	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+[build]    2720	      0	   2080	   4800	   12c0	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
 
 [build]    text	   data	    bss	    dec	    hex	filename
-[build]   18612	      0	   1576	  20188	   4edc	/home/alle/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
+[build]   18612	      0	   1576	  20188	   4edc	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs
 
 -Os
 
+[build]    text	   data	    bss	    dec	    hex	filename
+[build]   35052	     96	   2072	  37220	   9164	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-littlefs
+
+[build]    text	   data	    bss	    dec	    hex	filename
+[build]    2124	      0	   2080	   4204	   106c	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-nofs
+
+[build]    text	   data	    bss	    dec	    hex	filename
+[build]   15044	      0	   1576	  16620	   40ec	/home/user/Universitaet/BA-stm/code/spi-sdcardwrite/build/Size-FatFs

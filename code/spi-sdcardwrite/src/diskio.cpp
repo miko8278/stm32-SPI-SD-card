@@ -22,8 +22,7 @@ DSTATUS SD_disk_initialize()
 {
     GpioPin<Config::PortBase, Config::Pin>::OutputInit(Level::High);
     SpiDriver<Config::SpiBase>::Init();
-
-    if (SD_InitSPI<Config>() != SD_INIT_OK)
+    if (SD_InitSPI<Config>(SpiDiv::Div16) != SD_INIT_OK)
         return STA_NOINIT;
 
     return RES_OK;

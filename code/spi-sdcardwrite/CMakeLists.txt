@@ -18,7 +18,7 @@ set(MCU_FLAGS
 
 add_compile_options(
     ${MCU_FLAGS}
-    -Wall -Wextra -Os -g0                     
+    -Wall -Wextra -Os -g3                     
     -ffunction-sections -fdata-sections       
 )
 
@@ -65,9 +65,11 @@ function(add_stm32_executable TARGET)
 
 endfunction()
 
+##Basic sd-card functionality test
 add_stm32_executable(Test-SPI-SDCard
     test/sd_test.cpp
     FatFs/ff.c
+    FatFs/ffunicode.c
     src/diskio.cpp
     src/fatfs_time.cpp
     src/sdcardlittlefs.cpp
@@ -75,9 +77,11 @@ add_stm32_executable(Test-SPI-SDCard
     littlefs/lfs_util.c
 )
 
+##Tests for binary size
 add_stm32_executable(Size-FatFs
     size/size_fatfs.cpp
     FatFs/ff.c
+    FatFs/ffunicode.c
     src/diskio.cpp
     src/fatfs_time.cpp
 )
@@ -91,4 +95,14 @@ add_stm32_executable(Size-littlefs
 
 add_stm32_executable(Size-nofs
     size/size_nofs.cpp
+)
+
+
+#Long time write tests
+add_stm32_executable(fatfs-write-test
+    test/fatfs_write_test.cpp
+    FatFs/ff.c
+    FatFs/ffunicode.c
+    src/diskio.cpp
+    src/fatfs_time.cpp
 )
