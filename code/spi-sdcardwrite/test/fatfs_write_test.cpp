@@ -3,7 +3,8 @@
  *
  * Author: Michael Kolorz
  *
- * File for measuring minimal RAM/Flash footprint for FatFs
+ * Writetest for FatFs using a known and humanreadable byte-sequence
+ * Each file has a size of 1 kB
  */
 
 #include "init_conf.hpp"
@@ -45,12 +46,15 @@ int main()
             if (flg_open == FR_OK)
             {
                 //const char msg[] = "Writetest new!\n";
+                //The following creates the 1024 Byte message we write
                 char msg[32];
                 int msg_len = std::snprintf(msg, sizeof(msg), "Write %08d!\n", file_number);
                 for (int j = 0; j < 64; j++)
                 {
                     std::memcpy(big_buf + j * msg_len, msg, msg_len);
                 }
+
+
                 FRESULT result = f_write(&file, big_buf, sizeof(big_buf), &written);
                 if (result != FR_OK || written != sizeof(big_buf))
                 {

@@ -106,3 +106,11 @@ add_stm32_executable(fatfs-write-test
     src/diskio.cpp
     src/fatfs_time.cpp
 )
+
+
+add_stm32_executable(littlefs-write-test
+    test/littlefs_write_test.cpp
+    src/sdcardlittlefs.cpp
+    littlefs/lfs.c
+    littlefs/lfs_util.c
+)
