@@ -39,9 +39,12 @@ int main()
         char filename[32];
         char big_buf[1024];
         int file_number = 0;
+        int cnt_number = 0;
         for(;;)
         {
-            std::snprintf(filename, sizeof(filename), "fat_write_test_%08d.txt", file_number);
+            //Filename was changed in later versions to include timestamps just like the littlefs version 
+            int tcnt_ms = TIM2->CNT/1000;
+            std::snprintf(filename, sizeof(filename), "l_%06d_%06d_%08d.txt", file_number, cnt_number, tcnt_ms);
             FRESULT flg_open = f_open(&file, filename, FA_WRITE | FA_CREATE_ALWAYS);
             if (flg_open == FR_OK)
             {
@@ -63,6 +66,7 @@ int main()
                 f_close(&file);
                 file_number++;
             }
+            cnt_number++;
         }
     }
 
