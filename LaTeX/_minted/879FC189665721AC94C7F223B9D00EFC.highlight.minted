@@ -1,0 +1,25 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{k}{for}\PYG{p}{(}\PYG{p}{;}\PYG{p}{;}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{tcnt\PYGZus{}ms}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{TIM2}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{CNT}\PYG{o}{/}\PYG{l+m+mi}{1000}\PYG{p}{;}
+\PYG{+w}{        }\PYG{n}{std}\PYG{o}{:}\PYG{o}{:}\PYG{n}{snprintf}\PYG{p}{(}\PYG{n}{filename}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{filename}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{l\PYGZus{}\PYGZpc{}06d\PYGZus{}\PYGZpc{}06d\PYGZus{}\PYGZpc{}08d.txt}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n}{file\PYGZus{}number}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cnt\PYGZus{}number}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{tcnt\PYGZus{}ms}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{        }\PYG{k+kt}{char}\PYG{+w}{ }\PYG{n}{msg}\PYG{p}{[}\PYG{l+m+mi}{32}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{        }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{msg\PYGZus{}len}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{std}\PYG{o}{:}\PYG{o}{:}\PYG{n}{snprintf}\PYG{p}{(}\PYG{n}{msg}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{msg}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{Write \PYGZpc{}08d!}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{file\PYGZus{}number}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{64}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}
+\PYG{+w}{        }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{std}\PYG{o}{:}\PYG{o}{:}\PYG{n}{memcpy}\PYG{p}{(}\PYG{n}{lfswritebuf}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{msg\PYGZus{}len}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{msg}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{msg\PYGZus{}len}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{res\PYGZus{}open}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{lfs\PYGZus{}file\PYGZus{}open}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{lfs\PYGZus{}inst}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{filename}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{LFS\PYGZus{}O\PYGZus{}RDWR}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{LFS\PYGZus{}O\PYGZus{}CREAT}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n}{res\PYGZus{}open}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{LFS\PYGZus{}ERR\PYGZus{}OK}\PYG{p}{)}
+\PYG{+w}{        }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{lfs\PYGZus{}file\PYGZus{}write}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{lfs\PYGZus{}inst}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{lfswritebuf}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{lfswritebuf}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{n}{lfs\PYGZus{}file\PYGZus{}close}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{lfs\PYGZus{}inst}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{file}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{            }\PYG{n}{file\PYGZus{}number}\PYG{o}{+}\PYG{o}{+}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{n}{cnt\PYGZus{}number}\PYG{o}{+}\PYG{o}{+}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

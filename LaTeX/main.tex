@@ -1439,6 +1439,27 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
     \label{fig:littlefsimplement}
 \end{figure}
 
+
+
+\subsection{littlefs FUSE wrapper}
+W"ahrend sich mit FAT formatierte SD-Karten problemlos an jedem Desktop-PC mit jedem 
+erdenklichen Betriebssystem auslesen lassen, existiert f"ur littlefs das 
+\href{https://github.com/littlefs-project/littlefs-fuse}{littlefs FUSE wrapper} Projekt.
+Nach erfolgreichem Kompilieren des Projektes l"asst sich unter Linux beispielsweise mit 
+\texttt{sudo ./lfs /dev/mmcblk0 mount/ -o allow\_other} das Dateisystem einh"angen und
+mit kleinen Einschr"ankungen nutzen. Zu den Einschr"ankungen geh"ort,
+dass littlefs keine Zeitstempel f"ur Dateien anlegt und auch kein System f"ur spezielle
+Berechtigungen existiert. Weiterhin sind Umlaute beim Dateinamen nicht erlaubt und
+die maximale Dateinamenl"ange betr"agt 32 Zeichen. \\
+An dieser Stelle stellt sich f"ur die Praxis die Frage, ob der Endnutzer mit dem Dateisystem
+in Ber"uhrung kommen wird. W"ahrend die Einrichtung des littlefs FUSE wrapper Projektes  
+f"ur technisch versierte und mit github vertraute Menschen problemlos in unter einer Stunde 
+m"oglich ist, ist es f"ur normale Endnutzer ungeeignet und "uberfordernd. Littlefs ist
+also kein Dateisystem, was f"ur Ger"ate wie beispielsweise Digitalkameras oder Oszilloskope
+zu empfehlen w"are, wo dem Endnutzer eine garantierte Kompatiblit"at mit dem Dateisystem 
+garantiert werden sollte.
+
+
 \section{Vergleich littlefs, FatFs und direkter Blockadressierung}
 Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.
 
@@ -1497,6 +1518,148 @@ in einer h"oheren Programmgr"o"se widerspiegelt.
                 \hline
                 \end{tabular}
                 \end{table}
+
+
+\subsection{Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge}
+
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    for(;;)
+    {
+        int tcnt_ms = TIM2->CNT/1000;
+        std::snprintf(filename, sizeof(filename), "l_%06d_%06d_%08d.txt", 
+        file_number, cnt_number, tcnt_ms);
+
+        char msg[32];
+        int msg_len = std::snprintf(msg, sizeof(msg), "Write %08d!\n", file_number);
+        for (int j = 0; j < 64; j++)
+        {
+            std::memcpy(lfswritebuf + j * msg_len, msg, msg_len);
+        }
+
+        int res_open = lfs_file_open(&lfs_inst, &file, filename, LFS_O_RDWR | LFS_O_CREAT);
+        if(res_open == LFS_ERR_OK)
+        {
+            lfs_file_write(&lfs_inst, &file, &lfswritebuf, sizeof(lfswritebuf));
+
+            lfs_file_close(&lfs_inst, &file);
+            file_number++;
+        }
+        cnt_number++;
+    }
+    \end{minted}
+\caption{Hauptschleife aus \texttt{test/littlefs\_write\_test.cpp}}
+\label{listing:littlefswritetest}
+\end{listing}
+
+\coderef{listing:littlefswritetest} zeigt die relevante Hauptschleife des Schreibtests f"ur das littlefs-Dateisystem.
+Der Schreibtest f"ur das FatFs-Dateisystem ist analog dazu in \texttt{test/fatfs\_write\_test.cpp} vorhanden.
+\fig{fig:versuch1loop} verdeutlicht den Ablauf anschaulich. 
+Die aufgenommenen Testdaten finden sich im github-Projektverzeichnis unter 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest1}{test\_data/Writetest1/}.
+Die Auswertung folgte am station"aren Desktop-Computer. Dazu wurden kurze Pythonskripte erstellt, die
+Dateigr"o"se und Integrit"at der Daten pr"ufen. Das relevanteste Skript ist hierbei 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/test\_data/Writetest1/test\_readable.py}{test\_data/Writetest1/test\_readable.py}.
+In der Auswertung zeigt sich, dass unter etwa 9000 littlefs-Dateien und rund 8000 FatFs-Dateien keine einzige Datei auch nur
+einen einzigen messbaren Bitfehler aufweist, trotz fehlender CRC-Pr"ufsumme bei der SPI-Daten"ubertragung.
+Somit kann anhand dieses Versuchs keine Aussage dar"uber getroffen werden,
+ob ein Dateisystem zuverl"assiger mit Daten umgeht als das andere.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Diagramme/Versuch1loop.png}
+    \caption{Schreibzyklus f"ur eine 1024 Byte gro"se Versuchsdatei}
+    \label{fig:versuch1loop}
+\end{figure}
+
+Tats"achlich war der Plan etwa die zehnfache Menge an geschriebenen Daten f"ur diesen
+Versuch zu erzeugen. Dies war durch kurze Messreihen von einer Minute abgesch"atzt worden.
+W"ahrend des Schreibversuches ist klar geworden, dass deutlich weniger Dateien erstellt wurden
+als zun"achst angenommen. 
+W"ahrend in dieser Arbeit zwar vorrangig die Zuverl"assigkeit der Dateisysteme bez"uglich
+der Datenintegrit"at untersucht werden sollte, ist es beispielsweise f"ur Logginganwendungen
+unverzichtbar ein konsistentes Verhalten beim Erstellen und Schreiben von Dateien zu erreichen.
+Also wurde der Versuch um einen Zeitstempel im Dateinamen erweitert, sodass die Dauer des gesamten Zyklus
+der Dateierstellung wie in \fig{fig:versuch1loop} gemessen werden konnte.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Plot/1_fatfs_dateierstellzeit.png}
+    \caption{Dauer der Neuerstellung von Dateien auf dem FatFs-Dateisystem}
+    \label{fig:fatfstime}
+\end{figure}
+
+\fig{fig:fatfstime} zeigt die Dauer des Schreibvorgangs f"ur eine 1024 Byte Datei in Abh"angigkeit
+davon wie viele Dateien bereits erstellt wurden. Es zeigt sich ein klare lineare Abh"angigkeit mit einem 
+auff"allig periodisch wiederkehrendem Muster.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Plot/2_littlefs_dateierstellzeit.png}
+    \caption{Dauer der Neuerstellung von Dateien auf dem littlefs-Dateisystem}
+    \label{fig:littlefstime}
+\end{figure}
+
+\fig{fig:littlefstime} zeigt dieselbe Messreihe f"ur das littlefs-Dateisystem.
+Auch hier sehen wir einen konstanten, linearen Anstieg der Dateierstelldauer in Abh"angigkeit der bereits vorhandenen
+Dateien. Zus"atzlich braucht das Dateisystem alle 38 Dateien einmalig deutlich l"anger f"ur die Erstellung einer Datei.
+\\
+W"ahrend hier der "ubersichtlichkeithalber nur ein Auszug von rund 850 Dateien dargestellt ist, wurden alle vorhandenen
+Messdaten untersucht. Sowohl f"ur littlefs, als auch f"ur FatFs setzt sich das typische Muster mit linear steigender Dateierstelldauer fort.
+
+\subsubsection{Fazit Versuch 1}
+Auch wenn in diesem Versuch keine Aussage "uber die Datenintegrit"at getroffen werden konnte, da die zugrundeliegende "Ubertragungsebene
+fehlerfrei gearbeitet hat, so lassen sich dennoch wichtige Schl"usse f"ur den Umgang mit Dateien auf eingebetteten Systemen ziehen:
+
+
+\subsection{Versuch 2: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}
+Versuch 2 folgt im Aufbau und in der Idee analog zu Versuch 1.
+Aufgrund der hohen Zuverl"assigkeit der Schreibfunktionen wird nun eine gezielte Fehlerinjektion 
+in den Schreibfunktionen des SD-Kartentreibers durchgef"uhrt,
+bei der nach jeweils 5000 Bytes ein Byte modifiziert wird. Da sowohl littlefs, als auch FatFs diese Funktion als 
+Basis nutzen, ist eine "Uberpr"ufung des Umgangs mit fehlerhaften Daten auf Dateisystemebene m"oglich. 
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    // send 512 byte blockdata
+    for (uint16_t i = 0; i < 512; i++) {
+        //Injecting errors
+        if(err_cnt == 5000) 
+        { 
+            //some random data
+            //const_cast<uint8_t*>(buffer)[i] = 0xAA;
+            SpiDriver<Config::SpiBase>::Transfer(0xAA);
+            err_cnt = 0;
+            continue;
+        } 
+        err_cnt++;
+        SpiDriver<Config::SpiBase>::Transfer(buffer[i]);
+    }
+    \end{minted}
+\caption{Modifizierter Teil der Funktion \texttt{SD\_WriteBlock()} aus Datei \texttt{src/sdcarddriver.hpp}}
+\label{listing:sdwriteblockmod}
+\end{listing}
+
+\coderef{listing:sdwriteblockmod} zeigt den modifizierten Teil der Schreibfunktion.
+Die aufgenommenen Rohdaten finden sich in \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest2}{test\_data/Writetest2/}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%

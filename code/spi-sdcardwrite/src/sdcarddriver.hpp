@@ -224,6 +224,9 @@ enum SD_WRITE_RESULT : uint8_t
     SD_WRITE_ERROR_TIMEOUTBLOCK = 0x04,
     SD_WRITE_ERROR_TIMEOUTTERMINATION = 0x08,
 };
+
+static int err_cnt = 0;
+
 //template<uintptr_t Base, uintptr_t PortBase, uint32_t Pin>
 template<typename Config>
 uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
@@ -263,6 +266,16 @@ uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
 
     // send 512 byte blockdata
     for (uint16_t i = 0; i < 512; i++) {
+        //Injecting errors
+        // if(err_cnt == 5000) 
+        // { 
+        //     //some random data
+        //     //const_cast<uint8_t*>(buffer)[i] = 0xAA;
+        //     SpiDriver<Config::SpiBase>::Transfer(0xAA);
+        //     err_cnt = 0;
+        //     continue;
+        // } 
+        // err_cnt++;
         SpiDriver<Config::SpiBase>::Transfer(buffer[i]);
     }
 
@@ -327,7 +340,6 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
 
 
     const uint8_t *ptr = buffer;
-
     for (uint32_t block = 0; block < block_count; block++)
     {
         // multiple block write token
@@ -336,6 +348,15 @@ uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t 
         // write 512 bytes
         for (uint16_t i = 0; i < 512; i++)
         {
+            //Injecting errors
+            // if(err_cnt == 5000) 
+            // { 
+            //     //some random data
+            //     SpiDriver<Config::SpiBase>::Transfer(0xAA);
+            //     err_cnt = 0;
+            //     continue;
+            // } 
+            // err_cnt++;
             SpiDriver<Config::SpiBase>::Transfer(ptr[i]);
         }
 

@@ -107,6 +107,14 @@ add_stm32_executable(fatfs-write-test
     src/fatfs_time.cpp
 )
 
+add_stm32_executable(fatfs8.3-write-test
+    test/fatfs_8.3_write_test.cpp
+    FatFs/ff.c
+    FatFs/ffunicode.c
+    src/diskio.cpp
+    src/fatfs_time.cpp
+)
+
 
 add_stm32_executable(littlefs-write-test
     test/littlefs_write_test.cpp
