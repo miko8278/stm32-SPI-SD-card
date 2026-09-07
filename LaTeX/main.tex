@@ -1613,14 +1613,30 @@ auff"allig periodisch wiederkehrendem Muster.
 \fig{fig:littlefstime} zeigt dieselbe Messreihe f"ur das littlefs-Dateisystem.
 Auch hier sehen wir einen konstanten, linearen Anstieg der Dateierstelldauer in Abh"angigkeit der bereits vorhandenen
 Dateien. Zus"atzlich braucht das Dateisystem alle 38 Dateien einmalig deutlich l"anger f"ur die Erstellung einer Datei.
-\\
+
+
 W"ahrend hier der "ubersichtlichkeithalber nur ein Auszug von rund 850 Dateien dargestellt ist, wurden alle vorhandenen
 Messdaten untersucht. Sowohl f"ur littlefs, als auch f"ur FatFs setzt sich das typische Muster mit linear steigender Dateierstelldauer fort.
+
+
+Bei genauer Betrachtung der Werte f"allt auf, dass das FatFs-Dateisystem trotz geringerer Dateisystemkomplexit"at l"anger
+f"ur die Erstellung von Dateien ben"otigt als littlefs. Die Vermutung lag nahe, dass das mit FatFs Option \enquote{LFN}, \enquote{Long File Names}
+zusammenh"angt. Dies ist eine Erweiterung f"ur lange Dateinamen mit Unicode-Kodierung, die im klassischen FAT-Standard zun"achst
+nicht vorgesehen war. Diese Form der Dateinamen belegt insgesamt mehr Speicher aufgrund komplexerer Kodierung. Es wurden daher noch einmal eine Messreihe mit FatFs im klassischen \enquote{SFN}, \enquote{Short File Name} oder auch 8.3 Format,
+aufgenommen. Das Problem an diesem Format ist, dass nicht nur keine Umlaute f"ur Dateinamen funktionieren, sondern auch noch
+alle Dateien in Gro"sbuchstaben aufgezeichnet werden und nur eine maximale L"ange von 8 Zeichen aufweisen d"urfen, sowie 3 weitere Zeichen
+f"ur Dateiendungen wie \enquote{.txt}.
+\fig{fig:dateierstellalle} best"atigt die Vermutung. Mit dem klassischen SFN-Format zeigt FatFs eine bessere Performance
+beim Erstellen von Dateien als littlefs. 
 
 \subsubsection{Fazit Versuch 1}
 Auch wenn in diesem Versuch keine Aussage "uber die Datenintegrit"at getroffen werden konnte, da die zugrundeliegende "Ubertragungsebene
 fehlerfrei gearbeitet hat, so lassen sich dennoch wichtige Schl"usse f"ur den Umgang mit Dateien auf eingebetteten Systemen ziehen:
-
+Bei der Speicherung von Daten ist es f"ur die Geschwindigkeit des Schreibzyklus vorteilhaft diese in m"oglichst wenig Dateien zu b"undeln. Sollen dennoch
+separate Dateien erzeugt werden, so ist es vorteilhaft diese ab einer gewissen Anzahl auf Unterordner aufzuteilen.
+Eine m"ogliche Erkl"arung ist hierf"ur, dass die Dateisysteme vor dem Erstellen neuer Dateien den gesamten Inhalt des Ordners
+zun"achst auslesen m"ussen. Wenn dieser eine komplexe Kodierung enth"alt wie im Falle von Fat32-LFN oder sehr viele Dateien, so schadet
+das der Performance, insbesondere da auf eingebetteten Systemen die Speicherbuffer sehr klein sind, mit denen gearbeitet wird.
 
 \subsection{Versuch 2: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}
 Versuch 2 folgt im Aufbau und in der Idee analog zu Versuch 1.
@@ -1661,6 +1677,43 @@ Basis nutzen, ist eine "Uberpr"ufung des Umgangs mit fehlerhaften Daten auf Date
 \coderef{listing:sdwriteblockmod} zeigt den modifizierten Teil der Schreibfunktion.
 Die aufgenommenen Rohdaten finden sich in \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest2}{test\_data/Writetest2/}.
 
+In der Auswertung zeigt sich, dass littlefs das Datei- und Datenintegrit"atsversprechen h"alt: 
+Rund 500 Dateien konnten mit fehlerfreiem Dateinamen und Inhalt geschrieben und "uberpr"uft werden.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Plot/3_WT2_littlefs_dateierstellzeit.png}
+    \caption{Dauer der Neuerstellung von Dateien auf dem littlefs-Dateisystem mit korrupten Daten}
+    \label{fig:littlefstime_corr}
+\end{figure}
+
+\fig{fig:littlefstime_corr} zeigt den aus Versuch 1 bekannten Graphen, in dem die Dauer gezeichnet wird,
+die die Neuerstellung einer Datei in Abh"angigkeit von den sich bereits im Ordner befindlichen Dateien ben"otigt. 
+Logischerweise ben"otigt littlefs viel h"aufiger l"angere Zeit zur Erstellung einer Datei als zuvor,
+da es nach der Fehlerpr"ufung die Daten neu anfordern und neu senden muss.
+
+Bei FatFs hingegen f"allt allein schon die automatische Auswertung schwer:
+Durch Fehler sowohl beim Dateninhalt als auch in den Metadaten (also Dateiname, Zeitstempel, Dateigr"o"se etc.)
+l"asst sich das 
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder_Plot/4_dateierstellzeit_all.png}
+    \caption{Dauer der Neuerstellung von Dateien "Ubersicht}
+    \label{fig:dateierstellalle}
+\end{figure}
+
+\fig{fig:dateierstellalle} zeigt eine "Ubersicht "uber die Dateierstellzeiten in verschiedenen Kontexten.
+Interessant ist hier der Graph f"ur \enquote{Korruptes FAT32 SFN}. Ein L"oschen der korrupten FAT32 Dateien
+war n"amlich nur bedingt m"oglich. Das zur"uckgebliebene inkonsistente Dateisystem hat verglichen mit 
+einem frisch formatierten FAT32 erhebliche Performanceprobleme. Diese k"onnen nur durch Neuformatierung oder
+durch spezialisierte Software wie \enquote{fsck (file system check)}, beseitigt werden.  
+
+\subsubsection{Fazit Versuch 2}
+Bei einem unsicheren "Ubertragungskanal f"ur die Daten bedarf es f"ur das FAT-Dateisystem eine Strategie um die
+Integrit"at der Daten und des Dateisystems zu sichern.
+Littlefs hingegen bringt durch die in Kapitel XXX besprochenen Schutzmechanismen hier klare Vorteile mit sich.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 \input{Quellenverzeichnis.tex}
