@@ -1,0 +1,56 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+.
+|\PYGZhy{}\PYGZhy{} code
+|   `\PYGZhy{}\PYGZhy{} spi\PYGZhy{}sdcardwrite                   \PYGZsh{} Hauptprojekt
+|       |\PYGZhy{}\PYGZhy{} build                         \PYGZsh{} Build\PYGZhy{}Verzeichnis CMake
+|       |\PYGZhy{}\PYGZhy{} build.sh                      \PYGZsh{} Build\PYGZhy{}Skript
+|       |\PYGZhy{}\PYGZhy{} CMakeLists.txt                \PYGZsh{} CMake\PYGZhy{}Projektkonfiguration
+|       |\PYGZhy{}\PYGZhy{} FatFs                         \PYGZsh{} FatFs\PYGZhy{}Dateisystem extern
+|       |   |\PYGZhy{}\PYGZhy{} diskio.c                  \PYGZsh{} Mitgelieferte Beispiel diskio
+|       |   |\PYGZhy{}\PYGZhy{} diskio.h
+|       |   |\PYGZhy{}\PYGZhy{} ff.c                      \PYGZsh{} Kernimplementierung von FatFs
+|       |   |\PYGZhy{}\PYGZhy{} ffconf.h                  \PYGZsh{} FatFs\PYGZhy{}Konfigurationsdatei
+|       |   |\PYGZhy{}\PYGZhy{} ff.h                      \PYGZsh{} Öffentliche FatFs\PYGZhy{}Schnittstelle
+|       |   |\PYGZhy{}\PYGZhy{} ffsystem.c
+|       |   `\PYGZhy{}\PYGZhy{} ffunicode.c               \PYGZsh{} Codes für LFS, lange Dateinamen
+|       |\PYGZhy{}\PYGZhy{} include                       \PYGZsh{} Projektweite Header\PYGZhy{}Dateien STM
+|       |\PYGZhy{}\PYGZhy{} linker
+|       |   `\PYGZhy{}\PYGZhy{} STM32G431RBTX\PYGZus{}FLASH.ld    \PYGZsh{} Linker\PYGZhy{}Skript
+|       |\PYGZhy{}\PYGZhy{} littlefs                      \PYGZsh{} littlefs\PYGZhy{}Dateisystem extern
+|       |   |\PYGZhy{}\PYGZhy{} lfs.c                     \PYGZsh{} Kernimplementierung von littlefs
+|       |   |\PYGZhy{}\PYGZhy{} lfs.h                     \PYGZsh{} Öffentliche littlefs\PYGZhy{}Schnittstelle
+|       |   |\PYGZhy{}\PYGZhy{} lfs\PYGZus{}util.c
+|       |   |\PYGZhy{}\PYGZhy{} lfs\PYGZus{}util.h
+|       |   `\PYGZhy{}\PYGZhy{} LICENSE.md                \PYGZsh{} Lizenz von littlefs
+|       |\PYGZhy{}\PYGZhy{} size
+|       |   |\PYGZhy{}\PYGZhy{} size\PYGZus{}fatfs.cpp            \PYGZsh{} Speicherverbrauch mit FatFs
+|       |   |\PYGZhy{}\PYGZhy{} size\PYGZus{}littlefs.cpp         \PYGZsh{} Speicherverbrauch mit littlefs
+|       |   |\PYGZhy{}\PYGZhy{} size\PYGZus{}nofs.cpp             \PYGZsh{} Speicherverbrauch ohne Dateisystem
+|       |   `\PYGZhy{}\PYGZhy{} sizes\PYGZus{}allopt.txt          \PYGZsh{} Ergebnisse der Größenmessungen
+|       |\PYGZhy{}\PYGZhy{} src
+|       |   |\PYGZhy{}\PYGZhy{} diskio.cpp                \PYGZsh{} Anbindung von FatFs an den SD\PYGZhy{}Treiber
+|       |   |\PYGZhy{}\PYGZhy{} fatfs\PYGZus{}time.cpp            \PYGZsh{} Zeitfunktion für FatFs
+|       |   |\PYGZhy{}\PYGZhy{} GPIO\PYGZus{}HAL.hpp              \PYGZsh{} Kleine GPIO\PYGZhy{}Hardwareabstraktion
+|       |   |\PYGZhy{}\PYGZhy{} init\PYGZus{}conf.hpp             \PYGZsh{} Initialisierungskonfiguration
+|       |   |\PYGZhy{}\PYGZhy{} sdcarddriver.hpp          \PYGZsh{} SD\PYGZhy{}Karten\PYGZhy{}Treiber
+|       |   |\PYGZhy{}\PYGZhy{} sdcardlittlefs.cpp        \PYGZsh{} Anbindung von littlefs an den SD\PYGZhy{}Treiber
+|       |   |\PYGZhy{}\PYGZhy{} sdcardlittlefs.hpp
+|       |   `\PYGZhy{}\PYGZhy{} spidriver.hpp             \PYGZsh{} SPI\PYGZhy{}Treiber
+|       |\PYGZhy{}\PYGZhy{} startup\PYGZus{}stm32g431xx.s         \PYGZsh{} Startup\PYGZhy{}Code des STM
+|       |\PYGZhy{}\PYGZhy{} STM32G431xx.svd               \PYGZsh{} Beschreibung der MCU\PYGZhy{}Register für den Cortex\PYGZhy{}Debugger
+|       |\PYGZhy{}\PYGZhy{} system\PYGZus{}stm32g4xx.c            \PYGZsh{} Systeminitialisierungsdatei STM
+|       `\PYGZhy{}\PYGZhy{} test
+|           |\PYGZhy{}\PYGZhy{} fatfs\PYGZus{}8.3\PYGZus{}write\PYGZus{}test.cpp  \PYGZsh{} FatFs\PYGZhy{}Schreibtest mit 8.3\PYGZhy{}Dateinamen
+|           |\PYGZhy{}\PYGZhy{} fatfs\PYGZus{}write\PYGZus{}test.cpp      \PYGZsh{} Schreibtest 1+2 für FatFs
+|           |\PYGZhy{}\PYGZhy{} littlefs\PYGZus{}write\PYGZus{}test.cpp   \PYGZsh{} Schreibtest 1+2 für littlefs
+|           |\PYGZhy{}\PYGZhy{} sd\PYGZus{}test.cpp               \PYGZsh{} Haupttest des SD\PYGZhy{}Karten\PYGZhy{}Treibers
+|           `\PYGZhy{}\PYGZhy{} spi\PYGZus{}test.gdb              \PYGZsh{} GDB\PYGZhy{}Skript für den Haupttest
+|\PYGZhy{}\PYGZhy{} LaTeX                                 \PYGZsh{} LaTeX\PYGZhy{}Dateien der Bachelorarbeit
+|\PYGZhy{}\PYGZhy{} PCB                                   \PYGZsh{} KiCad\PYGZhy{}Dateien für die erstellte PCB
+|\PYGZhy{}\PYGZhy{} README.md                             \PYGZsh{} Projektbeschreibung für GitHub (Englisch)
+`\PYGZhy{}\PYGZhy{} test\PYGZus{}data                             \PYGZsh{} Daten für die durchgeführten Schreitests
+    |\PYGZhy{}\PYGZhy{} Writetest1                        \PYGZsh{} Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
+    |\PYGZhy{}\PYGZhy{} Writetest2                        \PYGZsh{} Versuch 2: Manipulierte Schreibfunktion
+    |\PYGZhy{}\PYGZhy{} Writetest3                        \PYGZsh{} Versuch 3: Pseudo\PYGZhy{}randomisierte Daten
+    `\PYGZhy{}\PYGZhy{} Writetest4                        \PYGZsh{} Versuch 4: Daten bei Stromausfälle
+\end{MintedVerbatim}

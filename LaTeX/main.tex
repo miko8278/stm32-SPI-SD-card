@@ -269,12 +269,121 @@
 \newpage % Neue Seite
 
 \section{Einleitung}
+SD-Karten sind eine weit verbreitete M"oglichkeit,
+um Daten auf eingebetteten Systemen zu speichern und zu lesen. 
+Sie sind, verglichen mit Flash-Bausteinen, bei gro"ser Speicherkapazit"at vergleichsweise g"unstig
+und benötigen auf einer Platine wenig Platz.
+
+Im Rahmen dieser Bachelorarbeit wurde die Verwendung von SD-Karten an einem Mikrocontroller untersucht.
+Als Mikrocontroller kam dabei ein STM32G431 zum Einsatz, der über die SPI-Schnittstelle mit einer SD-Karte kommunizierte.
+Dafür wurde zunächst eine eigene Schaltung entwickelt und auf einer selbst entworfenen Platine umgesetzt.
+Neben der eigentlichen SD-Karten-Schnittstelle enthält die Platine weitere Schnittstellen und Peripherie,
+die für die Entwicklung und Untersuchung des Systems ben"otigt wurden.
+
+Auf der Softwareseite wurden eigene SPI- und SD-Karten-Treiber in C++20 entwickelt. 
+Diese bilden die Grundlage für die Kommunikation zwischen dem Mikrocontroller und der SD-Karte.
+Es wurden die für den Zugriff auf eine SD-Karte notwendigen Funktionen zum Lesen und Schreiben
+von Bl"ocken implementiert. 
+Ein besonderer Fokus lag dabei auf der Verwendung der SD-Karte im SPI-Modus,
+da dieser eine vergleichsweise einfache Anbindung ermöglicht und 
+SPI-Peripherien bei Mikrocontrollern sehr verbreitet sind.
+
+Aufbauend auf der direkten Blockadressierung wurden anschließend verschiedene Dateisysteme betrachtet. 
+Dazu wurden mit FatFs und littlefs zwei unterschiedliche Dateisysteme auf dem Mikrocontroller eingesetzt 
+und an den zuvor entwickelten SD-Treiber angebunden. 
+Dabei wurde insbesondere untersucht, welche Eigenschaften die beiden Dateisysteme im Vergleich zueinander besitzen.
+Neben dem benötigten Speicher auf dem Mikrocontroller wurden auch das Verhalten bei Schreiboperationen
+und die Zuverlässigkeit der Datenspeicherung betrachtet.
+Aufgrund von unerwarteten Ergebnissen bei ersten Tests wurden zus"atzlich
+Zeitmessungen bei der Erstellung der Testdateien durchgef"uhrt und die Ergebnisse visualisiert. 
 
 
+Ein Schwerpunkt der Arbeit lag auf der Untersuchung von Schreibfehlern
+und dem Verhalten des Systems unter verschiedenen Bedingungen. 
+Hierzu wurden mehrere Versuche durchgeführt: 
+Zun"achst wurden Schreiboperationen mit bekannten Daten untersucht. 
+Anschließend wurden die Schreibfunktionen des SD-Treibers gezielt verändert,
+um die Auswirkungen von Fehlern bei den unterschiedlichen Dateisystemen untersuchen zu können.
+Ein weiterer Versuch untersuchte das Verhalten der Dateisysteme bei randomisierten Daten
+und diente als Vorbereitung für den abschließenden Versuch, 
+der das Verhalten der Dateisysteme bei unerwarteten Stromausf"allen betrachtete.
 
 
+\subsection{Projekt"ubersicht}
 Der zu dieser Bachelorarbeit geh"orende Quellcode ist auf GitHub verf"ugbar unter \url{https://github.com/miko8278/stm32-SPI-SD-card} und wird dort in englischer Sprache geführt.
 Dadurch soll der Code einer breiteren Gruppe von Interessierten zug"anglich sein.
+
+Da im weiteren Verlauf dieser Arbeit mehrfach auf konkrete Dateien und
+Verzeichnisse des Softwareprojekts verwiesen wird, soll die folgende "Ubersicht als Navigationshilfe
+"uber die wichtigsten Dateien und die Struktur des Repositories auf GitHub dienen.
+
+\newpage 
+
+\begin{minted}[
+    frame=lines,      % Rahmenlinien oben und unten
+    framesep=2mm,     % Abstand zum Rahmen
+    baselinestretch=1.2,
+    bgcolor=lightgray!20, % Hintergrundfarbe
+    fontsize=\scriptsize,
+    linenos           % Zeilennummern aktivieren
+]{text}
+.
+|-- code
+|   `-- spi-sdcardwrite                   # Hauptprojekt
+|       |-- build                         # Build-Verzeichnis CMake
+|       |-- build.sh                      # Build-Skript
+|       |-- CMakeLists.txt                # CMake-Projektkonfiguration
+|       |-- FatFs                         # FatFs-Dateisystem extern
+|       |   |-- diskio.c                  # Mitgelieferte Beispiel diskio 
+|       |   |-- diskio.h
+|       |   |-- ff.c                      # Kernimplementierung von FatFs
+|       |   |-- ffconf.h                  # FatFs-Konfigurationsdatei
+|       |   |-- ff.h                      # Öffentliche FatFs-Schnittstelle
+|       |   |-- ffsystem.c
+|       |   `-- ffunicode.c               # Codes für LFS, lange Dateinamen
+|       |-- include                       # Projektweite Header-Dateien STM
+|       |-- linker
+|       |   `-- STM32G431RBTX_FLASH.ld    # Linker-Skript
+|       |-- littlefs                      # littlefs-Dateisystem extern
+|       |   |-- lfs.c                     # Kernimplementierung von littlefs
+|       |   |-- lfs.h                     # Öffentliche littlefs-Schnittstelle
+|       |   |-- lfs_util.c
+|       |   |-- lfs_util.h
+|       |   `-- LICENSE.md                # Lizenz von littlefs
+|       |-- size
+|       |   |-- size_fatfs.cpp            # Speicherverbrauch mit FatFs
+|       |   |-- size_littlefs.cpp         # Speicherverbrauch mit littlefs
+|       |   |-- size_nofs.cpp             # Speicherverbrauch ohne Dateisystem
+|       |   `-- sizes_allopt.txt          # Ergebnisse der Größenmessungen
+|       |-- src
+|       |   |-- diskio.cpp                # Anbindung von FatFs an den SD-Treiber
+|       |   |-- fatfs_time.cpp            # Zeitfunktion für FatFs
+|       |   |-- GPIO_HAL.hpp              # Kleine GPIO-Hardwareabstraktion
+|       |   |-- init_conf.hpp             # Initialisierungskonfiguration
+|       |   |-- sdcarddriver.hpp          # SD-Karten-Treiber
+|       |   |-- sdcardlittlefs.cpp        # Anbindung von littlefs an den SD-Treiber
+|       |   |-- sdcardlittlefs.hpp
+|       |   `-- spidriver.hpp             # SPI-Treiber
+|       |-- startup_stm32g431xx.s         # Startup-Code des STM
+|       |-- STM32G431xx.svd               # Beschreibung der MCU-Register für den Cortex-Debugger
+|       |-- system_stm32g4xx.c            # Systeminitialisierungsdatei STM
+|       `-- test
+|           |-- fatfs_8.3_write_test.cpp  # FatFs-Schreibtest mit 8.3-Dateinamen
+|           |-- fatfs_write_test.cpp      # Schreibtest 1+2 für FatFs
+|           |-- littlefs_write_test.cpp   # Schreibtest 1+2 für littlefs
+|           |-- sd_test.cpp               # Haupttest des SD-Karten-Treibers
+|           `-- spi_test.gdb              # GDB-Skript für den Haupttest
+|-- LaTeX                                 # LaTeX-Dateien der Bachelorarbeit
+|-- PCB                                   # KiCad-Dateien für die erstellte PCB
+|-- README.md                             # Projektbeschreibung für GitHub (Englisch)
+`-- test_data                             # Daten für die durchgeführten Schreitests
+    |-- Writetest1                        # Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
+    |-- Writetest2                        # Versuch 2: Manipulierte Schreibfunktion
+    |-- Writetest3                        # Versuch 3: Pseudo-randomisierte Daten
+    `-- Writetest4                        # Versuch 4: Daten bei Stromausfälle
+    \end{minted}
+    
+
 \section{Hardware-Design und Schnittstellen}
 
 \subsection{Einleitung}
@@ -1429,9 +1538,9 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 
 
-\section{LittleFS}
+\subsection{LittleFS}
 
-\subsection{Implementierung}
+\subsubsection{Implementierung}
 \begin{figure}[H]
     \centering
     \includegraphics[height=8cm]{Bilder_Diagramme/littlefsstack.png}
@@ -1440,8 +1549,7 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 \end{figure}
 
 
-
-\subsection{littlefs FUSE wrapper}
+\subsubsection{littlefs FUSE wrapper}
 W"ahrend sich mit FAT formatierte SD-Karten problemlos an jedem Desktop-PC mit jedem 
 erdenklichen Betriebssystem auslesen lassen, existiert f"ur littlefs das 
 \href{https://github.com/littlefs-project/littlefs-fuse}{littlefs FUSE wrapper} Projekt.
@@ -1629,7 +1737,7 @@ f"ur Dateiendungen wie \enquote{.txt}.
 \fig{fig:dateierstellalle} best"atigt die Vermutung. Mit dem klassischen SFN-Format zeigt FatFs eine bessere Performance
 beim Erstellen von Dateien als littlefs. 
 
-\subsubsection{Fazit Versuch 1}
+\subsubsection*{Fazit Versuch 1}
 Auch wenn in diesem Versuch keine Aussage "uber die Datenintegrit"at getroffen werden konnte, da die zugrundeliegende "Ubertragungsebene
 fehlerfrei gearbeitet hat, so lassen sich dennoch wichtige Schl"usse f"ur den Umgang mit Dateien auf eingebetteten Systemen ziehen:
 Bei der Speicherung von Daten ist es f"ur die Geschwindigkeit des Schreibzyklus vorteilhaft diese in m"oglichst wenig Dateien zu b"undeln. Sollen dennoch
@@ -1694,7 +1802,7 @@ da es nach der Fehlerpr"ufung die Daten neu anfordern und neu senden muss.
 
 Bei FatFs hingegen f"allt allein schon die automatische Auswertung schwer:
 Durch Fehler sowohl beim Dateninhalt als auch in den Metadaten (also Dateiname, Zeitstempel, Dateigr"o"se etc.)
-l"asst sich das 
+l"asst sich das zuvor verwendete Skript nicht zuverl"assig anwenden.
 
 
 \begin{figure}[H]
@@ -1707,13 +1815,34 @@ l"asst sich das
 \fig{fig:dateierstellalle} zeigt eine "Ubersicht "uber die Dateierstellzeiten in verschiedenen Kontexten.
 Interessant ist hier der Graph f"ur \enquote{Korruptes FAT32 SFN}. Ein L"oschen der korrupten FAT32 Dateien
 war n"amlich nur bedingt m"oglich. Das zur"uckgebliebene inkonsistente Dateisystem hat verglichen mit 
-einem frisch formatierten FAT32 erhebliche Performanceprobleme. Diese k"onnen nur durch Neuformatierung oder
-durch spezialisierte Software wie \enquote{fsck (file system check)}, beseitigt werden.  
+einem frisch formatierten FAT32 erhebliche Performanceprobleme. An dieser Stelle sei erw"ahnt, dass alle Graphen
+in \fig{fig:dateierstellalle} im Gegensatz zu \fig{fig:littlefstime_corr} mit einer unmanipulierten Schreibfunktion
+erstellt wurden. Die Zeitverz"ogerung f"ur den Graphen \enquote{Korruptes FAT32 SFN} entsteht lediglich durch 
+ein inkonsistentes Dateisystem. Dieses kann nur durch Neuformatierung oder
+durch spezialisierte Software wie \enquote{fsck (file system check)} wieder repariert werden.  
 
-\subsubsection{Fazit Versuch 2}
+\subsubsection*{Fazit Versuch 2}
 Bei einem unsicheren "Ubertragungskanal f"ur die Daten bedarf es f"ur das FAT-Dateisystem eine Strategie um die
 Integrit"at der Daten und des Dateisystems zu sichern.
 Littlefs hingegen bringt durch die in Kapitel XXX besprochenen Schutzmechanismen hier klare Vorteile mit sich.
+
+
+
+\subsection{Versuch 3: Analyse der Schreibfehlerraten mittels pseudorandomisierter Zeichenfolge}
+Die Idee dieses Versuches ist einerseits die Konsistenz der Schreiboperationen
+bei zuf"alligen oder pseudo-zuf"alligen Daten festzustellen, andererseits die Schreibperformance
+bei dem Anh"angen von Daten an eine bereits existierende Datei im Gegensatz zur Neuerstellung zu untersuchen.
+\subsubsection*{Fazit Versuch 3}
+
+
+\subsection{Versuch 4: Verhalten der Dateisysteme bei Stromunterbrechungen}
+Der vorhergehende Versuch war im Grunde genommen eine Vorbereitung f"ur ein 
+gutes Design von diesem Versuch. Die Entwickler des littlefs-Dateisystems versprechen
+eine hohe Datei- und Dateisystemkonsistenz bei Stromausf"allen. Dies soll
+praktisch getestet werden und mit dem FAT-Dateisystem verglichen werden.
+\subsubsection*{Fazit Versuch 4}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%
 \input{Quellenverzeichnis.tex}
