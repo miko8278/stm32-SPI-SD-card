@@ -53,6 +53,8 @@ int main()
         int res_open = lfs_file_open(&lfs_inst, &file, filename, LFS_O_RDWR | LFS_O_CREAT);
         if(res_open == LFS_ERR_OK)
         {
+            //it's actually lfswritebuf without &, since both adresses are same it worked.
+            //Check next test again
             lfs_file_write(&lfs_inst, &file, &lfswritebuf, sizeof(lfswritebuf));
             // remember the storage is not updated until the file is closed successfully
             lfs_file_close(&lfs_inst, &file);

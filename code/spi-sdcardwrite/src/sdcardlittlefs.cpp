@@ -145,7 +145,7 @@ uint8_t __lfs_sdinit(lfs_config& sd_lfsconfig)
     GpioPin<Config::PortBase, Config::Pin>::OutputInit(Level::High);
     SpiDriver<Config::SpiBase>::Init();
 
-    if (SD_InitSPI<Config>() != SD_INIT_OK)
+    if (SD_InitSPI<Config>(SpiDiv::Div2) != SD_INIT_OK)
         return LFSINIT_SPIINIT_FAIL;
 
     uint8_t buffer[16];
