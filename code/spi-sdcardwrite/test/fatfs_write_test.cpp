@@ -52,7 +52,7 @@ int main()
                 //The following creates the 1024 Byte message we write
                 char msg[32];
                 int msg_len = std::snprintf(msg, sizeof(msg), "Write %08d!\n", file_number);
-                for (int j = 0; j < 64; j++)
+                for (int j = 0; j < (1024/msg_len); j++)
                 {
                     std::memcpy(big_buf + j * msg_len, msg, msg_len);
                 }

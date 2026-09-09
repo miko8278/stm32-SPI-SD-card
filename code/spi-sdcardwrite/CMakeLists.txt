@@ -122,3 +122,11 @@ add_stm32_executable(littlefs-write-test
     littlefs/lfs.c
     littlefs/lfs_util.c
 )
+
+add_stm32_executable(fatfs-rand-write-test
+    test/fatfs_rand_write_test.cpp
+    FatFs/ff.c
+    FatFs/ffunicode.c
+    src/diskio.cpp
+    src/fatfs_time.cpp
+)
