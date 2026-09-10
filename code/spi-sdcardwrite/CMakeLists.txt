@@ -145,6 +145,7 @@ add_stm32_executable(fatfs-rand-write-test
     FatFs/ffunicode.c
     src/diskio.cpp
     src/fatfs_time.cpp
+    src/prng.cpp
 )
 
 add_stm32_executable(littlefs-rand-write-test
@@ -152,4 +153,5 @@ add_stm32_executable(littlefs-rand-write-test
     src/sdcardlittlefs.cpp
     littlefs/lfs.c
     littlefs/lfs_util.c
+    src/prng.cpp
 )

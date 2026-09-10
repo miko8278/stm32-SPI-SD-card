@@ -11,7 +11,7 @@
 #include "sdcardlittlefs.hpp"
 #include <cstdio>
 #include <cstring>
-
+#include "prng.hpp"
 
 int main()
 {
@@ -37,12 +37,10 @@ int main()
 
     char filename[32];
     int file_number = 0;
-    int cnt_number = 0;
+    int cnt = 0;
+    std::snprintf(filename, sizeof(filename), "lfs_rand_test1.txt");
 
-    std::snprintf(filename, sizeof(filename), "lfs_append_test1.txt");
-
-    char msg[32];
-
+    uint32_t seednxt = 0;
 
     int res_open = lfs_file_open(&lfs_inst, &file, filename, LFS_O_RDWR | LFS_O_CREAT);
     if(res_open != LFS_ERR_OK) 
@@ -52,20 +50,26 @@ int main()
     lfs_file_seek(&lfs_inst, &file, 0, LFS_SEEK_END);
     for(;;)
     {
-        int tcnt_ms = TIM2->CNT/1000;
-        int msg_len = std::snprintf(msg, sizeof(msg), "%07d\n", tcnt_ms);
 
-        // Fill the complete 1024-byte buffer
-        for (int j = 0; j < (1024 / msg_len); j++)
+        constexpr int u32bitsize = 4; 
+        // Generate 1024 bytes of pseudorandom data
+        for (int i = 0; i < 1024; i += u32bitsize)
         {
-            std::memcpy(lfswritebuf + j * msg_len, msg, msg_len);
+            uint32_t random_value = xorrng32(0x01234567 + seednxt);
+            std::memcpy(lfswritebuf + i, &random_value, u32bitsize);
+            seednxt++;
         }
-        
+
+
         lfs_file_write(&lfs_inst, &file, lfswritebuf, sizeof(lfswritebuf));
 
-        //sync for now
-        lfs_file_sync(&lfs_inst, &file);
-
+        //sync every 200. write for now
+        if(cnt == 200)
+        {
+            lfs_file_sync(&lfs_inst, &file);
+            cnt = 0;
+        }
+        cnt++;
     }
     // remember the storage is not updated until the file is closed successfully
     lfs_file_close(&lfs_inst, &file);

@@ -39,3 +39,9 @@ _autosave-*
 PCB/*.rpt
 #kicad uses also git under the hood, ignore it...
 **/.history/
+
+
+#
+# Big testdata
+#
+big_test/

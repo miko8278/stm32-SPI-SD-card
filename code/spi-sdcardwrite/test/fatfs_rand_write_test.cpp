@@ -11,9 +11,13 @@
 #include "ff.h"
 #include <cstdio>
 #include <cstring>
+#include "prng.hpp"
 
 int write_errors = 0;
 int write_number = 0;
+
+
+
 
 int main()
 {
@@ -37,16 +41,12 @@ int main()
 
     if (flg_mnt == FR_OK)
     {
-        constexpr char filename[] = "fatfs_a2.txt";
+        constexpr char filename[] = "fat_wt3.txt";
         char big_buf[1024];
-
-
-        // Create the 1024-byte message
-        char msg[32];
 
         FIL file;
         UINT written;
-
+        uint32_t seednxt = 0;
         // Open existing file and position at the end.
         FRESULT result = f_open(&file,filename, FA_WRITE | FA_OPEN_APPEND);
 
@@ -54,27 +54,29 @@ int main()
         {   
             for(;;)
             {
-                int tcnt_ms = TIM2->CNT/1000;
-                int msg_len = std::snprintf(msg, sizeof(msg), "%07d\n", tcnt_ms);
+                constexpr int u32bitsize = 4; 
 
-                // Fill the complete 1024-byte buffer
-                for (int j = 0; j < (1024 / msg_len); j++)
+                // Generate 1024 bytes of pseudorandom data
+                for (int i = 0; i < 1024; i += u32bitsize)
                 {
-                    std::memcpy(big_buf + j * msg_len, msg, msg_len);
+                    uint32_t random_value = xorrng32(0x01234567 + seednxt);
+                    std::memcpy(big_buf + i, &random_value, u32bitsize);
+                    seednxt++;
                 }
-                result = f_write(&file,big_buf,sizeof(big_buf),&written);
+
+                result = f_write(&file, big_buf, sizeof(big_buf), &written);
 
                 if (result != FR_OK || written != sizeof(big_buf))
                 {
                     write_errors++;
                 }
 
-                //I'm not sure if sync is really needed, works without
                 if ((write_number % 125) == 0)
                 {
                     f_sync(&file);
                     write_number = 0;
                 }
+
                 write_number++;
             }
             f_close(&file);
