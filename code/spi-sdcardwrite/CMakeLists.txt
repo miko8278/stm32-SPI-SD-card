@@ -18,15 +18,15 @@ set(MCU_FLAGS
 
 add_compile_options(
     ${MCU_FLAGS}
-    -Wall -Wextra -Os -g3                     
-    -ffunction-sections -fdata-sections       
+    -Wall -Wextra -O0 -g3                     
+    -ffunction-sections -fdata-sections 
+    #-Wl,--gc-sections #this removes stuff for my gdb script...         
 )
 
 add_link_options(
     ${MCU_FLAGS}
     -specs=nano.specs                         # Uses lightweight C library
-    -specs=nosys.specs                        # Provides dummy stubs for _exit, _sbrk, etc.
-    -Wl,--gc-sections                         
+    -specs=nosys.specs                        # Provides dummy stubs for _exit, _sbrk, etc.                      
 )
 
 # Set source code definitions and file properties
@@ -153,5 +153,27 @@ add_stm32_executable(littlefs-rand-write-test
     src/sdcardlittlefs.cpp
     littlefs/lfs.c
     littlefs/lfs_util.c
+    src/prng.cpp
+)
+
+add_stm32_executable(killswitch
+    src/killswitch.cpp
+)
+
+
+add_stm32_executable(littlefs-killswitch-test
+    test/littlefs_killswitch_test.cpp
+    src/sdcardlittlefs.cpp
+    littlefs/lfs.c
+    littlefs/lfs_util.c
+    src/prng.cpp
+)
+
+add_stm32_executable(fatfs-killswitch-test
+    test/fatfs_killswitch_test.cpp
+    FatFs/ff.c
+    FatFs/ffunicode.c
+    src/diskio.cpp
+    src/fatfs_time.cpp
     src/prng.cpp
 )

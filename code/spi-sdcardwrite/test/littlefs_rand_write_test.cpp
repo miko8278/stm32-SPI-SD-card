@@ -38,7 +38,7 @@ int main()
     char filename[32];
     int file_number = 0;
     int cnt = 0;
-    std::snprintf(filename, sizeof(filename), "lfs_rand_test1.txt");
+    std::snprintf(filename, sizeof(filename), "lfs_rand_test2.txt");
 
     uint32_t seednxt = 0;
 

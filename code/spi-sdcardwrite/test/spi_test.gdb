@@ -343,12 +343,13 @@ define spi_test
 
 end
 
-#
-#break debug_gdb_print
-#commands
-#    printf "%s", str
-#    continue
-#end
+
+break debug_gdb_print
+info break
+commands
+    printf "%s", str
+    continue
+end
 
 break test_complete
 commands
