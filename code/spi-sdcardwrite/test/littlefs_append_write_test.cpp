@@ -4,7 +4,7 @@
  * Author: Michael Kolorz
  *
  * Writetest for littlefs using a known and humanreadable byte-sequence
- * Each file has a size of 1 kB
+ * Just one file appended over and over again
  */
 
 #include "init_conf.hpp"

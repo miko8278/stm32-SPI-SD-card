@@ -3,8 +3,8 @@
  *
  * Author: Michael Kolorz
  *
- * Writetest for FatFs using a known and humanreadable byte-sequence
- * Each file has a size of 1 kB
+ * Writetest for FatFs using a known and humanreadable byte-sequence.
+ * One file is being appended over and over.
  */
 
 #include "init_conf.hpp"

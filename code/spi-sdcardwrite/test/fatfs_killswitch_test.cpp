@@ -4,7 +4,7 @@
  * Author: Michael Kolorz
  *
  * Writetest for FatFs using a known and humanreadable byte-sequence
- * Each file has a size of 1 kB
+ * It is externally being shut off from power periodically
  */
 
 #include "init_conf.hpp"

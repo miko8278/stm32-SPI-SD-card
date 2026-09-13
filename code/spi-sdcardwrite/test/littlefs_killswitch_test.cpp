@@ -4,7 +4,7 @@
  * Author: Michael Kolorz
  *
  * Writetest for littlefs using a known and humanreadable byte-sequence
- * Each file has a size of 1 kB
+ * It is externally being shut off from power periodically
  */
 
 #include "init_conf.hpp"
@@ -28,7 +28,6 @@ int main()
     lfs_file_t file;
     const lfs_config& cfg = lfs_sdconfig(SdSlot::SD1);
 
-
     int mount_res = lfs_mount(&lfs_inst, &cfg);
     if (mount_res != 0)
     {
@@ -38,31 +37,58 @@ int main()
     char filename[32];
     int file_number = 0;
     int cnt_number = 0;
+
+    //find the next available filename
+    for (;;)
+    {
+        std::snprintf(filename, sizeof(filename),
+                    "test%04d.txt", file_number);
+
+        struct lfs_info info;
+        int result = lfs_stat(&lfs_inst, filename, &info);
+
+        if (result == LFS_ERR_NOENT)
+        {
+            // This filename does not exist
+            break;
+        }
+
+        if (result < 0)
+        {
+            // Some other filesystem error
+            file_number++;
+            continue;
+        }
+
+        // File/directory exists
+        file_number++;
+    }
+
+    //create the 1024byte buffer
+    char msg[32];
+    int msg_len = std::snprintf(msg, sizeof(msg), "Write %08d!\n", file_number);
+    for (int j = 0; j < 64; j++)
+    {
+        std::memcpy(lfswritebuf + j * msg_len, msg, msg_len);
+    }
+
+    int res_open = lfs_file_open(&lfs_inst, &file, filename, LFS_O_RDWR | LFS_O_CREAT);
+    if(res_open != LFS_ERR_OK) 
+    {
+        return 0;
+    }
+    lfs_file_seek(&lfs_inst, &file, 0, LFS_SEEK_END);
+    
+    //write in a loop till killswitch
     for(;;)
     {
-        int tcnt_ms = TIM2->CNT/1000;
-        std::snprintf(filename, sizeof(filename), "l_%06d_%06d_%08d.txt", file_number, cnt_number, tcnt_ms);
-
-        char msg[32];
-        int msg_len = std::snprintf(msg, sizeof(msg), "Write %08d!\n", file_number);
-        for (int j = 0; j < 64; j++)
-        {
-            std::memcpy(lfswritebuf + j * msg_len, msg, msg_len);
-        }
-
-        int res_open = lfs_file_open(&lfs_inst, &file, filename, LFS_O_RDWR | LFS_O_CREAT);
-        if(res_open == LFS_ERR_OK)
-        {
-            //it's actually lfswritebuf without &, since both adresses are same it worked.
-            //Check next test again
-            lfs_file_write(&lfs_inst, &file, &lfswritebuf, sizeof(lfswritebuf));
-            // remember the storage is not updated until the file is closed successfully
-            lfs_file_close(&lfs_inst, &file);
-            file_number++;
-        }
-        cnt_number++;
+        
+        lfs_file_write(&lfs_inst, &file, lfswritebuf, sizeof(lfswritebuf));
+        //sync for now
+        lfs_file_sync(&lfs_inst, &file);
     }
-    // release any resources we were using
+    
+    // shouldn't reach
     lfs_unmount(&lfs_inst);
 
     return 0;
