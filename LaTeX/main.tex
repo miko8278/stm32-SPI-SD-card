@@ -1840,6 +1840,108 @@ Der vorhergehende Versuch war im Grunde genommen eine Vorbereitung f"ur ein
 gutes Design von diesem Versuch. Die Entwickler des littlefs-Dateisystems versprechen
 eine hohe Datei- und Dateisystemkonsistenz bei Stromausf"allen. Dies soll
 praktisch getestet werden und mit dem FAT-Dateisystem verglichen werden.
+Eine erste Idee war die \texttt{watchdog}-Funktionalit"at des STM32G431 zu nutzen.
+Dieses greift allerdings zu kurz, da dabei keine Unterbrechung der SD-Karten-Spannungsversorgung
+herbeigef"uhrt wird.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=12cm]{Bilder_Diagramme/killswitchschaltung.png}
+    \caption{\enquote{killswitch}-Schaltung f"ur eine periodische Unterbrechung der Spannungsversorgung}
+    \label{fig:killswitch}
+\end{figure}
+
+Die Spannungsversorgung der in dieser Bachelorarbeit verwendeten Platine wird entweder "uber die vorhandene 5V USB-C-Buchse
+oder "uber eine Stiftleiste, die haupts"achlich f"ur
+ein Batteriefach mit einer variablen Spannung zwischen 3,8 und 5,5 V gedacht ist, gew"ahrleistet. Welche der
+beiden Optionen verwendet wird entscheidet ein Jumper. An dieser Stelle l"asst sich praktischerweise
+eine externe Schaltung einklinken, die periodisch die Spannungsversorgung unterbricht. 
+
+\fig{fig:killswitch} zeigt die f"ur diesen Versuch erstellte Schaltung. Leider musste diese
+aufgrund der vorhandenen Bauteile etwas komplexer gestaltet werden als im Prinzip notwendig.
+Letztlich braucht es lediglich einen Schalter, der periodisch 5\,V an- und ausschaltet.
+So w"are ein mit 3,3 V schaltbares Relais mit einer R"ucklaufdiode ausreichend f"ur diesen Zweck gewesen.
+Aufgrund von eingeschr"ankter Bauteilverf"ugbarkeit wurde aber auf den vorhandenen MOSFET \texttt{IRF620A} zur"uckgegriffen.
+Dieser kann im durchgeschalteten Zustand den Pegel vom 5\,V LDO Eingang auf nahezu 0 V bringen. Das ist ohne destruktiven Kurzschluss
+nat"urlich nur durch die Widerst"ande $R_1$ und $R_2$ m"oglich. Diese begrenzen den f"ur den LDO verf"ugbaren Strom auf
+rund $\frac{5\,V}{26\,\Omega} \approx 190\,mA$. Dies ist f"ur die durchschnittliche Stromaufnahme der Platine (gemessen: 23,3\,mA)
+vollkommen ausreichend und wird mit dem Kondensator $C_1$ zus"atzlich gepuffert. 
+Gleichzeitig kann der verwendete MOSFET den Stromfluss problemlos gegen GND abf"uhren, sodass die Spannung
+auf 0\,V einbricht. Unter der Annahme, dass der MOSFET im durchgeschalteten Zustand keinen Innenwiderstand besitzt, flie"st einerseits
+ein Strom von $\frac{5\,V}{13\,\Omega} \approx 385\,mA$ vom USB-C Zweig, andererseits ebenfalls maximal 385\,mA vom Zweig mit dem Kondendator $C_1$.
+Da der MOSFET bis zu 5\,A schalten kann ist dies im sehr sicheren Bereich f"ur das Bauteil. \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Hard_Bilder/killswitchsteckbrett.jpg}
+    \caption{Aufbau der \enquote{killswitch}-Schaltung auf einem Steckbrett}
+    \label{fig:killswitchaufbau}
+\end{figure}
+Die Idee war zun"achst den MOSFET mit einem GPIO-Pin eines externen Nucleo-Boards zu schalten. Leider schaltet 
+der \texttt{IRF620A} erst zuverl"assig bei $U_{gs}=5\,\mathrm{V}$ durch, sodass eine zus"atzlicher NPN-Transistor in Emitterschaltung
+hinzugef"ugt werden musste, der die 5\,V der USB-C Buchse nutzt. Dieser kann dann mit dem GPIO-Pin eines beliebigen Nucleo-Boards geschaltet
+werden.
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    GPIO_Init();
+    TIM2_Init();
+
+    GpioPin<GPIOA_BASE,10>::OutputInit(Level::High);
+    for(;;)
+    {
+        //ON for 10 secs
+        GpioPin<GPIOA_BASE,10>::setHigh();
+        delay_s<10>();
+        //OFF for 3 secs
+        GpioPin<GPIOA_BASE,10>::setLow();
+        delay_s<3>();
+    }
+    \end{minted}
+\caption{Hauptschleife aus Datei \texttt{src/killswitch.cpp}}
+\label{listing:killswitchcode}
+\end{listing}
+\coderef{listing:killswitchcode} zeigt praktisch den gesamten Quelltext der Datei \text{src/killswitch.cpp},
+der aufgrund der bereits vorhandenen Abstraktionen sehr einfach ausf"allt. F"ur 10\,s bleibt
+der GPIO-Pin auf einem 3,3\,V Pegel und erlaubt der Dateisystem-Platine den Schreibtest auszuf"uhren.
+Dann wird der Pin auf einen 0\,V Pegel gesetzt und simuliert der Platine einen pl"otzlichen Stromausfall.
+Es finden in diesem Versuch also ca. 4 Stromausf"alle pro Minute statt.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{Bilder/stm-killswitch.png}
+    \caption{Verifizierung der Spannung am LDO-Eingang}
+    \label{fig:killswitchoszi}
+\end{figure}
+
+\fig{fig:killswitchoszi} verifiziert die korrekte Spannungsversorgung am LDO-Eingang. 
+Es f"allt zus"atzlich auf, dass die Schaltung etwas Rauschen eingebracht hat, was f"ur diesen Versuch,
+der Schreibfehler provozieren m"ochte, grunds"atzlich positiv zu bewerten ist. \\
+
+Die verwendeten Programme f"ur den Test sind \texttt{test/fatfs\_killswitch\_test.cpp} und
+\texttt{test/littlefs\_killswitch\_test.cpp}. Der Test an sich nutzt wieder eine f"ur
+menschen lesbare, verifizierbare Zeichenfolge. Diese ist bei Fehlern leichter Handzuhaben als die
+pseudo-randomisierte Folge aus dem vorherigen Versuch. 
+Das Programm pr"uft zun"achst wie viele Testdateien bereits existieren und erstellst
+dann die n"achst gr"o"sere Datei.
+Grunds"atzlich wird dann eine bekannte Zeichenfolge
+bis zum Stromausfall an die erstellte Datei immer wieder angeh"angt.
+Die Gr"o"se der Dateien h"angt also haupts"achlich davon ab, wie schnell die
+Dateisysteme den n"achsten freien Dateinamen finden und wie schnell sie an
+diese Datei anh"angen k"onnen.   
+
+
+
+
+
 \subsubsection*{Fazit Versuch 4}
 
 

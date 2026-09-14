@@ -1,0 +1,15 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{n}{GPIO\PYGZus{}Init}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{TIM2\PYGZus{}Init}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{n}{GpioPin}\PYG{o}{\PYGZlt{}}\PYG{n}{GPIOA\PYGZus{}BASE}\PYG{p}{,}\PYG{l+m+mi}{10}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{OutputInit}\PYG{p}{(}\PYG{n}{Level}\PYG{o}{:}\PYG{o}{:}\PYG{n}{High}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k}{for}\PYG{p}{(}\PYG{p}{;}\PYG{p}{;}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{c+c1}{//ON for 10 secs}
+\PYG{+w}{        }\PYG{n}{GpioPin}\PYG{o}{\PYGZlt{}}\PYG{n}{GPIOA\PYGZus{}BASE}\PYG{p}{,}\PYG{l+m+mi}{10}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{setHigh}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{n}{delay\PYGZus{}s}\PYG{o}{\PYGZlt{}}\PYG{l+m+mi}{10}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{c+c1}{//OFF for 3 secs}
+\PYG{+w}{        }\PYG{n}{GpioPin}\PYG{o}{\PYGZlt{}}\PYG{n}{GPIOA\PYGZus{}BASE}\PYG{p}{,}\PYG{l+m+mi}{10}\PYG{o}{\PYGZgt{}}\PYG{o}{:}\PYG{o}{:}\PYG{n}{setLow}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{        }\PYG{n}{delay\PYGZus{}s}\PYG{o}{\PYGZlt{}}\PYG{l+m+mi}{3}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}
