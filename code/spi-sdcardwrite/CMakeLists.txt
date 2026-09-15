@@ -18,9 +18,9 @@ set(MCU_FLAGS
 
 add_compile_options(
     ${MCU_FLAGS}
-    -Wall -Wextra -O0 -g3                     
+    -Wall -Wextra -Os -g3                     
     -ffunction-sections -fdata-sections 
-    #-Wl,--gc-sections #this removes stuff for my gdb script...         
+    -Wl,--gc-sections #this removes stuff for my gdb script...         
 )
 
 add_link_options(
@@ -86,94 +86,94 @@ add_stm32_executable(Size-FatFs
     src/fatfs_time.cpp
 )
 
-add_stm32_executable(Size-littlefs
-    size/size_littlefs.cpp
-    src/sdcardlittlefs.cpp
-    littlefs/lfs.c
-    littlefs/lfs_util.c
-)
+# add_stm32_executable(Size-littlefs
+#     size/size_littlefs.cpp
+#     src/sdcardlittlefs.cpp
+#     littlefs/lfs.c
+#     littlefs/lfs_util.c
+# )
 
 add_stm32_executable(Size-nofs
     size/size_nofs.cpp
 )
 
 
-#Long time write tests
-add_stm32_executable(fatfs-write-test
-    test/fatfs_write_test.cpp
-    FatFs/ff.c
-    FatFs/ffunicode.c
-    src/diskio.cpp
-    src/fatfs_time.cpp
-)
+# #Long time write tests
+# add_stm32_executable(fatfs-write-test
+#     test/fatfs_write_test.cpp
+#     FatFs/ff.c
+#     FatFs/ffunicode.c
+#     src/diskio.cpp
+#     src/fatfs_time.cpp
+# )
 
-add_stm32_executable(fatfs8.3-write-test
-    test/fatfs_8.3_write_test.cpp
-    FatFs/ff.c
-    FatFs/ffunicode.c
-    src/diskio.cpp
-    src/fatfs_time.cpp
-)
-
-
-add_stm32_executable(littlefs-write-test
-    test/littlefs_write_test.cpp
-    src/sdcardlittlefs.cpp
-    littlefs/lfs.c
-    littlefs/lfs_util.c
-)
-
-add_stm32_executable(fatfs-append-write-test
-    test/fatfs_append_write_test.cpp
-    FatFs/ff.c
-    FatFs/ffunicode.c
-    src/diskio.cpp
-    src/fatfs_time.cpp
-)
-
-add_stm32_executable(littlefs-append-write-test
-    test/littlefs_append_write_test.cpp
-    src/sdcardlittlefs.cpp
-    littlefs/lfs.c
-    littlefs/lfs_util.c
-)
+# add_stm32_executable(fatfs8.3-write-test
+#     test/fatfs_8.3_write_test.cpp
+#     FatFs/ff.c
+#     FatFs/ffunicode.c
+#     src/diskio.cpp
+#     src/fatfs_time.cpp
+# )
 
 
-add_stm32_executable(fatfs-rand-write-test
-    test/fatfs_rand_write_test.cpp
-    FatFs/ff.c
-    FatFs/ffunicode.c
-    src/diskio.cpp
-    src/fatfs_time.cpp
-    src/prng.cpp
-)
+# add_stm32_executable(littlefs-write-test
+#     test/littlefs_write_test.cpp
+#     src/sdcardlittlefs.cpp
+#     littlefs/lfs.c
+#     littlefs/lfs_util.c
+# )
 
-add_stm32_executable(littlefs-rand-write-test
-    test/littlefs_rand_write_test.cpp
-    src/sdcardlittlefs.cpp
-    littlefs/lfs.c
-    littlefs/lfs_util.c
-    src/prng.cpp
-)
+# add_stm32_executable(fatfs-append-write-test
+#     test/fatfs_append_write_test.cpp
+#     FatFs/ff.c
+#     FatFs/ffunicode.c
+#     src/diskio.cpp
+#     src/fatfs_time.cpp
+# )
 
-add_stm32_executable(killswitch
-    src/killswitch.cpp
-)
+# add_stm32_executable(littlefs-append-write-test
+#     test/littlefs_append_write_test.cpp
+#     src/sdcardlittlefs.cpp
+#     littlefs/lfs.c
+#     littlefs/lfs_util.c
+# )
 
 
-add_stm32_executable(littlefs-killswitch-test
-    test/littlefs_killswitch_test.cpp
-    src/sdcardlittlefs.cpp
-    littlefs/lfs.c
-    littlefs/lfs_util.c
-    src/prng.cpp
-)
+# add_stm32_executable(fatfs-rand-write-test
+#     test/fatfs_rand_write_test.cpp
+#     FatFs/ff.c
+#     FatFs/ffunicode.c
+#     src/diskio.cpp
+#     src/fatfs_time.cpp
+#     src/prng.cpp
+# )
 
-add_stm32_executable(fatfs-killswitch-test
-    test/fatfs_killswitch_test.cpp
-    FatFs/ff.c
-    FatFs/ffunicode.c
-    src/diskio.cpp
-    src/fatfs_time.cpp
-    src/prng.cpp
-)
+# add_stm32_executable(littlefs-rand-write-test
+#     test/littlefs_rand_write_test.cpp
+#     src/sdcardlittlefs.cpp
+#     littlefs/lfs.c
+#     littlefs/lfs_util.c
+#     src/prng.cpp
+# )
+
+# add_stm32_executable(killswitch
+#     src/killswitch.cpp
+# )
+
+
+# add_stm32_executable(littlefs-killswitch-test
+#     test/littlefs_killswitch_test.cpp
+#     src/sdcardlittlefs.cpp
+#     littlefs/lfs.c
+#     littlefs/lfs_util.c
+#     src/prng.cpp
+# )
+
+# add_stm32_executable(fatfs-killswitch-test
+#     test/fatfs_killswitch_test.cpp
+#     FatFs/ff.c
+#     FatFs/ffunicode.c
+#     src/diskio.cpp
+#     src/fatfs_time.cpp
+#     src/prng.cpp
+# )

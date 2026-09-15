@@ -1571,7 +1571,7 @@ garantiert werden sollte.
 \section{Vergleich littlefs, FatFs und direkter Blockadressierung}
 Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.
 
-\subsection{RAM- und Flashverbrauch}
+\subsection{RAM- und Flashverbrauch}\label{sec:ramflash}
 \tab{tab:flash-ram} ist die Auswertung der Ausgabe des Compilers \enquote{arm-none-eabi-gcc} bei
 unterschiedlichen Optimierungsstufen. F"ur FatFs wurde eine minimale Konfiguration verwendet.
 Der statische RAM-Verbrauch h"alt sich "uber alle Dateisysteme
@@ -1628,7 +1628,7 @@ in einer h"oheren Programmgr"o"se widerspiegelt.
                 \end{table}
 
 
-\subsection{Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge}
+\subsection{Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge}\label{sec:v1}
 
 
 
@@ -1746,7 +1746,7 @@ Eine m"ogliche Erkl"arung ist hierf"ur, dass die Dateisysteme vor dem Erstellen 
 zun"achst auslesen m"ussen. Wenn dieser eine komplexe Kodierung enth"alt wie im Falle von Fat32-LFN oder sehr viele Dateien, so schadet
 das der Performance, insbesondere da auf eingebetteten Systemen die Speicherbuffer sehr klein sind, mit denen gearbeitet wird.
 
-\subsection{Versuch 2: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}
+\subsection{Versuch 2: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}\label{sec:v2}
 Versuch 2 folgt im Aufbau und in der Idee analog zu Versuch 1.
 Aufgrund der hohen Zuverl"assigkeit der Schreibfunktionen wird nun eine gezielte Fehlerinjektion 
 in den Schreibfunktionen des SD-Kartentreibers durchgef"uhrt,
@@ -1828,14 +1828,14 @@ Littlefs hingegen bringt durch die in Kapitel XXX besprochenen Schutzmechanismen
 
 
 
-\subsection{Versuch 3: Analyse der Schreibfehlerraten mittels pseudorandomisierter Zeichenfolge}
+\subsection{Versuch 3: Analyse der Schreibfehlerraten mittels pseudorandomisierter Zeichenfolge}\label{sec:v3}
 Die Idee dieses Versuches ist einerseits die Konsistenz der Schreiboperationen
 bei zuf"alligen oder pseudo-zuf"alligen Daten festzustellen, andererseits die Schreibperformance
 bei dem Anh"angen von Daten an eine bereits existierende Datei im Gegensatz zur Neuerstellung zu untersuchen.
 \subsubsection*{Fazit Versuch 3}
 
 
-\subsection{Versuch 4: Verhalten der Dateisysteme bei Stromunterbrechungen}
+\subsection{Versuch 4: Verhalten der Dateisysteme bei Stromunterbrechungen}\label{sec:v4}
 Der vorhergehende Versuch war im Grunde genommen eine Vorbereitung f"ur ein 
 gutes Design von diesem Versuch. Die Entwickler des littlefs-Dateisystems versprechen
 eine hohe Datei- und Dateisystemkonsistenz bei Stromausf"allen. Dies soll
@@ -1928,7 +1928,7 @@ der Schreibfehler provozieren m"ochte, grunds"atzlich positiv zu bewerten ist. \
 
 Die verwendeten Programme f"ur den Test sind \texttt{test/fatfs\_killswitch\_test.cpp} und
 \texttt{test/littlefs\_killswitch\_test.cpp}. Der Test an sich nutzt wieder eine f"ur
-menschen lesbare, verifizierbare Zeichenfolge. Diese ist bei Fehlern leichter Handzuhaben als die
+Menschen lesbare, verifizierbare Zeichenfolge. Diese ist bei Fehlern leichter Handzuhaben als die
 pseudo-randomisierte Folge aus dem vorherigen Versuch. 
 Das Programm pr"uft zun"achst wie viele Testdateien bereits existieren und erstellst
 dann die n"achst gr"o"sere Datei.
@@ -1936,14 +1936,80 @@ Grunds"atzlich wird dann eine bekannte Zeichenfolge
 bis zum Stromausfall an die erstellte Datei immer wieder angeh"angt.
 Die Gr"o"se der Dateien h"angt also haupts"achlich davon ab, wie schnell die
 Dateisysteme den n"achsten freien Dateinamen finden und wie schnell sie an
-diese Datei anh"angen k"onnen.   
-
-
-
-
+diese Datei anh"angen k"onnen.\\
+Die SPI-Clock wurde auf das maximale Tempo von 8 MHz gesetzt.
+Es wurden f"ur diesen Test rund 140 MB FatFs-Daten und 2,1 MB an littlefs-Daten erzeugt.
+Die verh"altnism"a"sig geringe Menge an littlefs-Daten h"angt damit zusammen,
+dass das Dateisystem auch beim Suchen der Dateien deutlich langsamer ist als FatFs und es somit
+innerhalb der vorgegebenen 10 Sekunden Versuchslaufzeit maximal 52 Dateien erstellen konnte.
+Alle weiteren Versuche beanspruchen schlichtweg mehr als 10 Sekunden f"ur die Suche des n"achsten
+freien Dateinamens und die Erstellung einer neuen Datei. Der Algorithmus lie"se sich nat"urlich
+optimieren, sodass noch mehr littlefs-Testdaten erzeugt werden k"onnen. Tats"achlich zeigen allerdings
+die Testdaten des unsichereren Dateisystems FatFs, dass sich mit Stromausf"allen auf SD-Karten 
+praktisch keine Schreibfehler erzeugen lassen. Der Effekt war bei FatFs im "Ubrigen ebenfalls vorhanden.
+Dennoch konnte problemlos die 70-fache Menge an Daten in derselben Zeit erzeugt werden. 
+Das Pythonskript zur Verifikation findet sich unter 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest4/test\_readable.py}{test\_data/Writetest4/test\_readable.py}.
 
 \subsubsection*{Fazit Versuch 4}
+Trotz der kontinuierlichen Stromausf"alle kam es in keinem der beiden Dateisysteme auch nur zu einem Schreibfehler.
+In Kombination mit den vorangegangenen Versuchen l"asst sich somit behaupten,
+dass Schreibfehler im "ublichen SD-Kartenbetrieb sehr selten sind und selbst bei exzessiven Stromausf"allen
+nicht h"aufig vorkommen:
+Nach der statistischen Dreier-Regel (Rule of Three) lässt sich 
+bei $N$ fehlerfreien Übertragungen die maximale Bitfehlerrate (BER) 
+für eine Sicherheit von 95\,\% wie folgt grob absch"atzen:
+$$
+\text{BER}_{95\%} \le \frac{3}{N}
+$$
 
+\noindent
+Aufgrund von 140 MB an fehlerfreien Daten folgt dann $N=140\cdot1024\cdot1024\cdot8$ Bits.
+
+$$
+\text{BER}_{95\%} \le \frac{3}{140\cdot1024\cdot1024\cdot8} \approx 2{,}55 \cdot 10^{-9}
+$$
+
+Der Versuch belegt also eine maximale Bitfehlerrate in der Gr"o"senordnung von $10^{-9}$ bei
+exzessiven Stromausf"allen und fehlender CRC-Pr"ufsumme auf SD-"Ubertragungsebene.
+
+Der Versuch hat ebenfalls noch einmal verdeutlicht, dass der Umgang mit littlefs 
+in Echtzeitsystemen sehr genau geplant sein muss. F"ur eine Einhaltung von gegebenen Zeitgrenzen m"ussen
+bei dem Dateisystem vorab Tests und Messungen gemacht werden, w"ahrend FatFs sich responsiver und weniger
+unberechenbar verh"alt.  
+
+Das Fazit ist hier, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
+des Systems im Zusammenhang mit SD-Karten nicht rechtfertigt.
+
+
+\section{Gesamtfazit}
+
+
+Die Entwickler des littlefs-Dateisystems nennen auf ihrer Github-Seite drei gro"se Vorteile ihres Dateisystems:
+\begin{itemize}
+    \item \textbf{Ausfallsicherheit bei Stromausfall} 
+    \item \textbf{Verschleißregulierung des Flashspeichers (Wear Leveling)} 
+    \item \textbf{Begrenzter RAM/ROM-Bedarf}
+\end{itemize}
+
+Leider fallen im Zusammenhang mit SD-Karten die Vorteile sehr gering aus:
+\hyperref[sec:v4]{Versuch 4} hat gezeigt, dass die tats"achlichen Bitfehlerraten beim Schreiben und
+der "Ubertragung extrem niedrig sind. Durch Nutzung des SD-Karteninternen CRC-Pr"ufsumme besteht optional 
+bereits auf SPI/SD-Kartenebene ein zus"atzlicher Fehlerschutz.
+Gleichzeitig f"uhrt das integrierte Fehlerpr"ufsystem zu
+einem Verlust von leicht vorhersagbarer Echtzeitf"ahigkeit des Systems, da das
+Dateisystem in regelm"a"sigen Abst"anden deutlich l"anger zum Schreiben einer Datei braucht
+als im Durchschnitt. \\
+Verschleißregulierung des Flashspeichers ist hinf"allig, da der SD-Kartencontroller diese Aufgabe
+bereits erledigt. W"ahrend dies in langen experimentellen Reihen getestet werden m"usste, bietet
+die zus"atzliche Verschlei"sregulierung auf Dateisystemebene wahrscheinlich keine zus"atzlichen
+positiven Effekte. Vielmehr scheint es wahrscheinlich, dass das zus"atzliche Journaling zu mehr
+Schreiboperationen f"uhrt und damit potentiell die SD-Karte belastet. \\
+Auch beim begrenzten RAM/ROM-Bedarf verliert littlefs im direkten Vergleich mit FatFs aufgrund seines 
+komplexeren Aufbaus. Abschnitt \ref{sec:ramflash} zeigt die Gr"o"senunterschiede auf. W"ahrend 
+littlefs problemlos auf moderne Mikrocontroller, 
+so hat FatFs schon in einer kleinen Standardkonfiguration bereits die halbe Gr"o"se und l"asst
+sich durch die Einschr"ankung von Optionen sogar noch weiter verkleinern.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%

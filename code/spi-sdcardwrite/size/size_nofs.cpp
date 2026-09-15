@@ -18,6 +18,7 @@ int main()
     TIM2_Init();
     delay_ms<500>();
 
+
     GPIO_Init();
 
     SD_InitSPI<SD1_Config>();
