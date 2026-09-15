@@ -20,14 +20,23 @@ add_compile_options(
     ${MCU_FLAGS}
     -Wall -Wextra -Os -g3                     
     -ffunction-sections -fdata-sections 
-    -Wl,--gc-sections #this removes stuff for my gdb script...         
+    -Wl,--gc-sections #this removes stuff for my gdb script...      
 )
 
 add_link_options(
     ${MCU_FLAGS}
     -specs=nano.specs                         # Uses lightweight C library
-    -specs=nosys.specs                        # Provides dummy stubs for _exit, _sbrk, etc.                      
+    -specs=nosys.specs                        # Provides dummy stubs for _exit, _sbrk, etc. 
+    -Wl,--gc-sections #this removes stuff for my gdb script...                        
 )
+
+set(MCU_FLAGS 
+    -mcpu=cortex-m4 
+    -mthumb 
+    -mfpu=fpv4-sp-d16 
+    -mfloat-abi=hard
+)
+
 
 # Set source code definitions and file properties
 add_compile_definitions(STM32G431xx)

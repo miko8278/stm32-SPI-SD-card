@@ -1573,21 +1573,29 @@ Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.
 
 \subsection{RAM- und Flashverbrauch}\label{sec:ramflash}
 \tab{tab:flash-ram} ist die Auswertung der Ausgabe des Compilers \enquote{arm-none-eabi-gcc} bei
-unterschiedlichen Optimierungsstufen. F"ur FatFs wurde eine minimale Konfiguration verwendet.
+unterschiedlichen Optimierungsstufen. F"ur FatFs wurde eine kleine Standardardkonfiguration verwendet.
+Das bedeutet konkret, dass alle Standardfunktionen vorhanden sind (FF\_FS\_MINIMIZE=0),
+aber der Support f"ur lange Dateinamen (FF\_USE\_LFN=0) abgeschaltet ist. 
 Der statische RAM-Verbrauch h"alt sich "uber alle Dateisysteme
-recht stabil im Bereich von 2 kB und schwankt auch nach der Compileroptimierung nicht sonderlich.
+recht stabil im Bereich von 2 KB und schwankt auch nach der Compileroptimierung nicht sonderlich.
 Hiervon ausgenommen ist FatFs, dessen statischer RAM-Verbrauch in optimierten Builds um fast 500 kB sinkt
-im Vergleich zum unoptimierten Build, sodass lediglich 1,5 kB an statischem RAM verbraucht werden.
+im Vergleich zum unoptimierten Build, sodass lediglich 1,5 KB an statischem RAM verbraucht werden.
 Da auch FatFs intern dieselben Treiber verwendet wie NoFs und littlefs, ist dies ein Hinweis darauf,
 dass die internen Buffer f"ur FatFs auf dem Stack allokiert werden, w"ahrend NoFs und littlefs statische
 Buffer nutzt, die der Compiler beim Build im .data oder .bss Segment verordnen und somit anzeigen kann.\\
+Weitere Untersuchungen des FatFs-Dateisystems haben gezeigt, dass sich der Hauptbuffer von FatFs in
+der Struktur \texttt{FIL} befindet und diese eine Gr"o"se von 552 Bytes aufweist. Ob der Buffer also auf dem Stack liegt oder
+im statischen/globalen Segment allokiert wird liegt in diesem Fall also in der Hand des Programmierers,
+was f"ur Systeme, die ihren RAM-Bereich fest aufteilen, sehr n"utzlich sein kann. Dies ist selbstverst"andlich
+auch der Fall f"ur NoFs.
+\\
 Der Flashverbrauch entspricht den Erwartungen:
 Er ist bei NoFs am kleinsten und bei littlefs am h"ochsten. Das h"angt mit der Komplexit"at
 des Dateisystems zusammen. W"ahrend FatFs ein relativ simples, blockbasiertes Dateisystem ist,
 fusioniert littlefs die Ideen der Journaling and Copy-on-Write Dateisysteme f"ur mehr Ausfallresilienz
 und Wear-Leveling. Dies spiegelt sich im Speicherverbrauch f"ur den Programmspeicher wider.
-NoFs verwendet in der kleinsten Variante etwa 2 kB, FatFs etwa 15 kB und littlefs etwa 35 kB Speicher auf dem Flash.
-W"ahrend das f"ur den verwendeten STM32-G431 mit 128 kB Flashspeicher kein Problem darstellt, so
+NoFs verwendet in der kleinsten Variante etwa 2 KB, FatFs etwa 15 KB und littlefs etwa 35 KB Speicher auf dem Flash.
+W"ahrend das f"ur den verwendeten STM32-G431 mit 128 KB Flashspeicher kein Problem darstellt, so
 gibt es zahlreiche kosteng"unstige STM-Modelle wie beispielsweise Modelle aus der STM32C0-Serie,
 die nur "uber 32 kB Programmspeicher verf"ugen und somit kein littlefs in dieser Konfiguration nutzen k"onnen. \\
 Ebenfalls interessant ist zu sehen, dass die Programmgr"o"se bei der Optimierung \enquote{-O3} gr"o"ser ist als 
@@ -1602,27 +1610,27 @@ in einer h"oheren Programmgr"o"se widerspiegelt.
                 \label{tab:flash-ram}
                 \begin{tabular}{|l|c|c|c|}
                 \hline
-                \textbf{Optimierungsstufe} & \textbf{Dateisystem} & \textbf{Flash (kB)} & \textbf{Statischer RAM (kB)} \\
+                \textbf{Optimierungsstufe} & \textbf{Dateisystem} & \textbf{Flash (Bytes)} & \textbf{Statischer RAM (Bytes)} \\
                 \hline
-                \multirow{3}{*}{-O0} & littlefs & 57,504 & 2,184 \\
-                                      & NoFs     & 13,424 & 2,512 \\
-                                      & FatFs    & 28,304 & 2,008 \\
+                \multirow{3}{*}{-O0} & littlefs & 57504 & 2184 \\
+                                      & NoFs     & 13424 & 2512 \\
+                                      & FatFs    & 28304 & 2008 \\
                 \hline
-                \multirow{3}{*}{-O1} & littlefs & 39,716 & 2,168 \\
-                                      & NoFs     &  3,120 & 2,080 \\
-                                      & FatFs    & 19,316 & 1,576 \\
+                \multirow{3}{*}{-O1} & littlefs & 39716 & 2168 \\
+                                      & NoFs     &  3120 & 2080 \\
+                                      & FatFs    & 19316 & 1576 \\
                 \hline
-                \multirow{3}{*}{-O2} & littlefs & 39,308 & 2,168 \\
-                                      & NoFs     &  2,404 & 2,080 \\
-                                      & FatFs    & 17,536 & 1,576 \\
+                \multirow{3}{*}{-O2} & littlefs & 39308 & 2168 \\
+                                      & NoFs     &  2404 & 2080 \\
+                                      & FatFs    & 17536 & 1576 \\
                 \hline
-                \multirow{3}{*}{-O3} & littlefs & 47,596 & 2,168 \\
-                                      & NoFs     &  2,720 & 2,080 \\
-                                      & FatFs    & 18,612 & 1,576 \\
+                \multirow{3}{*}{-O3} & littlefs & 47596 & 2168 \\
+                                      & NoFs     &  2720 & 2080 \\
+                                      & FatFs    & 18612 & 1576 \\
                 \hline
-                \multirow{3}{*}{-Os} & littlefs & 35,148 & 2,168 \\
-                                      & NoFs     &  2,124 & 2,080 \\
-                                      & FatFs    & 15,044 & 1,576 \\
+                \multirow{3}{*}{-Os} & littlefs & 35148 & 2168 \\
+                                      & NoFs     &  2124 & 2080 \\
+                                      & FatFs    & 15044 & 1576 \\
                 \hline
                 \end{tabular}
                 \end{table}
@@ -2009,7 +2017,7 @@ Auch beim begrenzten RAM/ROM-Bedarf verliert littlefs im direkten Vergleich mit 
 komplexeren Aufbaus. Abschnitt \ref{sec:ramflash} zeigt die Gr"o"senunterschiede auf. W"ahrend 
 littlefs problemlos auf moderne Mikrocontroller, 
 so hat FatFs schon in einer kleinen Standardkonfiguration bereits die halbe Gr"o"se und l"asst
-sich durch die Einschr"ankung von Optionen sogar noch weiter verkleinern.
+sich durch die Einschr"ankung von Optionen in der \texttt{FatFs/ffconf.h} sogar noch weiter verkleinern.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Quellen%%%%%%%%%%%%%%%%%%

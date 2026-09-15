@@ -11,7 +11,7 @@
 #include "ff.h"
 
 
-//FIL file;
+FIL file;
 int main()
 {
     TIM2_Init();
@@ -30,7 +30,7 @@ int main()
     }    
     while(flg_mnt != FR_OK && ((TIM2->CNT - start_time) < T_OUT1_US));
     if(flg_mnt == FR_OK){
-        FIL file;
+        //FIL file;
         UINT written;   
 
         FRESULT flg_open = f_open(&file, "sizetest.txt", FA_WRITE | FA_CREATE_ALWAYS);

@@ -60,7 +60,7 @@ int main()
             //check state before write 
     // uint8_t status_before[2];
     // SD_SendCmd<SD1_Config>(13, 0, 0xFF, status_before, 1);
-
+    //
     SD_WriteBlock<SD1_Config>(200, sd_block_buffer);
 
     SD_ReadBlock<SD1_Config>(200, sd_block_buffer);
