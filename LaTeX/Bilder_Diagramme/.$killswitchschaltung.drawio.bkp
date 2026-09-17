@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2026-09-14T12:41:25.956Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="mLm706vgcbvPdcDv0Prp" version="22.0.3" type="device">
+<mxfile host="Electron" modified="2026-09-14T12:43:40.852Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="qF9xqzrPdEl9YEfgRM61" version="22.0.3" type="device">
   <diagram name="Page-1" id="64g9F2M8ijSNSyG9Qb80">
-    <mxGraphModel dx="500" dy="299" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="500" math="1" shadow="0">
+    <mxGraphModel dx="724" dy="432" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="500" math="1" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -142,6 +142,18 @@
         </mxCell>
         <mxCell id="cbd8UDW7mP8dYeYAKik3-64" value="$$C_1=47\,uF$$" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
           <mxGeometry x="337.5" y="150" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cbd8UDW7mP8dYeYAKik3-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" edge="1" parent="1" source="cbd8UDW7mP8dYeYAKik3-65" target="cbd8UDW7mP8dYeYAKik3-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cbd8UDW7mP8dYeYAKik3-65" value="" style="pointerEvents=1;verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;shape=mxgraph.electrical.resistors.resistor_1;rotation=90;aspect=fixed;direction=south;" vertex="1" parent="1">
+          <mxGeometry x="348" y="230" width="10" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cbd8UDW7mP8dYeYAKik3-66" value="$$R_5=1\,M\Omega$$" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="323" y="218" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cbd8UDW7mP8dYeYAKik3-69" value="$$GND$$" style="pointerEvents=1;verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;shape=mxgraph.electrical.signal_sources.vss2;fontSize=8;flipV=1;spacing=-11;rotation=90;" vertex="1" parent="1">
+          <mxGeometry x="309.88" y="235.63" width="20" height="28.75" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

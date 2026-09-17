@@ -3,7 +3,7 @@
  *
  * Author: Michael Kolorz
  *
- * Writetest for littlefs using a known and humanreadable byte-sequence
+ * Writetest for littlefs using a timestamp byte-sequence
  * Just one file appended over and over again
  */
 

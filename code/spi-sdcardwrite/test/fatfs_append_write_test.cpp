@@ -3,7 +3,7 @@
  *
  * Author: Michael Kolorz
  *
- * Writetest for FatFs using a known and humanreadable byte-sequence.
+ * Writetest for FatFs using a timestamp byte-sequence.
  * One file is being appended over and over.
  */
 
