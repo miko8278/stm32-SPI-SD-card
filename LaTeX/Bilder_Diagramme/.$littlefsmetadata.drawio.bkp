@@ -1,0 +1,22 @@
+<mxfile host="Electron" modified="2026-09-18T16:34:00.135Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="tCFC0omHurI0kN7cI4Sb" version="22.0.3" type="device">
+  <diagram name="Page-1" id="ZSHL2InJLocW4HjZXtL8">
+    <mxGraphModel dx="1050" dy="627" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-1" value="Metadaten&lt;br&gt;Version 10&lt;br&gt;an Block 123&lt;br&gt;CRC32 ok" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;" vertex="1" parent="1">
+          <mxGeometry x="280" y="200" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-2" value="Metadaten&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;Version 9&lt;br&gt;an Block 456&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;CRC32 ok" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;" vertex="1" parent="1">
+          <mxGeometry x="460" y="200" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-3" value="Block A" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="285" y="170" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-4" value="Block B" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="465" y="170" width="110" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
