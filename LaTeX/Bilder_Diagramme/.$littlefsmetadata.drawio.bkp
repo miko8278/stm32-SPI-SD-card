@@ -1,20 +1,26 @@
-<mxfile host="Electron" modified="2026-09-18T16:34:00.135Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="tCFC0omHurI0kN7cI4Sb" version="22.0.3" type="device">
+<mxfile host="Electron" modified="2026-09-18T18:09:25.066Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="5woxxBOSqRuq_0tpOCHI" version="22.0.3" type="device">
   <diagram name="Page-1" id="ZSHL2InJLocW4HjZXtL8">
     <mxGraphModel dx="1050" dy="627" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="500" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="AhwvOpjXbe_8KVBXdWvL-1" value="Metadaten&lt;br&gt;Version 10&lt;br&gt;an Block 123&lt;br&gt;CRC32 ok" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;" vertex="1" parent="1">
-          <mxGeometry x="280" y="200" width="120" height="80" as="geometry" />
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="AhwvOpjXbe_8KVBXdWvL-1" target="AhwvOpjXbe_8KVBXdWvL-2">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AhwvOpjXbe_8KVBXdWvL-2" value="Metadaten&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;Version 9&lt;br&gt;an Block 456&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;CRC32 ok" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;" vertex="1" parent="1">
-          <mxGeometry x="460" y="200" width="120" height="80" as="geometry" />
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-1" value="&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Revision 10&lt;br&gt;commit:&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Metadaten A&#39;&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Metadaten B&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;CRC32&amp;nbsp;&lt;br&gt;commit:&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Metadaten A&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;CRC32&lt;br&gt;commit:&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Metadaten C&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;CRC32" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="210" y="210" width="120" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="AhwvOpjXbe_8KVBXdWvL-3" value="Block A" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
-          <mxGeometry x="285" y="170" width="110" height="30" as="geometry" />
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-2" value="&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Revision 11&lt;br&gt;commit:&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&#x9;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Metadaten B&#39;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;Metadaten C&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;CRC32&amp;nbsp;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;commit:&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;Metadaten A&#39;&#39;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;border-color: var(--border-color);&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;CRC32" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="460" y="210" width="120" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="AhwvOpjXbe_8KVBXdWvL-4" value="Block B" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-3" value="Metadaten&lt;br&gt;Block 0&lt;br&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="215" y="170" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-4" value="Metadaten&lt;br&gt;Block 1&lt;br&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=20;" vertex="1" parent="1">
           <mxGeometry x="465" y="170" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="AhwvOpjXbe_8KVBXdWvL-6" value="komprimieren,&lt;br&gt;wenn Block 0 voll" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="220" width="90" height="10" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

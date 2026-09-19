@@ -1265,7 +1265,7 @@ Au"serdem sorgt die zyklische Natur dafür, dass Logging-Dateisysteme den Versch
 perfekt über den Speicher verteilen.
 Dies minimiert die Löschzyklen auf Flash-Speichern 
 und garantiert eine hohe Ausfallsicherheit.
-Nachteile sind die verh"altnism"asig hohen Laufzeitkosten und der hohe RAM-Verbrauch,
+Nachteile sind die verh"altnism"asig hohen Laufzeitkosten (h"aufig O($n^2$)) und der hohe RAM-Verbrauch,
 was sie f"ur Embeddedanwendungen eher ungeeignet macht.
 \subsubsection{Journaling-Dateisysteme}
 Bekannte und moderne Vertreter sind hier ext3, ext4 f"ur Linuxbetriebssysteme oder
@@ -1282,7 +1282,7 @@ kann das Dateisystem beim nächsten Start das Journal auswerten.
 Transaktionen mit einem gültigen Commit-Eintrag können erneut an ihre endgültige Position geschrieben werden. 
 Dadurch wird verhindert, dass eine Dateisystemänderung nur teilweise übernommen wird.
 Der Prozess ist wie erw"ahnt nur schematisch dargestellt,
-beispielsweise sichert ext4 standardm"a"sig nur seine Metadaten auf diese Weise
+beispielsweise sichert ext4 standardm"a"sig nur seine Metadaten
 "uber Journals, tr"agt somit aber erheblich zur Konsistenz des Dateisystems bei\cite{kernel1}. \\
 Leider bringen Journaling-Dateisysteme einige Probleme mit sich.
 Sie sind ziemlich umfangreich in der Implementation, da im Grunde zwei Konzepte von Dateisystemen parallel benutzt werden,
@@ -1303,25 +1303,29 @@ und die Verweise auf den neuen Block umgelenkt werden.
     \centering
     \includegraphics[height=5cm]{Bilder_Diagramme/COW.png}
     \caption{Funktionsprinzip COW nach der DESIGN.md}
-    \label{fig:fatfsimplement}
+    \label{fig:cowdesign}
 \end{figure}
-COW-Dateisysteme bieten eine sehr ähnliche Performance wie blockbasierte Dateisysteme, 
+COW-Dateisysteme bieten eine langsamere, aber zumindest vergleichbare Performance zu blockbasierten Dateisystemen, 
 w"ahrend sie es gleichzeitig schaffen Aktualisierungen durchzuführen,
 ohne Datenänderungen direkt in einem Log oder Journal zu speichern. \\
-Der gro"se Nachteil ist allerdings, dass immer ein gesamter Baum kopiert werden muss,
-egal wie klein die "Anderung ist:
+\fig{fig:cowdesign} zeigt das Prinzip der Organisation anschaulich. Daten werden
+bei COW-Dateisystemen oft in (balancierten) B"aumen gespeichert. Dies bezieht sich 
+sowohl auf eine einzelne Datei, als auch auf z.b Verzeichnisstrukturen.
+Der gro"se Nachteil von COW-Dateisystemen ist, dass immer ein gesamter Zweig aktualisiert werden muss
+bis zur Wurzel, egal wie klein die "Anderung ist.
 Wenn man beispielsweise Daten in Block D ändert, passiert folgendes:
 Es wird eine komplett neue Kopie erstellt namens \enquote{D neu}.
-Weil „D neu“ jetzt an einer ganz anderen Stelle auf dem Speichermedium liegt als das alte \enquote{D},
+Weil \enquote{D neu} jetzt an einer ganz anderen Stelle auf dem Speichermedium liegt als das alte \enquote{D},
 stimmt der Verweis im übergeordneten Ordner (Block B) nicht mehr.
 Also muss auch ein neuer Ordnerblock \enquote{B neu} geschrieben werden,
 der auf \enquote{D neu} zeigt.
 Weil jetzt aber \enquote{B neu} an einer neuen Stelle liegt,
 stimmt der Verweis im Root-Block nicht mehr.
-Das System muss also zwingend auch einen brandneuen „root neu“-Block schreiben.
+Das System muss also zwingend auch einen brandneuen \enquote{root neu}-Block schreiben.
 Eine Aktualisierung kann also zu einer weitaus größeren Menge an Schreibvorgängen kaskadieren,
-als f"r die urspr"unglichen Daten eigentlich n"otig gewesen w"are.
-
+als f"ur die urspr"unglichen Daten eigentlich n"otig gewesen w"are. 
+Dieses Hochwandern der Änderungen bis ganz nach oben zur Wurzel braucht O(log n) Schritte,
+wenn die Datei oder das System aus n Elementen besteht und in einem balancierten Baum organisiert ist.
 
 \subsection{FAT-Dateisysteme}
 Das FAT-Dateisystem wurde 1980 von Microsoft entwickelt und erstmals von MS-DOS unterstützt.
@@ -1548,6 +1552,105 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 \subsection{LittleFS}
 
+
+\subsubsection{Ziele von littlefs}
+
+Die Entwickler des littlefs-Dateisystems nennen auf ihrer Github-Seite drei gro"se Vorteile ihres Dateisystems:
+\begin{itemize}
+    \item \textbf{Ausfallsicherheit bei Stromausfall} 
+    \item \textbf{Verschleißregulierung des Flashspeichers (Wear Leveling)} 
+    \item \textbf{Begrenzter RAM/ROM-Bedarf}
+\end{itemize}
+
+Das Design von littlefs wurde in Hinblick auf die Gew"ahrleistung dieser drei Hauptpunkte optimiert
+und soll im Folgenden n"aher beleuchtet werden.
+
+
+\subsubsection{Funktionsweise}
+Die Funktionsweise von littlefs wird in der bereits zitierten \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{DESIGN.md}
+erl"autert. Diese ist "au"serst komplex und kann in diesem Rahmen nur schemenhaft erl"autert werden:
+Die \enquote{Superblock-Ebene}, also die oberste Strukturebene des Dateisystems, nutzt eine modifizierte Form
+des bereits erl"auterten COW (Copy-on-Write) f"ur die grunds"atzliche Neubeschaffung und Strukturierung von Bl"ocken. 
+Das sogenannte CObW (Copy-On-bounded-Write) f"uhrt einen Z"ahler ein, sodass nicht bei jeder Modifikation
+der gesamte Baum neu geschrieben werden muss wie bei COW, sondern nur alle N male. Bis zur N-ten Modifikation
+bleibt der alte Baum g"ultig. Dies reduziert den Aufw"artskaskadierungsaufwand, den COW-Dateisysteme mit sich bringen,
+um den Faktor N. CObW wird bei littlefs also f"ur die gr"o"sen Datenstrukturen verwendet und bringt 
+den Vorteil des Wear-Leveling mit sich, sowie eine Dateikonsistenzgarantie bei unerwartetem Stromausfall. \\
+Auf Dateiebene nutzt littlefs unterschiedliche Mechanismen
+f"ur die tats"achlichen Dateiinhalte und die Metadaten (Dateiname, Gr"o"se, etc.).
+F"ur den Dateiinhalt wird eine sogenannte \enquote{CTZ skip-list} verwendet, 
+die man sich als eine Erweiterung der Datenstruktur der verketteten Liste vorstellen kann.
+
+\begin{table}[h]
+    \centering
+    \caption{Zahl von Zeigern in der \enquote{CTZ skip-list} in Abhängigkeit des Blockindexes.}
+    \begin{tabular}{c c c c}
+        \hline
+        Blockzahl & Blockzahl(bin) & CTZ & Zeiger \\
+        \hline
+        1 & 0001 & 0 & 1 \\
+        2 & 0010 & 1 & 2 \\
+        3 & 0011 & 0 & 1 \\
+        4 & 0100 & 2 & 3 \\
+        5 & 0101 & 0 & 1 \\
+        6 & 0110 & 1 & 2 \\
+        7 & 0111 & 0 & 1 \\
+        8 & 1000 & 3 & 4 \\
+        \hline
+    \end{tabular}
+    \label{tab:ctz-pointers}
+\end{table}
+
+Der gro"se Unterschied ist, dass die \enquote{skip-list} zus"atzliche Zeiger einf"uhrt, die Elemente
+"uberspringen k"onnen. In einer gew"ohnlichen \enquote{skip-list} ist es zufallsbasiert, wie viele Zeiger
+ein bestimmter Eintrag hat. Die CTZ-skip-list (Count Trailing Zeros) nutzt als Zeigerverteilung einfach
+die Anzahl der Nullen einer Zahl in Bin"ardarstellung.
+\tab{tab:ctz-pointers} zeigt die Verteilung beispielhaft f"ur die Bl"ocke 1 bis 8.
+Der Vorteil dieser Datenstruktur ist die Suchlaufzeit
+von O(log n) f"ur einen speziellen Block, w"ahrend die Traversion durch alle Bl"ocke einer Datei in einer Laufzeit von O(n)
+m"oglich ist und ein Anh"angen eines Blocks an eine Datei in O(1). Eine r"uckw"arts verkettete Liste h"atte beispielsweise den Nachteil, dass die Traversion durch
+alle Bl"ocke O($n^2$) Schritte ben"otigt, w"ahrend eine vorw"arts verkettete Liste nicht an eine Datei Bl"ocke anf"ugen kann
+ohne mindestens einen vorherigen Block zu modifizieren. Andere beliebte Datenstrukturen wie balancierte B"aume haben Nachteile
+bez"uglich einer beschr"ankten RAM-Nutzung, wie sie bei eingebetteten Systemen gefordert ist. \\ 
+F"ur Metadaten wird ein \enquote{two-block log} verwendet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{Bilder_Diagramme/littlefsmetadata.png}
+    \caption{Prinzip \enquote{two-block log}}
+    \label{fig:littlefsmetaidea}
+\end{figure}
+
+\fig{fig:littlefsmetaidea} zeigt die Idee hinter dem \enquote{two-block log} f"ur Metadaten auf.
+Die Metadaten stehen zu jedem Zeitpunkt in zwei Bl"ocken, die in sich eine begrenzte
+Anzahl an commits zulassen. Ein commit kann beispielsweise eine "Anderung der Metadaten beinhalten oder 
+ein Hinzuf"ugen von Metadaten. Jeder commit wird mit einer CRC32 abgeschlossen; Ist diese nicht g"ultig,
+so wird der commit verworfen. Das Prinzip ist also das eines Logging-Dateisystems, allerdings beschr"ankt
+in der Gr"o"se. Sobald einer der Bl"ocke voll ist, wird er auf den anderen Block komprimiert. Diesem wird
+dann eine neue Revisionsnummer gegeben und fortan ist dies der neue aktive Logblock.
+Die Vorteile, die das System mit sich bringt ist die dauerhafte Konsistenz der Metadaten, da nichts
+"uberschrieben wird, sondern zu jedem Zeitpunkt eine korrekte Version der Daten existiert. Weiterhin
+bringt das Logging durch die Begrenzung der Gr"o"se des Logs eine nahezu konstante Laufzeit mit sich.
+Dadurch, dass aber "uberwiegend mit Logs gearbeitet wird, ist fundamental der Anspruch an Wear-Leveling erf"ullt.  
+Zum Vergleich: FatFs "uberschreibt seine Metadaten an Ort und Stelle und gef"ahrdet damit die
+gesamte Dateiintegrit"at, falls die Schreiboperation scheitert. Ebenfalls ist das nicht
+optimal f"ur das Wear-Leveling.\\
+Grunds"atzlich gilt f"ur Metadaten bei littlefs der Begriff der Atomarität:
+Entweder die Operation wird vollst"andig ausgef"uhrt oder gar nicht. 
+Die CRC32-Pr"ufsumme gew"ahrleistet die Vollst"andigkeit eines commits.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=7cm]{Bilder_Diagramme/littlefsgesamt.png}
+    \caption{Prinzip des Dateiaufbaus bei littlefs}
+    \label{fig:littlefsall}
+\end{figure}
+
+\fig{fig:littlefsall} zeigt anschaulich den prinzipiellen Aufbau einer Datei in littlefs nach dem
+erl"auterten Prinzip.
+
+
 \subsubsection{Implementierung}
 
 \begin{figure}[H]
@@ -1558,55 +1661,17 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 \end{figure}
 
 \fig{fig:littlefsimplements} zeigt den Implementierungsstack f"ur das littlefs-Dateisystem.
-Im Grunde genommen werden nutzt littlefs genauso wie FatFs die Blockschreib- und Lesefunktionen des
+Im Grunde genommen nutzt littlefs genauso wie FatFs die Blockschreib- und Lesefunktionen des
 SD-Kartentreibers. Die Datei, die littlefs und SD-Kartentreiber verbindet, 
 findet sich unter \texttt{src/sdcardlittlefs.cpp}.
 Leider besteht die haupts"achliche Dokumentation f"ur littlefs aus
 Kommentaren in der Quelldatei \texttt{littlefs/lfs.h}. 
 Zus"atzlich gibt es auf der GitHub-Seite ein unvollst"andiges Beispiel und
-eine ausf"uhrliche Erkl"arung des Prinzips in der
+die bereits erw"ahnte ausf"uhrliche Erkl"arung des Prinzips in der
 \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{DESIGN.md}.
 Kurzum sind die vorhandenen Informationen im Gegensatz zu FatFs sehr beschr"ankt,
 sodass zwar eine funktionierende, aber m"oglicherweise keine optimale Implementierung 
 der Bindeschicht in der \texttt{src/sdcardlittlefs.cpp} gew"ahrleistet werden konnte.
-
-\subsubsection{Funktionsweise}
-Die Funktionsweise von littlefs wird in der bereits zitierten \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{DESIGN.md}
-erl"autert. Diese ist "au"serst komplex und wird hier nur schemenhaft erl"autert:
-Littlefs nutzt unterschiedliche Mechanismen f"ur Daten (den tats"achlichen Dateiinhalten) und Metadaten (Dateiname, Gr"o"se, etc.).
-Der Mechanismus f"ur Daten ist eine modifizierte Form des bereits kurz erl"auterten COW, namentlich
-das CObW (Copy-On-bounded-Write). Dieses f"uhrt einen Z"ahler ein, sodass nicht bei jeder Modifikation
-der gesamte Baum neu geschrieben werden muss wie bei COW, sondern nur alle N male. Bis zur N-ten Modifikation
-bleibt der alte Baum g"ultig. CObW wird bei littlefs also f"ur gr"o"sere Datenstrukturen verwendet, die 
-viele Bl"ocke miteinander verketten m"ussen. F"ur die genutzte Verkettung 
-wird eine sogenannte \enquote{CTZ skip-list} verwendet, ein von der Datenstruktur entfernter verwandter
-einer verketteten Liste. Diese funktioniert zufallsbasiert statt deterministisch und hat eine Suchlaufzeit
-von O(log n) f"ur einen speziellen Block, w"ahrend die Traversion durch alle Bl"ocke einer Datei in einer Laufzeit von O(n)
-m"oglich ist und ein Anh"angen eines Blocks an eine Datei in O(1). Eine r"uckw"arts verkettete Liste h"atte beispielsweise den Nachteil, dass die Traversion durch
-alle Bl"ocke O($n^2$) Schritte ben"otigt, w"ahrend eine vorw"arts verkettete Liste nicht an eine Datei Bl"ocke anf"ugen kann
-ohne alle vorherigen Bl"ocke zu kopieren. Andere beliebte Datenstrukturen wie balancierte B"aume haben Nachteile
-bez"uglich einer beschr"ankten RAM-Nutzung, wie sie bei eingebetteten Systemen gefordert ist. \\ 
-F"ur Metadaten wird ein \enquote{two-block log} verwendet.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=3cm]{Bilder_Diagramme/littlefsmetadata.png}
-    \caption{Prinzip \enquote{two-block log}}
-    \label{fig:littlefsmetaidea}
-\end{figure}
-
-\fig{fig:littlefsmetaidea} zeigt die Idee hinter dem \enquote{two-block log} f"ur Metadaten auf.
-Die Metadaten stehen zu jedem Zeitpunkt in zwei Bl"ocken. Wenn die Metadaten neu geschrieben werden
-m"ussen, wird der "altere der beiden Bl"ocke "uberschrieben und bei erfolgreichem Schreiben durch
-eine neue Versionsnummer zum neuen Block erkl"art. Scheitert das Update so bleibt einfach der
-alte Block g"ultig. Damit sind auch in heiklen F"allen die Metadaten einer Datei sicher. Zum
-Vergleich: FatFs "uberschreibt seine Metadaten an Ort und Stelle und gef"ahrdet damit die
-gesamte Dateiintegrit"at, falls die Schreiboperation scheitert. Zus"atzlich ist jeder Metablock
-mit einer CRC32 abgesichert und nur ein g"ultiger Block wird akzeptiert.
-Grunds"atzlich gilt f"ur Metadaten bei littlefs also der Begriff der Atomarität:
-Entweder die Operation wird vollst"andig ausgef"uhrt oder gar nicht.
-Durch die Nutzung 
-
 
 \subsubsection{littlefs FUSE wrapper}
 W"ahrend sich mit FAT formatierte SD-Karten problemlos an jedem Desktop-PC mit jedem 
@@ -1616,16 +1681,14 @@ Nach erfolgreichem Kompilieren des Projektes l"asst sich unter Linux beispielswe
 \texttt{sudo ./lfs /dev/mmcblk0 mount/ -o allow\_other} das Dateisystem einh"angen und
 mit kleinen Einschr"ankungen nutzen. Zu den Einschr"ankungen geh"ort,
 dass littlefs keine Zeitstempel f"ur Dateien anlegt und auch kein System f"ur spezielle
-Berechtigungen existiert. Weiterhin sind Umlaute beim Dateinamen nicht erlaubt und
-die maximale Dateinamenl"ange betr"agt 32 Zeichen. \\
-An dieser Stelle stellt sich f"ur die Praxis die Frage, ob der Endnutzer mit dem Dateisystem
+Berechtigungen existiert. \\
+An dieser Stelle stellt sich f"ur die Praxis ebenfalls die Frage, ob der Endnutzer mit dem Dateisystem
 in Ber"uhrung kommen wird. W"ahrend die Einrichtung des littlefs FUSE wrapper Projektes  
-f"ur technisch versierte und mit github vertraute Menschen problemlos in unter einer Stunde 
+f"ur technisch versierte und mit GitHub vertraute Personen problemlos in unter einer Stunde 
 m"oglich ist, ist es f"ur normale Endnutzer ungeeignet und "uberfordernd. Littlefs ist
 also kein Dateisystem, was f"ur Ger"ate wie beispielsweise Digitalkameras oder Oszilloskope
 zu empfehlen w"are, wo dem Endnutzer eine garantierte Kompatiblit"at mit dem Dateisystem 
 garantiert werden sollte.
-
 
 \section{Vergleich littlefs, FatFs und direkter Blockadressierung}
 Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.

@@ -11,7 +11,7 @@ int write_number = 0;
 int main()
 {
     TIM2_Init();
-    delay_ms<500>();
+    delay_ms<100>();
     GPIO_Init();
     using SPI_1 = SpiDriver<SD1_Config::SpiBase>;
 
@@ -25,42 +25,32 @@ int main()
     GpioPin<SD1_Config::PortBase, SD1_Config::CD_Pin>::InputInit(Pull::Up);
     
     SPI_1::Init();
+    delay_ms<1>();
+    SD_InitSPI<SD1_Config>();
 
-    for(;;)
+    char msg[32];
+    constexpr int BUFSIZE = 512;
+    static uint8_t big_buf[BUFSIZE];
+    static uint8_t read_buf[BUFSIZE];
+    constexpr int LASTBLK = 1000;
+    for(uint32_t blk = 0; blk < LASTBLK; blk++)
     {
+        
         int tcnt_ms = TIM2->CNT/1000;
-        int msg_len = std::snprintf(msg, sizeof(msg), "%07d\n", tcnt_ms);
+        int msg_len = std::snprintf(msg, sizeof(msg), "TIMEUS:%08d\n", tcnt_ms);
 
-        // Fill the complete 1024-byte buffer
-        for (int j = 0; j < (1024 / msg_len); j++)
+        // Fill the complete 512/1024-byte buffer
+        for (int j = 0; j < (BUFSIZE / msg_len); j++)
         {
             std::memcpy(big_buf + j * msg_len, msg, msg_len);
         }
-        result = f_write(&file,big_buf,sizeof(big_buf),&written);
 
-        if (result != FR_OK || written != sizeof(big_buf))
-        {
-            write_errors++;
-        }
+        SD_WriteBlock<SD1_Config>(blk, big_buf);
 
-        //I'm not sure if sync is really needed, works without
-        if ((write_number % 125) == 0)
-        {
-            f_sync(&file);
-            write_number = 0;
-        }
-        write_number++;
-    }
-    f_close(&file);
-}
-        else
-        {
-            write_errors++;
-        }
-
-        write_number++;
         
-    
+    }
+    SD_ReadBlock<SD1_Config>(0, read_buf);
 
+    SD_ReadBlock<SD1_Config>(999, read_buf);
     return 0;
 }

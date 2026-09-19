@@ -571,8 +571,8 @@ struct CSD_V2
     //uint8_t NOT_USED_ALWAYS_ONE : 1; // [0]
 };
 
-//Ok, let's keep it low, here just goes in what 
-//I need right now and can parse easily
+//Ok, let's keep it low here... 
+//This is what I need right now and can parse easily
 //Keeping the V1 and V2 structs for documentation though
 struct Csd_Common{
     uint8_t CSD_STRUCTURE : 2; 
@@ -669,6 +669,7 @@ uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)
 }
 
 //Don't forget to inline inside a .hpp when using non-template functions!
+//This might be a little heavy on the size...
 inline void parse_csd_v1(const uint8_t* rawcsd, Csd_Common* csd){
     //V1 is terrible, i don't know if this is correct, I've no csd_v1 card here...
     //Don't know if they are even sold right now
