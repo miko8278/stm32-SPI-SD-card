@@ -2191,18 +2191,25 @@ Ein ganz direkter Vergleich ist damit auch nicht m"oglich. \\
 Am ehesten l"asst sich Teil 1 von \hyperref[sec:v3]{Versuch 3} wiederholen, der die 
 Zeitdauer des Dateianhangs von 1\,KB Daten misst. Das ist insofern inhaltlich interessant,
 weil es aufzeigt wie viel Zeit das eigentliche Schreiben von Bl"ocken mit den gegebenen Funktionen ben"otigt
-und wie viel Zeit dem Overhead des Dateisystems zuzuordnen ist.  
-Die Versuchsquelldateien findet sich in \texttt{test/nofs\_append\_write\_test\_512.cpp} und
-\texttt{test/nofs\_append\_write\_test\_1024.cpp}.
+und wie viel Zeit dem Overhead des Dateisystems zuzuordnen ist. \\ 
+
 Gemessen wird die Dauer f"ur das Schreiben eines Blocks (512 Bytes) und die Dauer des Schreibens
 f"ur zwei Bl"ocke (1024 Bytes). Das Schreiben von mehreren Bl"ocken nutzt einen unterschiedliches
 SD-Kommando und sollte zeitm"a"sig dem Schreiben von einzelnen Bl"ocken "uberlegen sein.  
 Auf einem Linuxsystem lassen sich die Rohdaten wiederrum mit \\
 \mintinline[]{bash}|dd if=/dev/sdx of=sd_karte_dump.bin bs=512 count=Anzahl_Bloecke status=progress|
-extrahieren.
+extrahieren.\\
+Die Versuchsquelldateien findet sich in \texttt{test/nofs\_append\_write\_test\_512.cpp} und
+\texttt{test/nofs\_append\_write\_test\_1024.cpp}. Die aufgenommenen Testdaten sind unter
+\href{}{github:/test\data/Writetest5} erreichbar. 
 
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Diagramme/NoFs_time.png}
+    \caption{Dauer von 512 Byte und 1024 Byte Schreibvorg"angen}
+    \label{fig:nofstime}
+\end{figure}
 
 
 

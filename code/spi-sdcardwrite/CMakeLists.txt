@@ -190,3 +190,7 @@ add_stm32_executable(fatfs-killswitch-test
 add_stm32_executable(nofs-512-test
     test/nofs_append_write_test_512.cpp
 )
+
+add_stm32_executable(nofs-1024-test
+    test/nofs_append_write_test_1024.cpp
+)

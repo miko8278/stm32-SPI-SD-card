@@ -29,15 +29,15 @@ int main()
     SD_InitSPI<SD1_Config>();
 
     char msg[32];
-    constexpr int BUFSIZE = 512;
+    constexpr int BUFSIZE = 1024;
     static uint8_t big_buf[BUFSIZE];
     static uint8_t read_buf[BUFSIZE];
     constexpr int LASTBLK = 3000;
-    for(uint32_t blk = 0; blk < LASTBLK; blk++)
+    for(uint32_t blk = 0; blk < LASTBLK; blk=blk+2)
     {
         
         int tcnt_ms = TIM2->CNT/1000;
-        int msg_len = std::snprintf(msg, sizeof(msg), "TIMEUS:%08d\n", tcnt_ms);
+        int msg_len = std::snprintf(msg, sizeof(msg), "TIM2US:%08d\n", tcnt_ms);
 
         // Fill the complete 512/1024-byte buffer
         for (int j = 0; j < (BUFSIZE / msg_len); j++)
@@ -45,7 +45,7 @@ int main()
             std::memcpy(big_buf + j * msg_len, msg, msg_len);
         }
 
-        SD_WriteBlock<SD1_Config>(blk, big_buf);
+        SD_WriteBlocks<SD1_Config>(blk, 2,big_buf);
 
         
     }
