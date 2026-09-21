@@ -1566,7 +1566,7 @@ Das Design von littlefs wurde in Hinblick auf die Gew"ahrleistung dieser drei Ha
 und soll im Folgenden n"aher beleuchtet werden.
 
 
-\subsubsection{Funktionsweise}
+\subsubsection{Funktionsweise} \label{sec:funclittle}
 Die Funktionsweise von littlefs wird in der bereits zitierten \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{DESIGN.md}
 erl"autert. Diese ist "au"serst komplex und kann in diesem Rahmen nur schemenhaft erl"autert werden:
 Die \enquote{Superblock-Ebene}, also die oberste Strukturebene des Dateisystems, nutzt eine modifizierte Form
@@ -1648,7 +1648,15 @@ Die CRC32-Pr"ufsumme gew"ahrleistet die Vollst"andigkeit eines commits.
 \end{figure}
 
 \fig{fig:littlefsall} zeigt anschaulich den prinzipiellen Aufbau einer Datei in littlefs nach dem
-erl"auterten Prinzip.
+erl"auterten Prinzip. \\
+
+Ein wichtige, wenn auch in der DESIGN.md nur am Rande erw"ahnte Funktionalit"at, ist das Zur"ucklesen des
+geschriebenen Buffers und ein Vergleichen der Nachricht. Damit kann littlefs feststellen, ob das 
+Schreiben tats"achlich geklappt hat oder doch m"oglicherweise ein Schreibfehler vorliegt. Im Falle vom 
+Flashspeicher k"onnte in diesem Falle ein Badblock vorliegen, also ein defekter Speicherblock.
+Das Dateisystem probiert daher das Schreiben auf einem anderen Block und zwar solange, bis
+es die Nachricht korrekt zur"ucklesen kann.   
+
 
 
 \subsubsection{Implementierung}
@@ -1803,16 +1811,16 @@ in einer h"oheren Programmgr"o"se widerspiegelt.
 \coderef{listing:littlefswritetest} zeigt die relevante Hauptschleife des Schreibtests f"ur das littlefs-Dateisystem.
 Der Schreibtest f"ur das FatFs-Dateisystem ist analog dazu in \texttt{test/fatfs\_write\_test.cpp} vorhanden.
 \fig{fig:versuch1loop} verdeutlicht den Ablauf anschaulich. 
-Die aufgenommenen Testdaten finden sich im github-Projektverzeichnis unter 
-\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest1}{test\_data/Writetest1/}.
+Die aufgenommenen Testdaten finden sich im GitHub-Projektverzeichnis unter 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest1}{(root)/test\_data/Writetest1/}.
 Die Auswertung folgte am station"aren Desktop-Computer. Dazu wurden kurze Pythonskripte erstellt, die
 Dateigr"o"se und Integrit"at der Daten pr"ufen. Das relevanteste Skript ist hierbei 
-\href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/test\_data/Writetest1/test\_readable.py}{test\_data/Writetest1/test\_readable.py}.
+\href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/test\_data/Writetest1/test\_readable.py}{(root)/test\_data/Writetest1/test\_readable.py}.
 In der Auswertung zeigt sich, dass unter etwa 9000 littlefs-Dateien und rund 8000 FatFs-Dateien keine einzige Datei auch nur
 einen einzigen messbaren Bitfehler aufweist, trotz fehlender CRC-Pr"ufsumme bei der SPI-Daten"ubertragung.
 Somit kann anhand dieses Versuchs keine Aussage dar"uber getroffen werden,
 ob ein Dateisystem zuverl"assiger mit Daten umgeht als das andere.
-
+Gleichzeitig best"atigt der Versuch, dass die zugrundeliegenden Blockschreibfunktionen "uber eine Vielzahl Aufrufe zuverl"assig arbeiten.
 
 \begin{figure}[H]
     \centering
@@ -1829,11 +1837,11 @@ W"ahrend in dieser Arbeit zwar vorrangig die Zuverl"assigkeit der Dateisysteme b
 der Datenintegrit"at untersucht werden sollte, ist es beispielsweise f"ur Logginganwendungen
 unverzichtbar ein konsistentes Verhalten beim Erstellen und Schreiben von Dateien zu erreichen.
 Also wurde der Versuch um einen Zeitstempel im Dateinamen erweitert, sodass die Dauer des gesamten Zyklus
-der Dateierstellung wie in \fig{fig:versuch1loop} gemessen werden konnte.
+der Dateierstellung wie in \fig{fig:versuch1loop} aufgezeigt, gemessen werden konnte.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/1_fatfs_dateierstellzeit.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/1_fatfs_dateierstellzeit.png}
     \caption{Dauer der Neuerstellung von Dateien auf dem FatFs-Dateisystem}
     \label{fig:fatfstime}
 \end{figure}
@@ -1844,7 +1852,7 @@ auff"allig periodisch wiederkehrendem Muster.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/2_littlefs_dateierstellzeit.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/2_littlefs_dateierstellzeit.png}
     \caption{Dauer der Neuerstellung von Dateien auf dem littlefs-Dateisystem}
     \label{fig:littlefstime}
 \end{figure}
@@ -1852,11 +1860,11 @@ auff"allig periodisch wiederkehrendem Muster.
 \fig{fig:littlefstime} zeigt dieselbe Messreihe f"ur das littlefs-Dateisystem.
 Auch hier sehen wir einen konstanten, linearen Anstieg der Dateierstelldauer in Abh"angigkeit der bereits vorhandenen
 Dateien. Zus"atzlich braucht das Dateisystem alle 38 Dateien einmalig deutlich l"anger f"ur die Erstellung einer Datei.
-
+Eine m"ogliche Erkl"arung f"ur dieses Verhalten k"onnte der bereits erw"ahnte CObW-Mechanismus sein. Nach 38 Dateien w"are
+der Zeitpunkt erreicht, wo einmalig ein ganzer Zweig eines Baumes neu geschrieben werden muss.
 
 W"ahrend hier der "ubersichtlichkeithalber nur ein Auszug von rund 850 Dateien dargestellt ist, wurden alle vorhandenen
 Messdaten untersucht. Sowohl f"ur littlefs, als auch f"ur FatFs setzt sich das typische Muster mit linear steigender Dateierstelldauer fort.
-
 
 Bei genauer Betrachtung der Werte f"allt auf, dass das FatFs-Dateisystem trotz geringerer Dateisystemkomplexit"at l"anger
 f"ur die Erstellung von Dateien ben"otigt als littlefs. Die Vermutung lag nahe, dass das mit FatFs Option \enquote{LFN}, \enquote{Long File Names}
@@ -1865,21 +1873,22 @@ nicht vorgesehen war. Diese Form der Dateinamen belegt insgesamt mehr Speicher a
 aufgenommen. Das Problem an diesem Format ist, dass nicht nur keine Umlaute f"ur Dateinamen funktionieren, sondern auch noch
 alle Dateien in Gro"sbuchstaben aufgezeichnet werden und nur eine maximale L"ange von 8 Zeichen aufweisen d"urfen, sowie 3 weitere Zeichen
 f"ur Dateiendungen wie \enquote{.txt}.
-\fig{fig:dateierstellalle} best"atigt die Vermutung. Mit dem klassischen SFN-Format zeigt FatFs eine bessere Performance
+\fig{fig:dateierstellalle} best"atigt die Vermutung. Mit dem klassischen SFN-Format zeigt FatFs eine deutlich bessere Performance
 beim Erstellen von Dateien als littlefs. 
 
 \subsubsection*{Fazit Versuch 1}
 Auch wenn in diesem Versuch keine Aussage "uber die Datenintegrit"at getroffen werden konnte, da die zugrundeliegende "Ubertragungsebene
 fehlerfrei gearbeitet hat, so lassen sich dennoch wichtige Schl"usse f"ur den Umgang mit Dateien auf eingebetteten Systemen ziehen:
-Bei der Speicherung von Daten ist es f"ur die Geschwindigkeit des Schreibzyklus vorteilhaft diese in m"oglichst wenig Dateien zu b"undeln. Sollen dennoch
-separate Dateien erzeugt werden, so ist es vorteilhaft diese ab einer gewissen Anzahl auf Unterordner aufzuteilen.
+Bei der Speicherung von Daten ist es f"ur die Geschwindigkeit des Schreibzyklus vorteilhaft diese in m"oglichst wenig Dateien zu b"undeln. 
+Sollen dennoch separate Dateien erzeugt werden, so ist es vorteilhaft diese ab einer gewissen Anzahl auf Unterordner aufzuteilen.
 Eine m"ogliche Erkl"arung ist hierf"ur, dass die Dateisysteme vor dem Erstellen neuer Dateien den gesamten Inhalt des Ordners
 zun"achst auslesen m"ussen. Wenn dieser eine komplexe Kodierung enth"alt wie im Falle von Fat32-LFN oder sehr viele Dateien, so schadet
-das der Performance, insbesondere da auf eingebetteten Systemen die Speicherbuffer sehr klein sind, mit denen gearbeitet wird.
+das der Performance, insbesondere da auf eingebetteten Systemen die Speicherbuffer sehr klein sind mit denen gearbeitet wird. \\
+
 
 \subsection{Versuch 2: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}\label{sec:v2}
 Versuch 2 folgt im Aufbau und in der Idee analog zu Versuch 1.
-Aufgrund der hohen Zuverl"assigkeit der Schreibfunktionen wird nun eine gezielte Fehlerinjektion 
+Aufgrund der hohen Zuverl"assigkeit der Schreibfunktionen wird nun allerdings eine gezielte Fehlerinjektion 
 in den Schreibfunktionen des SD-Kartentreibers durchgef"uhrt,
 bei der nach jeweils 5000 Bytes ein Byte modifiziert wird. Da sowohl littlefs, als auch FatFs diese Funktion als 
 Basis nutzen, ist eine "Uberpr"ufung des Umgangs mit fehlerhaften Daten auf Dateisystemebene m"oglich. 
@@ -1914,14 +1923,18 @@ Basis nutzen, ist eine "Uberpr"ufung des Umgangs mit fehlerhaften Daten auf Date
 \end{listing}
 
 \coderef{listing:sdwriteblockmod} zeigt den modifizierten Teil der Schreibfunktion.
-Die aufgenommenen Rohdaten finden sich in \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest2}{test\_data/Writetest2/}.
+Die aufgenommenen Rohdaten finden sich in \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest2}{(root)/test\_data/Writetest2/}.
 
 In der Auswertung zeigt sich, dass littlefs das Datei- und Datenintegrit"atsversprechen h"alt: 
 Rund 500 Dateien konnten mit fehlerfreiem Dateinamen und Inhalt geschrieben und "uberpr"uft werden.
+W"ahrend die Metadaten durch das komplexe CRC32 Logging-System abgesichert sind,
+konnten alle Fehler beim Dateiinhalt durch das integrierte Zur"ucklesen des geschriebenen
+Blockes aufgedeckt werden. FatFs hingegen liest die geschriebenen Daten nicht noch einmal
+ein und "uberpr"uft sie auch nicht auf Korrektheit. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/3_WT2_littlefs_dateierstellzeit.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/3_WT2_littlefs_dateierstellzeit.png}
     \caption{Dauer der Neuerstellung von Dateien auf dem littlefs-Dateisystem mit korrupten Daten}
     \label{fig:littlefstime_corr}
 \end{figure}
@@ -1932,13 +1945,17 @@ Logischerweise ben"otigt littlefs viel h"aufiger l"angere Zeit zur Erstellung ei
 da es nach der Fehlerpr"ufung die Daten neu anfordern und neu senden muss.
 
 Bei FatFs hingegen f"allt allein schon die automatische Auswertung schwer:
-Durch Fehler sowohl beim Dateninhalt als auch in den Metadaten (also Dateiname, Zeitstempel, Dateigr"o"se etc.)
+Durch Fehler sowohl beim Dateninhalt, als auch in den Metadaten (Dateiname, Zeitstempel, Dateigr"o"se etc.)
 l"asst sich das zuvor verwendete Skript nicht zuverl"assig anwenden.
+Von 337 Dateien haben mindestens 28 Formatierungsfehler im Dateinamen, 8 Dateinamen sind dabei v"ollig unkenntlich.
+66 Dateien haben jeweils exakt einen Schreibfehler im Inhalt. Zus"atzlich gab es Fehler bei der Dateigr"o"se und 
+im Zeitstempel. Diese wurden leider beim Kopieren in den Testordner bereits wieder beseitigt, da sie beim Kopieren
+auf ein neues Dateisystem "uberf"uhrt wurden.
 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/4_dateierstellzeit_all.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/4_dateierstellzeit_all.png}
     \caption{Dauer der Neuerstellung von Dateien "Ubersicht}
     \label{fig:dateierstellalle}
 \end{figure}
@@ -1953,9 +1970,15 @@ ein inkonsistentes Dateisystem. Dieses kann nur durch Neuformatierung oder
 durch spezialisierte Software wie \enquote{fsck (file system check)} wieder repariert werden.  
 
 \subsubsection*{Fazit Versuch 2}
-Bei einem unsicheren "Ubertragungskanal f"ur die Daten bedarf es f"ur das FAT-Dateisystem eine Strategie um die
-Integrit"at der Daten und des Dateisystems zu sichern.
-Littlefs hingegen bringt durch die in Kapitel XXX besprochenen Schutzmechanismen hier klare Vorteile mit sich.
+Bei einem unsicheren "Ubertragungskanal f"ur die Daten bedarf es f"ur das FAT-Dateisystem einer gesonderten Strategie, 
+um die Integrit"at der Daten und des Dateisystems zu sichern. Ganz trivial ist das allerdings nicht:
+Wenn die Metadaten korrupt sind, so ist beispielsweise ein "Offnen der Datei mit der 
+\texttt{fopen()}-Funktion von FatFs gar nicht m"oglich, da der Dateiname nicht stimmt. Viel einfacher scheint
+hier die Einf"uhrung einer neuen, sicheren Schreibfunktion auf SD-Treiberebene,
+die das Zur"ucklesen direkt "ubernimmt und im Zweifelsfall die Operation wiederholt.\\
+
+Littlefs hingegen bringt durch die im Kapitel \hyperref[sec:funclittle]{Funktionsweise littlefs} 
+besprochenen Schutzmechanismen hier klare Vorteile mit sich.
 
 
 
@@ -1986,7 +2009,7 @@ von 1\,KB Daten an eine bestehende Datei ben"otigt.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/6_WT3_zeitenzoomin.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/6_WT3_zeitenzoomin.png}
     \caption{Dauer des Anh"angens von 1\,KB an eine Datei in Abh"angigkeit der Dateigr"o"se}
     \label{fig:timeappend2}
 \end{figure}
@@ -1994,7 +2017,7 @@ von 1\,KB Daten an eine bestehende Datei ben"otigt.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Bilder_Plot/5_WT3_zeitenzoomout.png}
+    \includegraphics[width=\textwidth, trim=3cm 0cm 3cm 0cm, clip]{Bilder_Plot/5_WT3_zeitenzoomout.png}
     \caption{Dauer des Anh"angens von 1\,KB an eine Datei in Abh"angigkeit der Dateigr"o"se}
     \label{fig:timeappend1}
 \end{figure}
@@ -2177,7 +2200,7 @@ unberechenbar verh"alt.
 Das Fazit ist hier, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
 des Systems im Zusammenhang mit SD-Karten nicht rechtfertigt.
 
-\subsection{Versuch 5: Direkte Blockadressierung (NoFs)}
+\subsection{Versuch 5: Direkte Blockadressierung (NoFs)}\label{sec:v5}
 Die vorangegangenen Kapitel untersuchten das Verhalten von littlefs und FatFs in unterschiedlichen Szenarien.
 Angedacht war auch die Untersuchung von direkter Blockadressierung. Dies hat sich aber aus mehreren Gr"unden
 als nicht sinnvoll herausgestellt: Einerseits nutzen beide Dateisysteme die Funktionen der Blockadressierung 
@@ -2201,7 +2224,9 @@ Auf einem Linuxsystem lassen sich die Rohdaten wiederrum mit \\
 extrahieren.\\
 Die Versuchsquelldateien findet sich in \texttt{test/nofs\_append\_write\_test\_512.cpp} und
 \texttt{test/nofs\_append\_write\_test\_1024.cpp}. Die aufgenommenen Testdaten sind unter
-\href{}{github:/test\data/Writetest5} erreichbar. 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test_data/Writetest5}{(root)/test\_data/Writetest5} erreichbar.
+Der SPI-Clock wurde auf 1 MHz belassen.
+
 
 
 \begin{figure}[H]
@@ -2211,7 +2236,51 @@ Die Versuchsquelldateien findet sich in \texttt{test/nofs\_append\_write\_test\_
     \label{fig:nofstime}
 \end{figure}
 
+\fig{fig:nofstime} plottet die aufgenommen Daten. Dabei war bereits zu erwarten, dass das Schreiben
+eines 512 Byte Blocks in etwa doppelt so lange in Anspruch nimmt als das Schreiben von zwei 512 Byte
+Bl"ocken.
+\tab{tab:schreibdauer} nimmt den Durchschnitt der ersten 1000 Werte f"ur die Schreibdauer
+von 1024 Bytes. F"ur NoFs (Einzelblock) wurde die aufgenommene Dauer verdoppelt.
+Interessant ist hierbei auch ein Vergleich der Daten von littlefs (SPI 1\,MHz) und FatFs (SPI 1\,MHz) aus \hyperref[sec:v3]{Versuch 3}.
+Tats"achlich zeigt sich, dass FatFs in seiner Performance sogar besser abschneidet als 
+NoFs bei Nutzung der Einzelblockschreibfunktion. Es f"uhrt beim Abh"angen an eine Datei
+im Prinzip gar keinen Schreibzeitoverhead ein. Der Unterschied zwischen dem Schreiben
+von zwei Bl"ocken und dem Schreiben von einem Einzelblock betr"agt lediglich 0,5 ms.
+Dieser w"urde aller voraussicht nach beim Schreiben von noch mehr Bl"ocken gleichzeitig
+mehr ins Gewicht fallen. Dadurch, dass in den allermeisten F"allen die zu schreibenden Informationen
+in einen Schreibbuffer gelegt werden m"ussen, k"onnen in ressourcenbeschränkten Umgebungen
+aber nicht beliebig viele Bl"ocke gleichzeitig geschrieben werden. \\
+\begin{table}[H]
+    \centering
+    \caption{Durchschnittliche Dauer des Schreibvorgangs für 1024 Bytes}
+    \label{tab:schreibdauer}
+    \begin{tabular}{lcc}
+        \hline
+        \textbf{Dateisystem} & \textbf{$\Delta$t 1024 Bytes} & Datenrate  \\
+        \hline
+        NoFs (Einzelblock)  & 11,96\,ms & 85618,72 B/s\\
+        NoFs (Multiblock)  & 11,48\,ms & 89198,61 B/s\\
+        FatFs SFN           & 11,74\,ms & 87223,17 B/s\\
+        littlefs            & 202\,ms & 5069,31 B/s\\
+        \hline
+    \end{tabular}
+\end{table}    
+Zeitm"a"sig deutlich abgehangen ist littlefs, wobei die Durchschnittsbildung in diesem Fall etwas irref"uhrend ist:
+Grunds"atzlich dauert das Anh"angen von 1\,KB bei littlefs um die 80\,ms. Der Durchschnitt wird
+aber durch fatale Ausrei"ser, die mehrere Sekunden dauern k"onnen, stark gesenkt. \\
+Die ideale Datenrate bei dem verwendeten SPI-Takt von 1\,MHz betr"agt 125000\,B/s. In allen F"allen ist beim Design
+die Erstellung des 1024 Byte Datenbuffers mitgemessen worden, sodass die eigentliche Datenrate sogar ein
+klein wenig h"oher ausf"allt. Zudem muss bedacht werden, dass hier lediglich die Geschwindigkeit des Payloads gemessen
+wurde. Das SD-Protokoll selbst hat einen Overhead f"ur die SD-Kommandos, zus"atzlich entstehen teilweise 
+Wartezeiten, weil die SD-Karte noch vorangegangene Operationen zuende f"uhren muss. \\ 
+FatFs und NoFs befinden sich in ihrer Schreibperformance also erstaunlich nah 
+am physikalischen Limit der SPI-Peripherie. 
 
+\subsubsection*{Fazit Versuch 5}
+Das Fazit in diesem Versuch ist die Erkenntnis, dass FatFs bei der genutzten Konfiguration und
+den vorhandenen Blockschreibfunktionen keinen Schreiboverhead einf"uhrt. Da bereits festgestellt wurde,
+dass FatFs auch hinsichtlich der RAM-Nutzung kaum schwerer wiegt als NoFs, ist der einzige gr"o"sere Nachteil
+von FatFs gegen"uber NoFs der Flashverbrauch, der im schlimmsten Fall rund 13\,KB h"oher ausf"allt. 
 
 \section{Gesamtfazit}
 
@@ -2228,10 +2297,18 @@ bieten moderne Funktionalit"aten mehr M"oglichkeiten Abstraktion, Wiederverwendb
 und Erweiterbarkeit f"ur zuk"unftige Projekte. Da viel Abstraktion mit modernem C++ in
 die Kompilierzeit verschoben werden kann, bleibt die Ausf"uhrungsgeschwindigkeit trotz
 Nutzung von (eigenen) Libraries wie der \texttt{src/GPIO\_HAL.hpp} sehr hoch.\\
-Die Arbeit am SD-Treiber f"ur blockweises Lesen und Schreiben von SD-Karten war eine
-der Grundvoraussetzungen f"ur den Rest der Arbeit.
-Ein gro"ser Teil der Arbeit bestand in dem Vergleich zwischen FatFs und littlefs:
-Die Entwickler des littlefs-Dateisystems nennen auf ihrer Github-Seite drei gro"se Vorteile ihres Dateisystems:
+Die Arbeit am SD-Treiber war eine
+der Grundvoraussetzungen f"ur den Rest der Arbeit. Nat"urlich implementiert diese nicht 
+das gesamte SD-Protokoll, sondern nur die f"ur diese Arbeit relevanten Funktionen:
+Das Schreiben und Lesen von Einzel- und Mehrfachbl"ocken und das Abrufen von SD-Karteninformationen.
+Es konnte festgestellt werden, dass die Schreibperformance sich nah an der physikalischen Grenze 
+der SPI-Peripherie befindet und sehr zuverl"assig funktioniert. Tats"achlich lie"s sich "uber 
+alle Versuche hinweg kein einziger Schreibfehler provozieren und es musste f"ur eine Untersuchung
+von Schreibfehler eine gezielte Injektion von falschen Daten erfolgen.\\ 
+Ein weiterer Vorteil des SD-Treibers ist der recht geringe Flashspeicherverbrauch von nur rund 2\,KB,
+sodass er sich problemlos in eine Vielzahl von weiteren aufbauenden Projekten integrieren l"asst.
+Ein gro"ser Teil der Arbeit bestand in dem Vergleich zwischen FatFs und littlefs.
+Noch einmal sollen an dieser Stelle die drei gro"sen Vorteile des littlefs-Dateisystems genannt werden:
 \begin{itemize}
     \item \textbf{Ausfallsicherheit bei Stromausfall} 
     \item \textbf{Verschleißregulierung des Flashspeichers (Wear Leveling)} 
@@ -2274,10 +2351,16 @@ wie sie auch bei Downloads von gr"o"seren Dateien "ublich sind. Mit Datensicheru
 Redundanz l"asst sich ohne zus"atzlichen Rechenaufwand zus"atzliche Sicherheit schaffen mit dem Preis des Speicherplatzes.     
 Die Verwendung von reinem Blockspeicher hingegen (NoFs) hat sich recht schnell als zu aufwendig herausgestellt:
 Ohne die Herstellung eines eigenen Systems zur Speicherung der Daten ist das Wiederauffinden einer bestimmten
-Information sehr schwierig. Weiterhin m"usste ein Mechanismus implementiert werden der die Daten extrahiert
+Information sehr schwierig. Weiterhin m"usste ein Mechanismus implementiert werden, der die Daten extrahiert
 und letztlich wieder in eine dateisystemlesbare Datei "uberf"uhrt. NoFs eignet sich daher h"ochstens f"ur 
 sehr einfache Daten, die einem simplen Schema folgen, wie beispielsweise Temperatursensordaten mit einer
-festen Gr"o"se.\\
+festen Gr"o"se. Ein m"ogliches Vorgehen f"ur NoFs wurde in \hyperref[sec:v3]{Versuch 3} demonstriert.\\
+Alles in allem liegt der Verwendungszweck von littlefs vor allem bei reinem Flashspeicher. 
+Aber ganz unabh"angig vom physikalischen Medium:
+Sollte allerdings eine L"osung f"ur die irregul"aren, sehr langen Schreibvorg"ange auftauchen,
+so w"are littlefs eine echte Alternative bei st"oranf"alligen Nachrichtenkan"alen. 
+
+
 
 
 
