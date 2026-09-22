@@ -42,8 +42,10 @@
     pdfpagemode=FullScreen,
     }
 
+\usepackage{seqsplit}
 %fuer code
 \usepackage[newfloat]{minted}
+\setminted{breaklines=true}
 %\usepackage{listings}
 \usepackage{moresize}
 \usepackage{graphicx}
@@ -1138,32 +1140,174 @@ aber nicht f"ur CMD0 und CMD8, diese Befehle brauchen immer einen korrekten CRC7
 \label{listing:sdcardsendcmd}
 \end{listing}
 
+\coderef{listing:sdcardsendcmd} verdeutlicht wie das Senden von einzelnen SD-Befehlen "uber die SPI-Peripherie
+prinzipiell funktioniert. Tats"achlich wurde die Funktion \cpp{SD_SendCmd} selten verwendet, da nach dem 
+Senden des 4-Byte Arguments meistens noch f"ur die konkreten SD-Befehle spezifische Abl"aufe folgen. 
+
 %Das ist f"ur die Funktion des Treibers wichtig, da dieser in der Initialisierungsphase
 
 \subsection{Lese- und Schreiboperationen}
 %Sektor => physisch hardware kleinste Einheit
 %Block => logisch Software kleinste Einheit
 \subsubsection{Begriffskl"arung Sektor, Block, Cluster, Page}
+F"ur die weitere Arbeit m"ussen hier im Zusammenhang mit Blockspeicher 
+zun"achst h"aufig verwendete Begriffe gekl"art werden:
 Ein Sektor bezeichnet die kleinste physikalisch adressierbare Speichereinheit eines Datenträgers.
 Ein Block bezeichnet dagegen die kleinste logische Speichereinheit, 
 die von einem Betriebssystem oder Dateisystem adressiert wird. Ein Block kann also gr"o"ser
-sein als ein Sektor, aber nicht anders rum.\\
+sein als ein Sektor, aber nicht anders herum.\\
 Ein Cluster ist genau dasselbe wie ein Block, taucht aber im Zusammenhang mit dem
 FAT-Dateisystem auf, wohingegen der Block in der Unixwelt gel"aufiger ist.\\
 Im Zusammenhang von Flashspeicher wird die Page als kleinste programmierbare Einheit beschrieben,
-wohingegen der Erase Block die kleinste löschbare Einheit beschreibt.
+wohingegen der Erase Block die kleinste löschbare Einheit beschreibt.\\
 Leider werden in Spezifikationen und Literatur die Begrifflichkeiten nicht eindeutig verwendet.
-So spricht man im Zusammenhang von SD-Karten meist von Bl"ocken, die beschrieben werden,
+So spricht man im Zusammenhang von SD-Karten in aller Regel von Bl"ocken, die beschrieben werden,
 obwohl der Begriff des Sektors hier manchmal synonym verwendet wird. 
-Hier wird im Folgenden von Bl"ocken die Rede sein, womit aber die kleinste vor 
-der SD-Karte adressierbare Einheit gemeint ist. \\
+Hier wird im Folgenden von Bl"ocken die Rede sein, womit aber die kleinste von 
+der SD-Karte adressierbare Einheit gemeint ist.\\
 
-\subsubsection{Bl"ocke lesen/schreiben}
+\subsubsection{SD-Karte als Blockspeicher}
 Die essenzielle Funktionalit"at der SD-Karte ist das Lesen und Schreiben von Bl"ocken.
-F"ur die kommenden Dateisysteme ist die SD-Karte als Blockspeicher
-abstrahiert worden. \\
-Alle folgenden Funktionen finden sich in der Datei ''sdcarddriver.hpp''.
-\cpp{uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)} 
+F"ur die verwendeten Dateisysteme ist die SD-Karte als Blockspeicher
+abstrahiert worden. Das Dateisystem \enquote{wei"s} gar nicht, dass es eine
+SD-Karte verwendet, sondern ihm werden lediglich Funktionen zur Verf"ugung
+gestellt, mit denen es einzelne oder mehrere Bl"ocke schreiben und lesen kann.\\
+Die Funktionen des SD-Treibers finden sich in der Datei \texttt{src/sdcarddriver.hpp}.
+
+
+\subsubsection{Lesefunktionen}
+F"ur das blockweise Lesen eines Blocks wurde die Funktion 
+\cpp{uint8_t SD_ReadBlock(uint32_t block_addr, uint8_t *buffer)} implementiert.
+Die Funktion \\
+\cpp{uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer)}
+hingegen implementiert das Lesen von mehreren Bl"ocken. Das Argument \cpp{uint32_t block_count}
+gibt dabei an wie viele Bl"ocke hintereinander gelesen werden sollen, wohingegen
+\cpp{uint32_t block_addr} den Startblock angibt, angefangen bei Block 0.
+Da das Feld 32-bit gro"s ist, lassen sich damit genau 
+$
+\frac{2^{32} \cdot 512}{1024^4} = 2 \,\text{TB}
+$
+an Daten adressieren. Dies gilt f"ur den modernen SDHC/SDXC-Kartenstandard und somit 
+f"ur den ansoluten Gr"o"steil aller heutigen SD-Karten. 
+Der "altere SDSC-Standard hat auf eine Byteadressierung gesetzt und hat somit 
+ein Speicherlimit von 2\,GB. Vereinzelt braucht es allerdings SDSC-Karten noch f"ur alte
+Hardware aus den fr"uhen 2000er Jahren, die den neuen Standard nicht implementiert hat.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Bilder_Diagramme/CMD17.png}
+    \caption{Flussdiagramm des prinzipiellen Ablaufs der \cpp{SD_ReadBlock}-Funktion}
+    \label{fig:sd_flowchartcmd17}
+\end{figure}
+
+\fig{fig:sd_flowchartcmd17} zeigt ein Flussdiagramm f"ur die \cpp{SD_ReadBlock}-Funktion.
+CMD17 entspricht dem Befehl \enquote{Read Single Block} aus der SD-Spezifikation und
+kann nach der Initialisierung der SD-Karte in den SPI-Modus gesendet werden.
+Wenn die Karte nach dem Empfang des CMD17 bereit ist, so sendet sie ein \texttt{0x00}-Byte zur"uck und im
+Anschluss ein \texttt{0xFE}-Byte. Nach dem \texttt{0xFE}-Byte folgt dann der angeforderte Block 
+bestehend aus 512-Bytes an Daten, die in einen Buffer eingelesen werden k"onnen. \\
+An zahlreichen Stellen wird durch
+einen Timeout sichergestellt, dass die Funktion bei Fehlschlag nicht den gesamten
+Programmfluss blockiert. Die SD-Spezifikation gibt hier keine Vorgaben, also wurden
+Werte bis zur Bew"ahrung getestet.\\
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    // wait for start 0xFE
+    start_time = TIM2->CNT;
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    } while ((r1 != 0xFE) && ((TIM2->CNT - start_time) < T_OUT2_US));
+
+    if (r1 != 0xFE) {
+        //SD_CS_DESELECT();
+        return 0x02; // timeout-error waiting for 0xFE
+    }
+
+    // read 512 byte blockdata
+    for (uint16_t i = 0; i < 512; i++) {
+        buffer[i] = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    }
+
+    \end{minted}
+\caption{Auszug aus der Funktion \cpp{SD_ReadBlock}}
+\label{listing:lesefunktionen}
+\end{listing}
+
+\coderef{listing:lesefunktionen} zeigt beispielhaft einen Auszug der Funktion \cpp{SD_ReadBlock}, 
+der auf das \texttt{0xFE-Byte} wartet und danach 512-Bytes empf"angt. Da die SPI-Peripherie
+immer gleichzeitig sendet und empf"angt, m"ussen f"ur den Empfang von Bytes willk"urliche 
+Daten gesendet werden. Ebenfalls zeigt der Auszug wie mittels eines Hardwaretimers der Timeout 
+implementiert wurde. \\
+Die Funktion \cpp{SD_ReadBlocks} ist die etwas komplexere Version, die f"ur
+das Lesen von multiplen Bl"ocken genutzt werden kann. Dies hat den Vorteil,
+dass es den Overhead im Vergleich mit der Payload minimiert: W"ahrend bei der 
+\cpp{SD_ReadBlock}-Funktion f"ur alle 512 Bytes einmal CMD17 gesendet 
+werden muss zuz"uglich aller potentiellen Wartezeiten im SD-Controller, so reicht
+ein CMD18-Befehl f"ur beliebig viele 512-Byte Bl"ocke.\\
+Prinzipiell ist der Programmablauf "ahnlich: Zun"achst muss CMD18 gesendet werden.
+Das entspricht dem Befehl \enquote{Read Multiple Block} aus der Spezifikation.
+Nach dem \texttt{0xFE}-Byte folgen aber so lange Bytes, bis ein CMD12 (\enquote{Stop Transmission}
+den Datenfluss unterbricht. 
+
+
+\subsubsection{Schreibfunktionen}
+\cpp{uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)}
+\cpp{uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t *buffer)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Bilder_Diagramme/CMD24.png}
+    \caption{Flussdiagramm des prinzipiellen Ablaufs der \cpp{SD_WriteBlock}-Funktion}
+    \label{fig:sd_flowchartcmd24}
+\end{figure}
+
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    BSP
+    }
+    \end{minted}
+\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
+\label{listing:schreibfunktionen}
+\end{listing}
+
+
+\subsubsection{Statusfunktionen}
+
+\cpp{uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)}
+\cpp{uint8_t parse_csd(const uint8_t* rawcsd, Csd_Common* csd)}
+
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+    BSP
+    }
+    \end{minted}
+\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
+\label{listing:statusfunktionen}
+\end{listing}
 
 
 \section{Dateisysteme}
@@ -2168,7 +2312,7 @@ die Testdaten des unsichereren Dateisystems FatFs, dass sich mit Stromausf"allen
 praktisch keine Schreibfehler erzeugen lassen. Der Effekt war bei FatFs im "Ubrigen ebenfalls vorhanden.
 Dennoch konnte problemlos die 70-fache Menge an Daten in derselben Zeit erzeugt werden. 
 Das Pythonskript zur Verifikation findet sich unter 
-\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest4/test\_readable.py}{test\_data/Writetest4/test\_readable.py}.
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest4/test\_readable.py}{(root)/test\_data/Writetest4/test\_readable.py}.
 
 \subsubsection*{Fazit Versuch 4}
 Trotz der kontinuierlichen Stromausf"alle kam es in keinem der beiden Dateisysteme auch nur zu einem Schreibfehler.
@@ -2189,15 +2333,19 @@ $$
 \text{BER}_{95\%} \le \frac{3}{140\cdot1024\cdot1024\cdot8} \approx 2{,}55 \cdot 10^{-9}
 $$
 
-Der Versuch belegt also eine maximale Bitfehlerrate in der Gr"o"senordnung von $10^{-9}$ bei
-exzessiven Stromausf"allen und fehlender CRC-Pr"ufsumme auf SD-"Ubertragungsebene.
+Der Versuch sch"atzt also eine maximale Bitfehlerrate in der Gr"o"senordnung von $10^{-9}$ bei
+exzessiven Stromausf"allen und fehlender CRC-Pr"ufsumme auf SD-"Ubertragungsebene. Der 
+in die Karte integrierte SD-Kartencontroller scheint also bereits daf"ur zu sorgen,
+dass auch bei Stromausf"allen nur verl"assliche Daten auf der Karte landen. F"ur eine
+zus"atzliche Sicherheit bei der "Ubertragung lie"se sich die CRC-Pr"ufsumme, die im SPI-Modus
+standardm"a"sig deaktiviert ist, wieder aktivieren.\\
 
 Der Versuch hat ebenfalls noch einmal verdeutlicht, dass der Umgang mit littlefs 
 in Echtzeitsystemen sehr genau geplant sein muss. F"ur eine Einhaltung von gegebenen Zeitgrenzen m"ussen
 bei dem Dateisystem vorab Tests und Messungen gemacht werden, w"ahrend FatFs sich responsiver und weniger
-unberechenbar verh"alt.  
+unberechenbar verh"alt.\\
 
-Das Fazit ist hier, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
+Das endg"ultige Fazit ist hier, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
 des Systems im Zusammenhang mit SD-Karten nicht rechtfertigt.
 
 \subsection{Versuch 5: Direkte Blockadressierung (NoFs)}\label{sec:v5}

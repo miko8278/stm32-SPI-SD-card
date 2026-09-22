@@ -1,0 +1,3 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{SD\PYGZus{}GetCSD}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{buffer}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{BUF\PYGZus{}SIZE}\PYG{p}{)}
+\end{MintedVerbatim}

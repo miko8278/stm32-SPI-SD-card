@@ -204,6 +204,7 @@ uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer
     start_time = TIM2->CNT;
     // CMD12 has a stuff byte before R1, bizarre, but does not work without it properly
     SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    
     do {
         r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
     } while (r1 == 0xFF && ((TIM2->CNT - start_time) < T_OUT3_US));
