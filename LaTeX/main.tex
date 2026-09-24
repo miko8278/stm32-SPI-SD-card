@@ -276,7 +276,22 @@ um Daten auf eingebetteten Systemen zu speichern und zu lesen.
 Sie sind, verglichen mit Flash-Bausteinen, bei gro"ser Speicherkapazit"at vergleichsweise g"unstig
 und benötigen auf einer Platine wenig Platz.
 
-Im Rahmen dieser Bachelorarbeit wurde die Verwendung von SD-Karten an einem Mikrocontroller untersucht.
+Ziel dieser Arbeit war es, verschiedene Dateisysteme f"ur den Einsatz 
+von SD-Karten auf einem ressourcenbeschränkten Mikrocontroller ohne Betriebssystem zu untersuchen 
+und miteinander zu vergleichen. 
+Hierzu wurde eine Hard- und Softwareumgebung entwickelt, 
+die einen direkten Zugriff des Mikrocontrollers auf eine SD-Karte ermöglicht. 
+Auf dieser Grundlage konnten die untersuchten Dateisysteme FatFs und littlefs hinsichtlich ihres Speicherbedarfs, 
+ihres Schreibverhaltens und ihrer Zuverlässigkeit bei der Datenspeicherung untersucht werden.
+Ein Schwerpunkt lag dabei auf dem Verhalten der Dateisysteme bei Schreibfehlern 
+und unerwarteten Stromausfällen.
+
+Ausgangspunkt für die Untersuchung waren praktische Erfahrungen mit der Datenspeicherung
+auf SD-Karten in Verbindung mit Einplatinencomputern, 
+bei denen insbesondere Probleme mit der Zuverl"assigkeit der Datenspeicherung auftraten.
+Weiterhin kann bei batteriebetriebenen Anwendungen der geringere Energiebedarf 
+eines Mikrocontrollers von Bedeutung sein.
+
 Als Mikrocontroller kam dabei ein STM32G431 zum Einsatz, der über die SPI-Schnittstelle mit einer SD-Karte kommunizierte.
 Dafür wurde zunächst eine eigene Schaltung entwickelt und auf einer selbst entworfenen Platine umgesetzt.
 Neben der eigentlichen SD-Karten-Schnittstelle enthält die Platine weitere Schnittstellen und Peripherie,
@@ -288,11 +303,11 @@ Es wurden die für den Zugriff auf eine SD-Karte notwendigen Funktionen zum Lese
 von Bl"ocken implementiert. 
 Ein besonderer Fokus lag dabei auf der Verwendung der SD-Karte im SPI-Modus,
 da dieser eine vergleichsweise einfache Anbindung ermöglicht und 
-SPI-Peripherien bei Mikrocontrollern sehr verbreitet sind.
+SPI-Peripherien bei allen Arten von Mikrocontrollern sehr verbreitet sind.
 
-Aufbauend auf der direkten Blockadressierung wurden anschließend verschiedene Dateisysteme betrachtet. 
-Dazu wurden mit FatFs und littlefs zwei unterschiedliche Dateisysteme auf dem Mikrocontroller eingesetzt 
-und an den zuvor entwickelten SD-Treiber angebunden. 
+Aufbauend auf der direkten Blockadressierung von Speicher wurden anschließend zwei verschiedene Dateisysteme betrachtet. 
+Dazu wurden FatFs und littlefs an den zuvor entwickelten SD-Treiber angebunden und auf dem Mikrocontroller eingesetzt.
+ 
 Dabei wurde insbesondere untersucht, welche Eigenschaften die beiden Dateisysteme im Vergleich zueinander besitzen.
 Neben dem benötigten Speicher auf dem Mikrocontroller wurden auch das Verhalten bei Schreiboperationen
 und die Zuverlässigkeit der Datenspeicherung betrachtet.
@@ -319,7 +334,6 @@ Da im weiteren Verlauf dieser Arbeit mehrfach auf konkrete Dateien und
 Verzeichnisse des Softwareprojekts verwiesen wird, soll die folgende "Ubersicht als Navigationshilfe
 "uber die wichtigsten Dateien und die Struktur des Repositories auf GitHub dienen.
 
-\newpage 
 
 \begin{minted}[
     frame=lines,      % Rahmenlinien oben und unten
@@ -331,69 +345,90 @@ Verzeichnisse des Softwareprojekts verwiesen wird, soll die folgende "Ubersicht 
 ]{text}
 .
 |-- code
-|   `-- spi-sdcardwrite                   # Hauptprojekt
-|       |-- build                         # Build-Verzeichnis CMake
-|       |-- build.sh                      # Build-Skript
-|       |-- CMakeLists.txt                # CMake-Projektkonfiguration
-|       |-- FatFs                         # FatFs-Dateisystem extern
-|       |   |-- diskio.c                  # Mitgelieferte Beispiel diskio 
+|   `-- spi-sdcardwrite                     # Hauptprojekt
+|       |-- build                           # Build-Verzeichnis CMake
+|       |-- build.sh                        # Build-Skript
+|       |-- CMakeLists.txt                  # CMake-Projektkonfiguration
+|       |-- FatFs                           # FatFs-Dateisystem extern
+|       |   |-- diskio.c                    # Mitgelieferte Beispiel diskio 
 |       |   |-- diskio.h
-|       |   |-- ff.c                      # Kernimplementierung von FatFs
-|       |   |-- ffconf.h                  # FatFs-Konfigurationsdatei
-|       |   |-- ff.h                      # Öffentliche FatFs-Schnittstelle
+|       |   |-- ff.c                        # Kernimplementierung von FatFs
+|       |   |-- ffconf.h                    # FatFs-Konfigurationsdatei
+|       |   |-- ff.h                        # Öffentliche FatFs-Schnittstelle
 |       |   |-- ffsystem.c
-|       |   `-- ffunicode.c               # Codes für LFS, lange Dateinamen
-|       |-- include                       # Projektweite Header-Dateien STM
+|       |   `-- ffunicode.c                 # Codes für LFS, lange Dateinamen
+|       |-- include                         # Projektweite Header-Dateien STM
 |       |-- linker
-|       |   `-- STM32G431RBTX_FLASH.ld    # Linker-Skript
-|       |-- littlefs                      # littlefs-Dateisystem extern
-|       |   |-- lfs.c                     # Kernimplementierung von littlefs
-|       |   |-- lfs.h                     # Öffentliche littlefs-Schnittstelle
+|       |   `-- STM32G431RBTX_FLASH.ld      # Linker-Skript
+|       |-- littlefs                        # littlefs-Dateisystem extern
+|       |   |-- lfs.c                       # Kernimplementierung von littlefs
+|       |   |-- lfs.h                       # Öffentliche littlefs-Schnittstelle
 |       |   |-- lfs_util.c
 |       |   |-- lfs_util.h
-|       |   `-- LICENSE.md                # Lizenz von littlefs
+|       |   `-- LICENSE.md                  # Lizenz von littlefs
 |       |-- size
-|       |   |-- size_fatfs.cpp            # Speicherverbrauch mit FatFs
-|       |   |-- size_littlefs.cpp         # Speicherverbrauch mit littlefs
-|       |   |-- size_nofs.cpp             # Speicherverbrauch ohne Dateisystem
-|       |   `-- sizes_allopt.txt          # Ergebnisse der Größenmessungen
+|       |   |-- size_fatfs.cpp              # Speicherverbrauch mit FatFs
+|       |   |-- size_littlefs.cpp           # Speicherverbrauch mit littlefs
+|       |   |-- size_nofs.cpp               # Speicherverbrauch ohne Dateisystem
+|       |   `-- sizes_allopt.txt            # Ergebnisse der Größenmessungen
 |       |-- src
-|       |   |-- diskio.cpp                # Anbindung von FatFs an den SD-Treiber
-|       |   |-- fatfs_time.cpp            # Zeitfunktion für FatFs
-|       |   |-- GPIO_HAL.hpp              # Kleine GPIO-Hardwareabstraktion
-|       |   |-- init_conf.hpp             # Initialisierungskonfiguration
-|       |   |-- sdcarddriver.hpp          # SD-Karten-Treiber
-|       |   |-- sdcardlittlefs.cpp        # Anbindung von littlefs an den SD-Treiber
+|       |   |-- diskio.cpp                  # Anbindung von FatFs an den SD-Treiber
+|       |   |-- fatfs_time.cpp              # Zeitfunktion für FatFs
+|       |   |-- GPIO_HAL.hpp                # Kleine GPIO-Hardwareabstraktion
+|       |   |-- init_conf.hpp               # Initialisierungskonfiguration
+|       |   |-- killswitch.cpp              # Timer-Programm für Versuch 4
+|       |   |-- sdcarddriver.hpp            # SD-Karten-Treiber
+|       |   |-- sdcardlittlefs.cpp          # Anbindung von littlefs an den SD-Treiber
 |       |   |-- sdcardlittlefs.hpp
-|       |   `-- spidriver.hpp             # SPI-Treiber
-|       |-- startup_stm32g431xx.s         # Startup-Code des STM
-|       |-- STM32G431xx.svd               # Beschreibung der MCU-Register für den Cortex-Debugger
-|       |-- system_stm32g4xx.c            # Systeminitialisierungsdatei STM
+|       |   `-- spidriver.hpp               # SPI-Treiber
+|       |-- startup_stm32g431xx.s           # Startup-Code des STM
+|       |-- STM32G431xx.svd                 # Beschreibung der MCU-Register für den Cortex-Debugger
+|       |-- system_stm32g4xx.c              # Systeminitialisierungsdatei STM
 |       `-- test
-|           |-- fatfs_8.3_write_test.cpp  # FatFs-Schreibtest mit 8.3-Dateinamen
-|           |-- fatfs_write_test.cpp      # Schreibtest 1+2 für FatFs
-|           |-- littlefs_write_test.cpp   # Schreibtest 1+2 für littlefs
-|           |-- sd_test.cpp               # Haupttest des SD-Karten-Treibers
-|           `-- spi_test.gdb              # GDB-Skript für den Haupttest
-|-- LaTeX                                 # LaTeX-Dateien der Bachelorarbeit
-|-- PCB                                   # KiCad-Dateien für die erstellte PCB
-|-- README.md                             # Projektbeschreibung für GitHub (Englisch)
-`-- test_data                             # Daten für die durchgeführten Schreitests
-    |-- Writetest1                        # Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
-    |-- Writetest2                        # Versuch 2: Manipulierte Schreibfunktion
-    |-- Writetest3                        # Versuch 3: Pseudo-randomisierte Daten
-    `-- Writetest4                        # Versuch 4: Daten bei Stromausfälle
+|       |-- fatfs_8.3_write_test.cpp        # FatFs-Schreibtest mit 8.3-Dateinamen
+|       |-- fatfs_append_write_test.cpp     # Versuch 3 für FatFs
+|       |-- fatfs_killswitch_test.cpp       # Versuch 4 für FatFs
+|       |-- fatfs_rand_write_test.cpp       # Versuch 3 für FatFs
+|       |-- fatfs_write_test.cpp            # Versuch 1+2 für FatFs
+|       |-- littlefs_append_write_test.cpp  # Versuch 3 für littlefs
+|       |-- littlefs_killswitch_test.cpp    # Versuch 4 für littlefs
+|       |-- littlefs_rand_write_test.cpp    # Versuch 3 für littlefs
+|       |-- littlefs_write_test.cpp         # Versuch 1+2 für littlefs
+|       |-- nofs_append_write_test_1024.cpp # Versuch 5
+|       |-- nofs_append_write_test_512.cpp  # Versuch 5
+|       |-- sd_test.cpp                     # Haupttest des SD-Karten-Treibers
+|       `-- spi_test.gdb                    # GDB-Skript für den Haupttest        
+|-- LaTeX                                   # LaTeX-Dateien der Bachelorarbeit
+|-- PCB                                     # KiCad-Dateien für die erstellte PCB
+|-- README.md                               # Projektbeschreibung für GitHub (Englisch)
+`-- test_data                               # Daten für die durchgeführten Schreitests
+    |-- Writetest1                          # Versuch 1: Schreibfehleranalyse mittels bekannter Zeichenfolge
+    |-- Writetest2                          # Versuch 2: Manipulierte Schreibfunktion
+    |-- Writetest3                          # Versuch 3: Pseudo-randomisierte Daten
+    |-- Writetest4                          # Versuch 4: Daten bei Stromausfälle
+    `-- Writetest5                          # Versuch 5: NoFs Datenrate                       
     \end{minted}
     
+
+Weiterhin wird im Folgenden eine Kurzschreibweise vereinbart, die in der gesamten Arbeit verwendet wird.
+Der Ordner \texttt{(root)/code/spi-sdcardwrite/} enth"alt das Hauptprojekt.
+Ist daher beispielsweise von \texttt{src/diskio.cpp} die Rede, so befindet sich die betreffende Datei in \\
+\href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/code/spi-sdcardwrite/src/diskio.cpp}{(root)/code/spi-sdcardwrite/src/diskio.cpp}, wobei (root) f"ur die oberste Ebene 
+des GitHub-Repositories steht, also das Wurzelverzeichnis. 
+Alle Dateien, auf die au"serhalb des Ordners des Hauptprojektes verwiesen wird, werden direkt verlinkt und
+mit vollem Verzeichnispfad genannt.
+
 
 \section{Hardware-Design und Schnittstellen}
 
 \subsection{Einleitung}
-F"ur diese Bachelorarbeit wurde eigens eine PCB in KiCad10 entwickelt.
+F"ur diese Bachelorarbeit wurde eigens eine PCB in KiCad 10 entwickelt.
 Die vollst"andigen Dateien, inklusive der Gerberdateien, liegen in
-dem \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/PCB}{Projektverzeichnis auf Github}.\\
+dem \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/PCB}{Projektverzeichnis auf GitHub}.\\
 
-Das Kernelement der Platine bildet der \href{https://www.st.com/en/microcontrollers-microprocessors/stm32g431rb.html}{STM32G431}, ein 2019 ver"offentlicher Mikrocontroller von STMicroelectronics\cite{st1}.
+Das Kernelement der Platine bildet der \href{https://www.st.com/en/microcontrollers-microprocessors/stm32g431rb.html}{STM32G431}, 
+ein 2019 ver"offentlichter Mikrocontroller von \\
+STMicroelectronics\cite{st1}.
 Dieser ist preiswert und enth"alt alle wesentlichen Elemente, die f"ur diese Arbeit ben"otigt wurden:
 128 KB Flash, 32 KB SRAM, 3x SPI-Interfaces und au"serdem frei konfigurierbares Direct Memory Access (DMA),
 das sogenannte DMAMUX.
@@ -403,75 +438,83 @@ da ansonsten der DMA nicht verwendet werden konnte oder sich mit anderen Periphe
 Weiterhin bietet der STM32G431 2x 12-bit ADCs, 2x 12-bit DACs und zahlreiche Timer, sodass potentielle Anwendungen
 wie das Einlesen von Sensordaten oder das Ausgeben von Audiodaten umgesetzt werden k"onnen.\\
 Eine "Ubersicht der gesamten Features findet sich im \href{https://www.st.com/resource/en/datasheet/stm32g431rb.pdf}{offiziellen Datenblatt},
-wobei sehr genau gelesen werden muss: Beispielsweise besitzt der Controller zwar 4 DAC Kan"ale, aber nur 2 sind gleichzeitig nutzbar.
-ebenfalls kann eine ADC Genauigkeit von 16 Bit zwar erreicht werden, aber nur in einem speziellen Oversamplingmodus,
+wobei sehr genau gelesen werden muss: Beispielsweise besitzt der Controller zwar 4 DAC-Kan"ale, aber nur 2 sind gleichzeitig nutzbar.
+Ebenfalls kann eine ADC Genauigkeit von 16 Bit zwar erreicht werden, aber nur in einem speziellen Oversamplingmodus,
 wodurch die m"ogliche Abtastrate drastisch sinkt.
 Als Geh"auseform wurde LQFP48 gew"ahlt, da dieses von Hand l"otbar ist und genug Pins f"ur alle ben"otigten Zwecke
 herausf"uhrt. \\
-Es ist an dieser Stelle erw"ahnenswert, dass ST Microelectronics im h"oherwertigen Segment ebenfalls 
+Es ist an dieser Stelle erw"ahnenswert, dass STMicroelectronics im h"oherwertigen Segment ebenfalls 
 Mikrocontroller anbietet, die eine dezidierte SDMMC-Schnittstelle f"ur den nativen SD-Modus von SD-Karten haben.
 Mit diesem lassen sich h"ohere "Ubertragungsraten erreichen, was f"ur die vorliegende Arbeit aber nicht relevant war.\\
 
 
 Die Platine wurde bei dem gro"sen chinesischen Unternehmen \href{jlc.com}{JLCPCB} bestellt.
-Die Bauteile wurden bei dessen Tochterunternehmen \href{lcsc.com}{LCSC} bestellt. Der Bill of Material (BOM)
+Die Bauteile wurden bei dessen Tochterunternehmen \href{lcsc.com}{LCSC} bestellt. Der Bill of Materials (BOM)
 f"ur die Bauteile befindet sich ebenfalls im Projektverzeichnis.
 
 
 
 \subsection{Idee und Schaltplan}
 Die Idee war der Entwurf einer Prototypplatine f"ur einen STM32G431, die mit zwei MicroSD-Kartenslots ausgestattet
-wird. Dar"uber hinaus sollte die PCB so simpel wie m"oglich gehalten werden, da dies mein erster eigener Platinenentwurf ist und
-die n"otige Erfahrung f"ur komplexe Wechselwirkungen und Probleme fehlt. 
+wird. Einerseits sollte die PCB m"oglichst simpel gehalten werden,
+um die Fehlersuche und die Untersuchung zu erleichtern. Andererseits durfte die Funktionalit"at nicht zu sehr
+reduziert werden, da im Verlauf einer Arbeit immer Unw"agbarkeiten hinzukommen und ein Neuentwurf aufgrund
+der Lieferdauer der Platine unrealistisch schien.  
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_main.png}
+    \fbox{\includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_main_highres.png}}
     \caption{Hauptblatt des Schaltplans}
     \label{fig:schalt_main}
 \end{figure}
 \fig{fig:schalt_main} zeigt den haupts"achlichen Schaltplan. In der Kurzschreibweise von Schaltungen werden oft die Leitungen
-f"ur GND und VCC/VDD weggelassen. In "ahnlichem Stile wurden in dem vorliegenden Schaltplan fast alle anderen Leitungen auch
+f"ur GND und VCC/VDD weggelassen. In "ahnlichem Stil wurden in dem vorliegenden Schaltplan fast alle anderen Leitungen auch
 weggelassen und die Pins der "Ubersichtlichkeit halber mit Labels verbunden. Auch bei einem minimalen Design mussten einige 
-einige Dinge f"ur eine korrekte Funktionsweise beachtet werden, andere Features wurden hinzugef"ugt, um eine bessere Auswertung
-und Nutzung der Platine zu gew"ahrleisten:
+Dinge f"ur eine korrekte Funktionsweise beachtet werden, andere Features wurden hinzugef"ugt, um eine bessere Auswertung
+und Nutzung der Platine zu gew"ahrleisten.
+
 \subsubsection{Spannungsversorgung}
-Die Spannungsversorgung soll haupts"achlich "uber ein 5V USB-C-Netzteil gew"ahrleistet werden.
+Die Spannungsversorgung soll haupts"achlich "uber ein 5\,V USB-C-Netzteil gew"ahrleistet werden.
 Ein umsteckbarer Jumper erm"oglicht allerdings auch die Versorgung "uber einen externen Akku,
-sofern er minimal 3,8 V bis maximal 6 V zur Verf"ugung stellt. F"ur die Spannungsregelung
-ist ein \texttt{Texas Instruments TLV1117LV33DCYR} Linearregler zust"andig, da dieser au"ser zwei Kondensatoren keine
-komplexe, externe Beschaltung ben"otigt. Weiterhin wurden f"ur eine stabile Spannungsversorgung alle VDD-Pins des STM32G431 mit 
+sofern er minimal 3,8\,V bis 6\,V zur Verf"ugung stellt. Der STM32G431 ben"otigt an seinen
+VDD-Pins allerdings 3,3\,V Spannung:
+F"ur die Spannungsregelung
+ist daher ein \texttt{Texas Instruments TLV1117LV33DCYR} Linearregler zust"andig. Dieser ben"otigt im Gegensatz zu vielen
+Abw"artsreglern keine
+komplexe, externe Beschaltung, sondern lediglich zwei Kondensatoren am Ein- und Ausgang. 
+Weiterhin wurden f"ur eine stabile Spannungsversorgung alle VDD-Pins des STM32G431 mit 
 einem 100 nF Kondensator ausgestattet.
 
 \subsubsection{USB-C}
 Die Platine ist mit einem 16-Pin USB Typ C Stecker ausgestattet. Da der Stecker beidseitig in die Buchse gesteckt werden kann,
 ist jeder Pin in zweifacher Ausf"uhrung vorhanden.
-Haupts"achlich ist der Stecker zur Spannungsversorgung gedacht gewesen. Damit die USB-Spannung von 5 V von einem
-Netzteil oder anderem Ger"at "uberhaupt bereit gestellt werden kann, m"ussen die Pins CC1 und CC2 "uber einen $5,1\kohm$ Widerstand
+Haupts"achlich ist der Stecker zur Spannungsversorgung gedacht gewesen. Damit die USB-Spannung von 5\,V von einem
+Netzteil oder anderem Ger"at "uberhaupt bereitgestellt werden kann, m"ussen die Pins CC1 und CC2 "uber einen $5{,}1\kohm$ Widerstand
 auf Masse gezogen werden. Es stehen mit USB-C auch h"ohere Spannungen zur Verf"ugung, wenn mit der Spannungsquelle "uber
 das USB Power Delivery Protokoll kommuniziert wird. Dies war f"ur die vorliegende Arbeit aber nicht relevant. 
 
 Da STM32G431 aber einen USB 2.0 Controller besitzt, wurden ebenfalls die differenziellen Datenpins angeschlossen.
-Das erweitert die potentiellen M"oglichkeiten der Platine f"ur einen Datenaustausch mit dem Computer.
+Das erweitert die potenziellen M"oglichkeiten der Platine f"ur einen Datenaustausch mit dem Computer.
 
 \subsubsection{SPI-Interfaces}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_spi.png}
+    \fbox{\includegraphics[width=1\linewidth]{Hard_Bilder/Schaltplan_spi_highres.png}}
     \caption{Schaltplan f"ur die SPI-Interfaces}
     \label{fig:schalt_spi}
 \end{figure}
-Die Hauptfunktionalit"at der Platine ist die Ansteuerung einer MicroSD Karte "uber das SPI-Protokoll.
+Die Hauptfunktionalit"at der Platine ist die Ansteuerung einer MicroSD-Karte "uber das SPI-Protokoll.
 Der STM32G431 bietet hierf"ur eigene SPI-Hardwarecontroller, die als Master fungieren k"onnen und einen
 konfigurierbaren Takt vorgeben. Die Platine verbindet zwei der drei SPI-Peripherien mit MicroSD-Karten Steckpl"atzen
 und f"uhrt den dritten mit einer Pinleiste aus. Der gew"ohnliche Kommunikationsmodus von SD-Karten, der SD-Modus, ben"otigt
-zwei weitere Pins. Diese werden per Pull-Up Widerstand auf 3,3 V Spannungspegel gebracht, um ein  
-"Ubersprechen von den anderen Leitungen auf diese Pins zu unterbinden und damit potentielle Fehler zu minimieren.
+zwei weitere Pins. Diese werden in der vorliegenden Konfiguration aber per Pull-Up Widerstand auf 3,3 V Spannungspegel gebracht, 
+um ein "Ubersprechen von den anderen Leitungen auf diese Pins zu unterbinden und damit potenzielle Fehler zu minimieren.
 Die Pull-Up Widerst"ande sollten zun"achst direkt "uber ungenutzte STM32G431 Pins per Software konfiguriert werden.
 Beim Routing hat sich dies jedoch als schwierig herausgestellt, sodass physische Pull-Up Widerst"ande verwendet werden sollten.
 Durch die "Anderungen in letzter Minute hat sich hierbei allerdings ein Fehler eingeschlichen und die Widerst"ande sind
-zu Pull-Down Widerst"anden geschaltet worden.
-Das dritte SPI-Interface wurde per Pinleiste rausgef"uhrt, sodass die Flexibilit"at gew"ahrleistet ist ein
-externes SPI-Ger"at anzuschlie"sen (wie z.B einen kleinen LCD-Bildschirm), falls dies gew"unscht ist.
+zu Pull-Down Widerst"anden geschaltet worden. 
+Folglich muss die Prototypplatine ohne Pull-Up oder Pull-Down Widerst"ande genutzt werden.\\
+Das dritte SPI-Interface wurde per Pinleiste herausgef"uhrt, sodass die Flexibilit"at gew"ahrleistet ist, ein
+externes SPI-Ger"at anzuschlie"sen (wie z.B. einen kleinen LCD-Bildschirm), falls dies gew"unscht ist.
 
 \subsubsection{Programmier-Interfaces}
 Das Programmierinterface wurde in zwei Versionen herausgef"uhrt:\\
@@ -481,43 +524,47 @@ Der Nachteil ist hierbei allerdings, dass kein Debug-Interface vorhanden ist,
 sodass die Entwicklung eines Programms erschwert wird. \\
 Andererseits wurden die Pins f"ur das SWD-Interface mit einer 6-Pin Leiste herausgef"uhrt.
 Dieses Interface ben"otigt einen dezidierten Programmieradapter. Allerdings lassen sich
-mit einigen Jumperumstellungen auch die STM-Nucleo Boards daf"ur nutzen,
+mit einigen Jumperumstellungen auch die STM-Nucleo-Boards daf"ur nutzen,
 da diese ebenfalls SWD intern f"ur ihre Programmierung verwenden. 
-**HIER GENAUER SWD PROG ERKLAEREN MIT PINS UND BILDERN**
+Zur Programmierung wurde ein NUCLEO-L053R8 verwendet, prinzipiell l"asst sich aber
+jedes verf"ugbare Nucleo-Board verwenden.
+N"aheres zu den Anschl"ussen findet sich beispielsweise im \href{https://www.st.com/resource/en/user_manual/um1724-stm32-nucleo64-boards-mb1136-stmicroelectronics.pdf}{User Manual UM1724} \cite{st4} ab Seite
+17.
 
 
 \subsubsection{VREF und ADCs/DACs}
-F"ur die Referenzspannung f"ur die ADC und DAC muss der Pin VREF mit VDDA verbunden werden und mit 
-1 uF und 100 nF Kondensatoren abgesichert werden. Alternativ k"onnte man f"ur
+Die ADC/DAC-Peripherie des STM32 ist f"ur den SD-Kartenversuch prinzipiell nicht notwendig,
+erweitert die Funktionalit"at der Platine aber um potenzielle Ein- und Ausgabeoptionen und wurde
+daher per Stiftleiste herausgef"uhrt.
+F"ur die Referenzspannung der ADCs und DACs muss der Pin VREF mit VDDA verbunden werden und mit 
+1\uF\ und 100 nF Kondensatoren abgesichert werden. Alternativ k"onnte man f"ur
 eine Referenz den internen VREFBUF nutzen. In der vorliegenden Konfiguration besteht allerdings
 maximale Flexibilit"at. Um die Komplexit"at der Schaltung niedrig zu halten, 
 wurden in diesem Platinendesign keine separaten Versorgungen f"ur die digitale und analoge Spannung
-verwendet, sodass mit einem h"oheren Grundrauschen bei DAC und ADC gerechnet werden muss. 
-Es wurden 2x ADCs und 2x DACs "uber 2-Pin Leisten herausgef"uhrt. Einer der DAC ist intern
+verwendet, sodass mit einem h"oheren Grundrauschen bei den DACs und ADCs gerechnet werden muss. 
+Es wurden 2x ADCs und 2x DACs "uber 2-Pin Leisten herausgef"uhrt. Einer der DACs ist intern
 mit dem OPAMP3 verschaltet und somit gepuffert. 
 
 \subsubsection{Weitere Peripherien}
-F"ur potentielle Debugging und Kommunikationszwecke wurde ebenfalls per 3-Pin Leiste ein
+F"ur potenzielle Debugging- und Kommunikationszwecke wurde ebenfalls per 3-Pin Leiste ein
 USART-Interface herausgef"uhrt. F"ur eine einfache Eingabem"oglichkeit wurden zwei Pins
 "uber einen Taster an GND angeschlossen. Diese sollen mit in Software zugeschalteten Pull-Up Widerst"anden
-verwendet werden. Weiterhin wurden 5 weitere ungenutze Pins herausgef"uhrt.
-
+verwendet werden. Weiterhin wurden 5 weitere ungenutzte Pins herausgef"uhrt.
 
 
 
 \subsection{Routing und Design}
-
 \subsubsection{Footprints}
 Da die Platine von Hand gel"otet werden sollte, wurden alle 
 Kondensatoren und Widerst"ande in der 0805 Gr"o"se gew"ahlt.
 Alle Bauteile wurden schon in der Schaltplanphase darauf begutachtet,
-ob es sie in einer von Hand l"otbaren Geh"auseform gibt. \\
-Die Pads praktisch aller Bauteile wurden manuell etwas verl"angert, um
+ob sie in einer von Hand l"otbaren Geh"auseform existieren. \\
+Die Pads fast aller Bauteile wurden manuell etwas verl"angert, um
 eine gute Handl"otbarkeit zu gew"ahrleisten.
-LCSC stellt f"ur alle bei Ihnen verf"ugbaren Bauteile auch Footprints
+LCSC stellt f"ur alle bei ihnen verf"ugbaren Bauteile auch Footprints
 zur Verf"ugung. Die Footprints der spezielleren Bauteile, wie die des MicroSD-Kartenslots oder
-des TI Linearreglers, wurden mit dem Tool easyeda2kicad in einen KiCad Footprint
-"uberf"uhrt. Diese wiederrum mussten teilweise auch leicht angepasst werden, weil z.B 
+des TI-Linearreglers, wurden mit dem Tool \href{https://github.com/uPesy/easyeda2kicad.py}{easyeda2kicad} in einen KiCad Footprint
+"uberf"uhrt. Diese wiederum mussten teilweise auch leicht angepasst werden, weil z.B. 
 der Abstand der Pads zu den Bohrl"ochern nicht die f"ur die Produktion zul"assigen Ma"se 
 besessen hatte.
 
@@ -548,9 +595,9 @@ das sp"atere physische Layout mitbedacht werden.
 \subsubsection{Fertigung}
 Die bisherigen Ma"se und "Uberlegungen mussten schon konzeptionell und beim Entwurf im CAD-Programm beachtet werden.
 F"ur die Fertigung bei JLCPCB mussten weitere Optionen festgelegt werden:
-Der Materialtyp ist das "ubliche FR4 TG135 in der Farbe Blau. Die L"otpads werden nach dem Kupfer"atzprozess im ''LeadFree HASL'' Verfahren
+Der Materialtyp ist das "ubliche FR4 TG135 in der Farbe Blau. Die L"otpads werden nach dem Kupfer"atzprozess im \enquote{LeadFree HASL} Verfahren
 mit einer Schutzschicht Zinn "uberzogen. Auf diese Option muss besonders geachtet werden, da in Asien
-weiterhin bleihaltige Verzinnung "ublich ist. Dies ist notwendig, da blankes Kupfer innerhalb kurzer Zeit oxidieren w"urde.
+weiterhin bleihaltige Verzinnung "ublich ist. Diese Option ist vorteilhaft, da blankes Kupfer der Pads innerhalb kurzer Zeit oxidieren w"urde.
 Die Kupferdicke liegt bei den "ublichen $35\um$. \\
 Alle weiteren M"oglichkeiten sind Spezialoptionen f"ur Sonderanwendungen wie beispielsweise galvanisierte Kanten und sind f"ur diese Platine
 nicht relevant.
@@ -566,7 +613,7 @@ verteilt.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{Hard_Bilder/LQFP48_bruecke.jpg}
+    \includegraphics[width=0.55\linewidth, trim=0cm 2cm 0cm 2cm, clip]{Hard_Bilder/LQFP48_bruecke.jpg}
     \caption{L"otbr"ucke bei einem der LQFP48-Pins des STM32G431}
     \label{fig:loetproblem}
 \end{figure}
@@ -588,23 +635,21 @@ Ohne ein Mikroskop ist dieses Dr"ahtchen mit blo"sem Auge nicht zu sehen.
 Neben dem bereits erw"ahnten Problem der falsch beschalteten Pull-Up Widerst"ande wurden ebenfalls
 die Pins f"ur die SPI2 und SPI3 Peripherien vertauscht. Dieser Fehler l"asst sich durch eine 
 Umkonfigurierung softwareseitig aber l"osen.\\
-\\
 Der mit Abstand unintuitivste und am schwierigsten auszumachende Fehler der Platine h"angt 
-allerdings mit der Spannungsversorgung f"ur die SD-Kartenslots zusammen. W"ahrend den Testungen
+allerdings mit der Spannungsversorgung f"ur die SD-Kartenslots zusammen. W"ahrend der Testungen
 hat sich insbesondere der SD-Kartenslot, der an der SPI3-Peripherie angeschlossen ist, als 
-besonders unzuverl"assig herausgestellt. Dieser Fehler ist f"ur den SPI3 SD-Kartenslot fatal und l"asst sich ohne
-ein neues Design kaum beheben.\\
-
+besonders unzuverl"assig herausgestellt.\\
 \fig{fig:misodip} zeigt den Kanal MISO, also die Antwort der SD-Karte auf eine Initialisierungsanfrage.
 Die erwartete Antwort w"are 0xFF, also ein Signal, das durchgehend 3,3 V ist. Tats"achlich l"asst
-sich aber ein kleine Kondensatorentladungskurve messen. Diese Entladungskurve war noch gr"o"ser,
-als noch keine zus"atzlichen 2,2 uF Kondensatoren provisorisch in der N"ahe der SD-Kartenadapterversorung gel"otet wurden.
-Aber auch diese zus"atzlichen, provisorischen Kondensatoren sind nicht in der Lage den Einbruch g"anzlich wegzupuffern.
+sich aber eine kleine Kondensatorentladungskurve messen. Diese Entladungskurve war noch gr"o"ser,
+als noch keine zus"atzlichen 2,2\uF\ Kondensatoren provisorisch in der N"ahe der SD-Kartenadapterversorgung gel"otet wurden.
+Aber auch diese zus"atzlichen, provisorischen Kondensatoren sind nicht in der Lage, den Einbruch g"anzlich wegzupuffern.
 Tats"achlich h"angt der Spike auch vom verwendeten Netzteil ab, auch wenn sich an der Spannungsversorgung
-des Netzteils, sowie am TI Linearregler kein nennenswerter Einbruch messen l"asst.
-Ohne einen 10 uF Kondensator ist der mit der SPI3 verbundene SD-Kartenslot daher leider nicht stabil benutzbar.\\
-
-Die Peripherie an SPI1 hingegen macht weniger Probleme, da sie sich physisch n"aher an der Spannungsversorgung
+des Netzteils, sowie am TI-Linearregler, kein nennenswerter Einbruch messen l"asst.
+Ohne einen 10 uF Kondensator ist der mit der SPI3 verbundene SD-Kartenslot daher leider nicht stabil benutzbar.
+Dieser Fehler macht daher den SPI3 SD-Kartenslot unbenutzbar und l"asst sich ohne
+ein neues Design kaum beheben.\\
+Die Peripherie an SPI1 hingegen macht keine Probleme, vermutlich da sie sich physisch n"aher an der Spannungsversorgung
 befindet und die Regelschleife des Linearreglers hier schnell genug die Versorgung nachregeln kann.
 
 \begin{figure}[H]
@@ -631,16 +676,17 @@ Alles in allem ist das Design f"ur einen ersten Prototypen sehr gelungen und fun
 Der STM32 wird stabil mit Spannung versorgt und l"asst sich "uber ein speziell konfiguriertes Nucleo-Board
 debuggen und programmieren.
 Die SPI1- und mit Einschr"ankungen auch die SPI3-Peripherien lassen sich f"ur die weitere Arbeit verwenden. 
-Eine gro"se Lektion ist, dass schon beim Schaltungsdesign das sp"atere Layout mitbedacht werden muss,
-um vorrausschauene Entscheidungen bez"uglich der Pinwahl treffen zu k"onnen.\\
-SD-Karten scheinen durch ihren internen Aufbau phasenweise sehr kurzfristige Stromspitzen zu verursachen,
-die der verwendete LDO-Regler nicht ausregeln kann, wenn sich das Bauteil zu weit weg befindet. 
-Daher ist es g"unstig diese in der N"ahe der Spannungsversorgung zu platzieren und mit dezidierten Kondensatoren
+Eine wichtige Erkenntnis ist, dass schon beim Schaltungsdesign das sp"atere Layout mitbedacht werden muss,
+um vorausschauende Entscheidungen bez"uglich der Pinwahl treffen zu k"onnen.\\
+SD-Karten scheinen durch ihren internen Aufbau kurzfristig hohe Stromspitzen zu verursachen,
+die der verwendete LDO-Regler vermutlich aufgrund der r"aumlichen Entfernung des Bauteiles nicht ausregeln kann. 
+Daher ist es g"unstig, diese in der N"ahe der Spannungsversorgung zu platzieren und mit dezidierten Kondensatoren
 auszustatten. \\
 Ein gro"ses "Argernis bei der Fehlersuche, insbesondere im Hinblick auf die SPI-Peripherie, die die Grundlage
 des SD-Kartentreibers bildet, ist eine fehlende Pinleiste f"ur das Debugging. Ohne diese war es nur
-mit gr"o"ster M"uhe und Pr"azision m"oglich einzelne SPI-Pins mit dem Oszilloskop zu messen. Ein Anschluss
-an einen Logikanalyser w"are hingegen gar nicht m"oglich gewesen. \\
+mit gr"o"ster M"uhe und Pr"azision m"oglich, einzelne SPI-Pins mit dem Oszilloskop zu messen. Ein Anschluss
+an einen Logikanalyser w"are hingegen gar nicht m"oglich gewesen. Weiterhin wurde zwar "uberwiegend mit einem Debugger gearbeitet, 
+für viele der in den weiteren Arbeit durchgef"uhrten Versuche w"are eine Status-LED dennoch sehr praktisch gewesen. \\
 All diese Punkte w"aren in einer zweiten Version der Platine aber leicht nachzubessern. 
 
 \subsection{Testhardware}
@@ -649,7 +695,7 @@ Bestellungen aus China ben"otigen mehrere Wochen Zeit.
 \MP{b}{0.5}{
     \begin{figure}[H]
         \centering
-        \includegraphics[height=6cm]{Hard_Bilder/sdadapter_sold.jpg}
+        \includegraphics[height=7cm]{Hard_Bilder/sdadapter_sold.jpg}
         \caption{Erster gel"oteter SD-Adapter}
         \label{fig:sd_sold}
     \end{figure}
@@ -657,7 +703,7 @@ Bestellungen aus China ben"otigen mehrere Wochen Zeit.
 \MP{b}{0.5}{
     \begin{figure}[H]
         \centering
-        \includegraphics[height=6cm]{Hard_Bilder/sdadapter_broken.jpg}
+        \includegraphics[height=7cm]{Hard_Bilder/sdadapter_broken.jpg}
         \caption{Aufgebrochener SD-Adapter}
         \label{fig:sd_broken}
     \end{figure}
@@ -665,12 +711,12 @@ Bestellungen aus China ben"otigen mehrere Wochen Zeit.
 
 
 Um in der Zwischenzeit an der Arbeitsstellung weiterarbeiten zu k"onnen,
-wurde der in \fig{fig:sd_sold} gezeigte Adapter verwendet in Kombination
-mit einem ST Nucleo-G431RB. Diese Adapter finden sich meist bei jeder gekauften MicroSD-Karte
-und haben den Zweck die kleine Karte in ein gr"o"seres Format zu "uberf"uhren.
-Wie so oft sind improvisierte L"osungen aber nicht sehr zuverl"assig:
+wurde der in \fig{fig:sd_sold} gezeigte Adapter in Kombination
+mit einem ST NUCLEO-G431RB verwendet. Diese Adapter finden sich meist bei jeder gekauften MicroSD-Karte
+und haben den Zweck, die kleine Karte in ein gr"o"seres Format zu "uberf"uhren.
+Die improvisierte L"osung erwies sich jedoch nicht als sehr zuverl"assig:
 Schon nach zwei Wochen musste ein neuer Adapter, diesmal mit gecrimpten Aderendh"ulsen, gel"otet werden,
-da sich einzelne Str"ange des Litzenkabels gel"ost haben und zu Kurzschl"ussen gef"uhrt haben.
+da sich einzelne Str"ange des Litzenkabels gel"ost hatten und zu Kurzschl"ussen gef"uhrt hatten.
 
 
 \section{SPI- und SD-Karten-Treiber} \label{sec:spi} 
@@ -681,8 +727,8 @@ Die Sprache erlaubt Hardware-Abstraktionen mit Templates und Berechnungen zur Co
 vollkommen ohne Laufzeitoverhead, sogenannte Zero-Cost-Abstractions.
 Moderne Sprachfeatures wie \cpp{enum class} und \cpp{namespace} bieten Typensicherheit und erh"ohen die Lesbarkeit.
 Bedingte Kompilierung mit \cpp{if constexpr} w"ahlt nur relevante Zweige zur Compilezeit aus und kompiliert den Rest erst gar nicht.
-Gleichzeitig besteht Abw"artskompatiblit"at zu C-Code, sodass beispielsweise die in C89 geschriebene
-FatFS-Bibliothek problemlos implementiert werden kann.
+Gleichzeitig besteht Abw"artskompatibilit"at zu C-Code, sodass beispielsweise die in C89 geschriebene
+FatFS-Bibliothek problemlos eingebunden werden kann.
 %namespace problematik schreiben, folgender Fehler:
 % [build]  1130 | #define CRC                 ((CRC_TypeDef *) CRC_BASE)
 % [build]       |                              ~            ^
@@ -693,12 +739,13 @@ FatFS-Bibliothek problemlos implementiert werden kann.
 Um nicht st"andig direkte und dadurch schwer lesbare Registerzugriffe
  innerhalb der Treiber vornehmen zu müssen, wurde eine kleine Zero-Cost-Abstraction
 für die Konfiguration und Ansteuerung der GPIOs implementiert.
-Die in ''GPIO\_HAL.hpp'' verwendete Template-Klasse \cpp{GpioPin} erh"alt die Basisadresse des verwendeten GPIO-Ports sowie die Pinnummer als Compile-Time-Parameter. 
+Die in \texttt{src/GPIO\_HAL.hpp} verwendete Template-Klasse \cpp{GpioPin} 
+erh"alt die Basisadresse des verwendeten GPIO-Ports sowie die Pinnummer als Compilezeit-Parameter. 
 Dadurch k"onnen konkrete GPIO-Pins typsicher beschrieben
 und über eine einheitliche Schnittstelle konfiguriert werden.
 Die Klasse stellt unter anderem Funktionen zur Konfiguration als Ein- oder Ausgang, 
 zur Auswahl von Pull-Up- bzw. Pull-Down-Widerständen sowie zur Konfiguration von Alternate Functions bereit.
-Da Port und Pin bereits zur Compile-Zeit feststehen und die bereitgestellten Funktionen als \cpp{static} implementiert sind,
+Da Port und Pin bereits zur Compilezeit feststehen und die bereitgestellten Funktionen als \cpp{static} implementiert sind,
 ist zur Laufzeit keine Objektinstanz erforderlich. 
 Bei entsprechender Compileroptimierung können die Methoden daher auf die für den jeweiligen Pin notwendigen direkten Registerzugriffe reduziert werden. 
 Die Abstraktion dient somit prim"ar der Lesbarkeit und Wartbarkeit des Quellcodes, ohne einen relevanten Laufzeit- oder Speicher-Overhead einzuführen.
@@ -744,18 +791,18 @@ Dadurch wird nur der tatsächlich benötigte Zweig für AFR[0] oder AFR[1] kompi
 \subsection{Debugging mit GDB}
 Ein absolut wesentlicher und sehr zeitintensiver Teil der Arbeit ist das Debugging der Hard- und Software.
 Zum Debugging wurde die VS Code Erweiterung \href{https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug}{Cortex-Debug}
-verwendet. Diese nutzt im Hintergrund den \href{https://www.sourceware.org/gdb/}{GNU Project Debugger GDB}. \\
+verwendet. Diese nutzt im Hintergrund den \href{https://www.sourceware.org/gdb/}{GNU Project Debugger (GDB)}. \\
 Mit der Erweiterung und der richtigen .svd Datei f"ur den STM32G431 lassen sich direkt aus dem Editor Programme 
-auf den STM32 flashen und Register und Variablen auslesen. Durch die Nutzung von CMake lassen sich ausserdem
+auf den STM32 flashen und Register und Variablen auslesen. Durch die Nutzung von CMake lassen sich au"serdem
 bequem mehrere ausf"uhrbare Programme kompilieren und leicht wechseln.\\
 So war recht schnell erreicht, dass das Projekt eine f"ur das direkte Auslesen
 von Variablen unhandliche Gr"o"se angenommen hat. 
-F"ur das Debugging wurde diese Arbeit inspiriert vom Rustprojekt \href{https://defmt.ferrous-systems.com/}{defmt},
-das Debuggingnachrichten direkt "uber die Debug Probe ST-Link ohne einen zus"atzlichen UART-Kanal oder
+F"ur das Debugging wurde diese Arbeit vom Rustprojekt \href{https://defmt.ferrous-systems.com/}{defmt} inspiriert,
+das Debuggingnachrichten direkt "uber die Debug-Probe ST-Link ohne einen zus"atzlichen UART-Kanal oder
 den SWO-Pin senden kann. Dies ist besonders n"utzlich, da der ST-Link zum Flashen der Programme ohnehin am 
 Mikrocontroller angeschlossen sein muss. \\ 
 Die minimale L"osung f"ur diese Arbeit nutzt letztlich aus, dass GDB im angehaltenen Zustand immer den Speicher des
-Mikrocontrollers auslesen kann. Damit ist es m"oglich f"ur Testprogramme GDB-Skripte zu entwerfen, die
+Mikrocontrollers auslesen kann. Damit ist es m"oglich, f"ur Testprogramme GDB-Skripte zu entwerfen, die
 bestimmte Flags von Variablen oder ganze Variablen auswerten.
 
 
@@ -799,13 +846,19 @@ bestimmte Flags von Variablen oder ganze Variablen auswerten.
         (...)
     end
     \end{minted}
-\caption{Auszug aus \texttt{spi\_test.gdb}}
+\caption{Auszug aus \texttt{test/spi\_test.gdb}}
 \label{listing:gdbdebug1}
 \end{listing}
 
 
-\fig{listing:gdbdebug1} zeigt einen Auszug aus dem erstellten GDB-Skript, welches die beiden SD-Kartenslots
-auf ihre Funktionsf"ahigkeit pr"uft.
+\coderef{listing:gdbdebug1} zeigt einen Auszug aus dem erstellten GDB-Skript, welches die beiden SD-Kartenslots
+auf ihre Funktionsf"ahigkeit pr"uft.\\
+Die dazugeh"orige, typische Ausgabe in der GDB-Debug-Konsole zeigt \coderef{listing:gdbdebugausgabe}.
+Damit lässt sich mit einem Durchlauf des Programms feststellen, ob die zugrundeliegenden
+Funktionen des SPI/SD-Treibers alle ordnungsgemä"s funktionieren und ob die Karte sich mit 
+einem der beiden Dateisysteme mounten l"asst und ob die grundlegenden Funktionen des Dateisystems, wie zum Beispiel das Lesen und Schreiben, fehlerfrei ausf"uhrbar sind.
+
+
 
 \begin{listing}[H]
     \begin{minted}[
@@ -843,18 +896,39 @@ auf ihre Funktionsf"ahigkeit pr"uft.
     SPI1, littlefs: CLOSE [OK]
     SPI1, littlefs: UNMOUNT [OK]
     \end{minted}
-\caption{Debugausgabe von \texttt{spi\_test.cpp} durch Anwendung von \texttt{spi\_test.gdb}}
+\caption{Debugausgabe von \texttt{test/spi\_test.cpp} durch Anwendung von \texttt{spi\_test.gdb}}
 \label{listing:gdbdebugausgabe}
 \end{listing}
 
-Eine typische Ausgabe in der GDB-Debug Konsole zeigt \coderef{listing:gdbdebugausgabe}.
-Damit lässt sich mit einem Durchlauf des Programms feststellen, ob die zugrundeliegenden
-Funktionen des SPI/SD-Treibers alle ordnungsgemä"s funktionieren und ob die Karte sich mit 
-einem der beiden Dateisysteme mounten l"asst und ob die grundlegenden Funktionen des Dateisystems, wie zum Beispiel das Lesen und Schreiben, fehlerfrei ausf"uhrbar sind.
-\\  
+
 GDB-Skripte sind ebenfalls in der Lage Breakpoints zu setzen. Mit dieser Funktion l"asst sich 
 ein einfaches Debug-Print in der GDB-Debug-Konsole realisieren.
+\coderef{listing:gdbdebug2} zeigt einen weiteren Auszug aus dem erstellten GDB-Skript \texttt{spi\_test.gdb}.
+Dieser Code setzt einen Breakpoint bei der Funktion \cpp{debug_gdb_print} und gibt dessen str-Variable aus.
+\coderef{listing:gdbdebug3} zeigt den vollst"andigen Code der Funktion \cpp{debug_gdb_print}. Mit dieser
+Kombination ist es m"oglich, die Funktion im Code aufzurufen. Diese macht codetechnisch nichts, veranlasst
+den Debugger aber kurz bei ihr anzuhalten, die Variable str auszugeben und sofort den Programmablauf fortzuf"uhren.
+W"ahrend diese Funktionalit"at nicht in zeitkritischen Schleifen zum Einsatz kommen kann, ist sie f"ur
+allgemeine Debuggingnachrichten sehr gut anwendbar. Gleichzeitig ist kein zus"atzliches, externes Modul
+notwendig, sondern die bereits vorhandenen Funktionalit"aten des GDB-Debuggers k"onnen ausgenutzt werden. 
 
+\begin{listing}[H]
+    \begin{minted}[
+        frame=lines,      % Rahmenlinien oben und unten
+        framesep=2mm,     % Abstand zum Rahmen
+        baselinestretch=1.2,
+        bgcolor=lightgray!20, % Hintergrundfarbe
+        fontsize=\footnotesize,
+        linenos           % Zeilennummern aktivieren
+    ]{cpp}
+void debug_gdb_print(const char* str)
+{
+    // breakpoint target only
+}
+    \end{minted}
+\caption{Auszug aus \texttt{test/sd\_test.cpp}}
+\label{listing:gdbdebug3}
+\end{listing}
 
 \begin{listing}[H]
     \begin{minted}[
@@ -871,39 +945,15 @@ ein einfaches Debug-Print in der GDB-Debug-Konsole realisieren.
         continue
     end
     \end{minted}
-\caption{Auszug aus \texttt{spi\_test.gdb}}
+\caption{Auszug aus \texttt{test/spi\_test.gdb}}
 \label{listing:gdbdebug2}
 \end{listing}
 
 
-\begin{listing}[H]
-    \begin{minted}[
-        frame=lines,      % Rahmenlinien oben und unten
-        framesep=2mm,     % Abstand zum Rahmen
-        baselinestretch=1.2,
-        bgcolor=lightgray!20, % Hintergrundfarbe
-        fontsize=\footnotesize,
-        linenos           % Zeilennummern aktivieren
-    ]{cpp}
-void debug_gdb_print(const char* str)
-{
-    // breakpoint target only
-    //
-}
-    \end{minted}
-\caption{Auszug aus \texttt{sd\_test.cpp}}
-\label{listing:gdbdebug3}
-\end{listing}
 
 
-\coderef{listing:gdbdebug2} zeigt einen weiteren Auszug aus dem erstellten GDB-Skript \texttt{spi\_test.gdb}.
-Dieser Code setzt einen Breakpoint bei der Funktion \cpp{debug_gdb_print} und gibt dessen str-Variable aus.
-\coderef{listing:gdbdebug3} zeigt den vollst"andigen Code der Funktion \cpp{debug_gdb_print}. Mit dieser
-Kombination ist es m"oglich die Funktion im Code aufzurufen. Diese macht codetechnisch nichts, veranlasst
-den Debugger aber kurz bei ihr anzuhalten, die Variable str ausgeben und sofort den Programmablauf fortzuf"uhren.
-W"ahrend diese Funktionalit"at nicht in zeitkritischen Schleifen zum Einsatz kommen kann, ist sie f"ur
-allgemeine Debuggingnachrichten sehr gut anwendbar. Gleichzeitig ist kein zus"atzliches, externes Modul
-notwendig, sondern es nutzt die bereits vorhandenen Funktionalit"aten des GDB-Debuggers aus. 
+
+
 
 
 \subsection{SPI}
@@ -916,11 +966,11 @@ notwendig, sondern es nutzt die bereits vorhandenen Funktionalit"aten des GDB-De
     \label{tab:standardsd_spi}
     \begin{tabular}{lllll}
     \toprule
-    \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32 G431 Pin} \\ \midrule
-    1            & DAT3 / CD         & CS        & Chip Select (Low-aktiv)     & GPIO (z.B. PA8)        \\
+    \textbf{Pin} & \textbf{SD-Modus} & \textbf{SPI-Modus} & \textbf{Beschreibung (SPI)} & \textbf{STM32G431 Pin} \\ \midrule
+    1            & DAT3 / CD         & CS        & Chip Select (Low-aktiv)     & GPIO (hier PA8)        \\
     2            & CMD               & DI        & Data In (Dateneingang)      & PA7 (MOSI)              \\
     3            & VSS1              & VSS       & Masse                       & GND                     \\
-    4            & VDD               & VDD       & Stromversorgung (3,3\,V)    & 3,3\,V                  \\
+    4            & VDD               & VDD       & Spannungsversorgung (3,3\,V)    & 3,3\,V                  \\
     5            & CLK               & SCLK      & Taktleitung                 & PA5 (SCK)               \\
     6            & VSS2              & VSS       & Masse                       & GND                     \\
     7            & DAT0              & DO        & Data Out (Datenausgang)     & PA6 (MISO)              \\
@@ -929,30 +979,34 @@ notwendig, sondern es nutzt die bereits vorhandenen Funktionalit"aten des GDB-De
     \end{tabular}
 \end{table}
 
-    \tab{tab:standardsd_spi} verdeutlicht die Anschlussbelegungen, die "uberwiegend f"ur die Testhardware
-    am Nucleo-G431RB verwendet wurden.
-
-
-
+\tab{tab:standardsd_spi} verdeutlicht die Anschlussbelegungen f"ur eine SD-Karte in Standardgr"o"se, wie sie f"ur die Testhardware
+am NUCLEO-G431RB verwendet wurden. Au"serdem verdeutlicht die Tabelle die Funktionen der einzelnen Pins der SD-Karte.
+Hier zeigt sich auch, dass eine SD-Karte im SD-Modus bis zu 4 Datenleitungen nutzen kann, w"ahrend sie im SPI-Modus nur
+eine nutzt. Dadurch sind im SD-Modus selbstverst"andlich h"ohere Datenraten m"oglich, w"ahrend sich der SPI-Modus
+durch eine einfachere Handhabung auszeichnet.
 
 \fig{fig:sd_broken} verdeutlicht, dass SD-Adapter lediglich die Leitungen der MicroSD-Karte umlenken.
-Die neue Belegung f"ur SPI1, mit der die Platine arbeitet, findet sich in \tab{tab:microsd_pinout}.
+Die angewandten Belegungen f"ur eine MicroSD-Karte, mit der auch die Platine arbeitet, finden sich in \tab{tab:microsd_pinout}.
+Es besteht eine gewisse Variabilit"at, welche Pins f"ur welche SPI-Peripherie genutzt werden.
+Dies wird anhand der zugeh"origen Alternate Functions entschieden. Ein noch unvollst"andiger Versuch, 
+das mit einer Konfigurationsdatei zu abstrahieren, findet sich in der \texttt{src/init\_conf.hpp} mit den
+Strukturen \cpp{SD1_Config} bis \cpp{SD3_Config}. 
 
     \begin{table}[H]
         \centering
-        \caption{Anschlussbelegung der MicroSD-Karte am STM32G431 im SPI-Modus f"ur SPI1}
+        \caption{Anschlussbelegung der MicroSD-Karte am STM32G431 im SPI-Modus}
         \label{tab:microsd_pinout}
-        \begin{tabular}{c|l|l}
+        \begin{tabular}{clll}
         \hline
-        \textbf{MicroSD-Pin} & \textbf{Signalname} & \textbf{Verbindung am STM32G431 / Platine} \\ \hline
-        Pin 1 & DAT2 & 3.3V "uber internen Pull-up \\ 
-        Pin 2 & CS & GPIO (z.B. PA8) \\ 
-        Pin 3 & DI (MOSI) & PA7 \\ 
-        Pin 4 & VDD & 3.3V Hauptversorgung \\ 
-        Pin 5 & SCK & PA5 \\ 
-        Pin 6 & VSS & GND \\ 
-        Pin 7 & DO (MISO) & PA6 \\ 
-        Pin 8 & DAT1 & 3.3V "uber internen Pull-up \\ \hline
+        \textbf{MicroSD-Pin} & \textbf{Signalname} & \textbf{SPI1} & \textbf{SPI3}\\ \hline
+        Pin 1 & DAT2 & 3.3\,V "uber Pull-up & 3,3\,V "uber Pull-up \\ 
+        Pin 2 & CS & PA8 & PB11\\ 
+        Pin 3 & DI (MOSI) & PA7 & PB5\\ 
+        Pin 4 & VDD & 3,3\,V & 3,3\,V \\ 
+        Pin 5 & SCK & PA5 & PB3\\ 
+        Pin 6 & VSS & GND & GND \\ 
+        Pin 7 & DO (MISO) & PA6 & PB4 \\ 
+        Pin 8 & DAT1 & 3,3\,V "uber Pull-up & 3,3\,V "uber Pull-up \\ \hline
         \end{tabular}
     \end{table}
 
@@ -970,7 +1024,7 @@ Die neue Belegung f"ur SPI1, mit der die Platine arbeitet, findet sich in \tab{t
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{BilderExt/st-blockdiagram.png}
-    \caption{Blockdiagramm f"ur die SPI-Peripherie des STMG431\cite{st3}}
+    \caption{Blockdiagramm f"ur die SPI-Peripherie des STMG431 \cite{st3}}
     \label{fig:stblock}
 \end{figure}
 \fig{fig:stblock} zeigt das Blockdiagramm f"ur die SPI-Peripherie der STMG4-Serie.
@@ -1256,12 +1310,20 @@ ein CMD18-Befehl f"ur beliebig viele 512-Byte Bl"ocke.\\
 Prinzipiell ist der Programmablauf "ahnlich: Zun"achst muss CMD18 gesendet werden.
 Das entspricht dem Befehl \enquote{Read Multiple Block} aus der Spezifikation.
 Nach dem \texttt{0xFE}-Byte folgen aber so lange Bytes, bis ein CMD12 (\enquote{Stop Transmission}
-den Datenfluss unterbricht. 
+den Datenfluss unterbricht. \\
+Es sollte beachtet werden, dass die Buffergr"o"se f"ur \cpp{SD_ReadBlocks} ein Vielfaches 
+von 512-Byte sein muss, wobei der Faktor dem Argument \texttt{block\_count} gleicht. 
 
 
 \subsubsection{Schreibfunktionen}
+F"ur das blockweise Schreiben eines einzelnen 512-Byte Blocks stellt
+der SD-Treiber die Funktion
 \cpp{uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)}
-\cpp{uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t *buffer)}
+zur Verf"ugung.
+F"ur das Schreiben von multiplen Bl"ocken hintereinander existiert die Funktion
+\cpp{uint8_t SD_WriteBlocks(uint32_t block_addr, uint32_t block_count, const uint8_t *buffer)}.
+Die Argumente verhalten sich analog zu denen der lesenden Funktionen.
+
 
 \begin{figure}[H]
     \centering
@@ -1270,28 +1332,36 @@ den Datenfluss unterbricht.
     \label{fig:sd_flowchartcmd24}
 \end{figure}
 
+\fig{fig:sd_flowchartcmd24} zeigt den prinzipiellen Programmfluss f"ur den 
+SD-Befehl CMD24 \enquote{"Write Single Block"}. Zun"achst wird wie immer
+der entsprechende Befehl, hier CMD24, gesendet. Bei erfolgreicher
+Antwort wird mit dem Startbyte \texttt{0xFE} der Beginn der "Ubertragung
+signalisiert. Dann folgen 512 Bytes an zu schreibenden Daten und es wird
+mit 2 Bytes CRC abgeschlossen. Wichtig ist hier zu beachten, dass die
+CRC in jedem Fall gesendet werden muss, auch wenn die entsprechende
+"Uberpr"ufung ausgeschaltet ist: In dem Falle kann aber auf die 
+Berechnung einer echten CRC verzichtet werden und es k"onnen stattdessen beliebige
+2 Bytes gesendet werden. Im n"achsten Schritt muss die SD-Karte mit einem
+\texttt{0x05} antworten, falls die CRC-"Uberpr"ufung erfolgreich war. \\
+Die Funktion kann erfolgreich verlassen werden, wenn die SD-Karte im Anschluss mit 
+einem \text{0x00} signalisiert, dass alle Daten erfolgreich im Flash abgelegt werden konnten.\\
+Der SD-Befehl CMD25 f"ur das Schreiben von mehreren Bl"ocken "ahnelt vom Ablauf her 
+sehr CMD24. Statt dem \texttt{0xFE}-Byte kommt hier ein \texttt{0xFC}-Byte als Startbyte
+zum Einsatz. Es wird weiterhin in 512-Byte Abschnitten gearbeitet: Zun"achst werden Startbyte + 512-Byte Daten + 2 Byte CRC geschrieben,
+dann sendet die SD-Karte ein Statusbyte, in dem sie die erhaltene Information akzeptiert. 
+Im Anschluss wird darauf gewartet, dass die SD-Karte den Block tats"achlich geschrieben hat.
+Dieser Ablauf erfolgt f"ur alle zu schreibenen Bl"ocke in einer Schleife. 
+Am Ende folgt dann statt dem \texttt{0xFC}-Startbyte f"ur einen neuen Block ein \texttt{0xFD}-Stopbyte,
+welches den Schreibvorgang beendet.
 
-\begin{listing}[H]
-    \begin{minted}[
-        frame=lines,      % Rahmenlinien oben und unten
-        framesep=2mm,     % Abstand zum Rahmen
-        baselinestretch=1.2,
-        bgcolor=lightgray!20, % Hintergrundfarbe
-        fontsize=\footnotesize,
-        linenos           % Zeilennummern aktivieren
-    ]{cpp}
-    BSP
-    }
-    \end{minted}
-\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
-\label{listing:schreibfunktionen}
-\end{listing}
 
 
 \subsubsection{Statusfunktionen}
-
+Zu guter Letzt braucht es f"ur eine Implementation von Dateisystemen als Information zumindest
+die Speicherkapazit"at der SD-Karte. Die Rohinformation l"asst sich mit   
 \cpp{uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)}
-\cpp{uint8_t parse_csd(const uint8_t* rawcsd, Csd_Common* csd)}
+abrufen. Diese Funktion nutzt den SD-Befehl CMD9 \enquote{Send CSD (Card Specific Data)}.
+
 
 \begin{listing}[H]
     \begin{minted}[
@@ -1302,12 +1372,44 @@ den Datenfluss unterbricht.
         fontsize=\footnotesize,
         linenos           % Zeilennummern aktivieren
     ]{cpp}
-    BSP
+    // wait for start 0xFE
+    start_time = TIM2->CNT;
+    do {
+        r1 = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    } while ((r1 != 0xFE) && ((TIM2->CNT - start_time) < T_OUT2_US));
+
+    if (r1 != 0xFE) {
+        //SD_CS_DESELECT();
+        return SD_CSD_ERROR_DATATRANS; // timeout-error waiting for 0xFE
+    }
+
+    // read 16 byte CSD register
+    constexpr uint8_t CSD_SIZE = 16;
+    for (uint8_t i = 0; i < CSD_SIZE; i++) {
+        buffer[i] = SpiDriver<Config::SpiBase>::Transfer(0xFF);
+    }
     }
     \end{minted}
-\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
+\caption{Auszug aus der Funktion \cpp{SD_GetCSD}}
 \label{listing:statusfunktionen}
 \end{listing}
+\coderef{listing:statusfunktionen} zeigt den wichtigsten Teil der \cpp{SD_GetCSD}-Funktion.
+Diese Arbeitet im Prinzip genauso wie die \cpp{SD_ReadBlock}-Funktion mit der Ausnahme, 
+dass sie eine von der SD-Karte fixe 16 Byte Sequenz erh"alt, die sogenannte CSD.
+Diese enth"alt eine Vielzahl an Informationen, wie beispielsweise die maximale
+"Ubertragungsgeschwindigkeit der SD-Karte pro Datenleitung. Die genaue Bedeutung der Informationen
+unterscheidet sich allerdings einmal wieder je nachdem ob eine alte SDSC-Karte (CSD V1.0) oder
+eine moderne SDHC/SDXC-Karten (CSD V2.0) vorliegt. Alle Details befinden sich in der SD-Spezifikation.
+Als Hinweis sei hier aber noch erw"ahnt, dass in der CSD V2.0 zwar zum Beispiel das Feld
+\enquote{erase sector size} tabellarisch auftaucht und genau so benannt wird, es aber nicht f"ur die Gr"o"se
+des L"oschblocks steht. Tats"achlich wird das Feld in CSD V2.0 schlichtweg nicht genutzt, was erst in 
+der erweiterten Beschreibung des Feldes erl"autert wird. 
+Die SD-Spezifikation hat das Feld dennoch nicht umbenannt. \\
+Die Funktion
+\cpp{uint8_t parse_csd(const uint8_t* rawcsd, Csd_Common* csd)}
+extrahiert aus der Vielzahl von Informationen lediglich die Kartengr"o"se,
+da dies im folgenden die einzig relevante Information darstellt. 
+
 
 
 \section{Dateisysteme}
@@ -1760,7 +1862,7 @@ F"ur Metadaten wird ein \enquote{two-block log} verwendet.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[height=4cm]{Bilder_Diagramme/littlefsmetadata.png}
+    \includegraphics[height=6cm]{Bilder_Diagramme/littlefsmetadata.png}
     \caption{Prinzip \enquote{two-block log}}
     \label{fig:littlefsmetaidea}
 \end{figure}

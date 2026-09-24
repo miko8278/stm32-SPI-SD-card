@@ -228,7 +228,9 @@ enum SD_WRITE_RESULT : uint8_t
 
 static int err_cnt = 0;
 
-//template<uintptr_t Base, uintptr_t PortBase, uint32_t Pin>
+// SD-CMD 24, "Write Single Block"
+// Blockadressing is being used, starting with Block 0 and a blocksize of 512 bytes.
+// const uint8_t *buffer therefore should also be at least 512 Bytes
 template<typename Config>
 uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)
 {
