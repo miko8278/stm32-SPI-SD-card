@@ -210,7 +210,6 @@
     Schwerpunkt:        & Kommunikationstechnik \\ 
     Erstprüfer:         & Prof.\ Dr.\ Peter Gober \\
     Zweitprüfer:        & Prof.\ Dr.\ David Dietrich \\
-    Semester:           & Sommersemester 2026 \\
     Abgabedatum:        & 1. Oktober 2026 \\
     \end{tabular}
     
@@ -289,8 +288,9 @@ und unerwarteten Stromausfällen.
 Ausgangspunkt für die Untersuchung waren praktische Erfahrungen mit der Datenspeicherung
 auf SD-Karten in Verbindung mit Einplatinencomputern, 
 bei denen insbesondere Probleme mit der Zuverl"assigkeit der Datenspeicherung auftraten.
-Weiterhin kann bei batteriebetriebenen Anwendungen der geringere Energiebedarf 
-eines Mikrocontrollers von Bedeutung sein.
+Ebenso besitzen Einplatinencomputer zumeist eine h"ohere Leistungsaufnahme,
+sodass bei batteriebetriebenen Anwendungen der geringere Energiebedarf 
+eines Mikrocontrollers von Vorteil ist.
 
 Als Mikrocontroller kam dabei ein STM32G431 zum Einsatz, der über die SPI-Schnittstelle mit einer SD-Karte kommunizierte.
 Dafür wurde zunächst eine eigene Schaltung entwickelt und auf einer selbst entworfenen Platine umgesetzt.
@@ -315,7 +315,7 @@ Aufgrund von unerwarteten Ergebnissen bei ersten Tests wurden zus"atzlich
 Zeitmessungen bei der Erstellung der Testdateien durchgef"uhrt und die Ergebnisse visualisiert. 
 
 
-Ein Schwerpunkt der Arbeit lag auf der Untersuchung von Schreibfehlern
+Ein weiterer Schwerpunkt der Arbeit lag auf der Untersuchung von Schreibfehlern
 und dem Verhalten des Systems unter verschiedenen Bedingungen. 
 Hierzu wurden mehrere Versuche durchgeführt: 
 Zun"achst wurden Schreiboperationen mit bekannten Daten untersucht. 
@@ -1027,18 +1027,15 @@ Strukturen \cpp{SD1_Config} bis \cpp{SD3_Config}.
     \caption{Blockdiagramm f"ur die SPI-Peripherie des STMG431 \cite{st3}}
     \label{fig:stblock}
 \end{figure}
-\fig{fig:stblock} zeigt das Blockdiagramm f"ur die SPI-Peripherie der STMG4-Serie.
-Der relevanteste Teil ist das Shiftregister. Das oberste Bit des Shift-Registers wird auf MOSI ausgegeben.
+\fig{fig:stblock} zeigt das Blockdiagramm f"ur die SPI-Peripherie der STM32G4-Serie.
+Der relevanteste Teil ist das Shiftregister. Das oberste Bit des Shiftregisters wird auf MOSI ausgegeben.
 Gleichzeitig wird das Bit auf MISO eingelesen. Es liegt in der verwendeten Konfiguration immer eine Full-Duplex "Ubertragung vor.
 Um Daten über MISO zu empfangen, muss der Master eine Übertragung initiieren und entsprechend Taktzyklen erzeugen. 
-Dabei werden gleichzeitig Daten über MOSI übertragen.
-Aus dem Rx-FIFO k"onnen Daten gelesen werden,
-sobald das RXP-Flag gesetzt ist. Dieses Flag wird gesetzt, wenn so viele Bits wie im Feld ''Data size'' des \texttt{SPIx\_CR2} Registers spezifiziert
-mit Daten gef"ullt wurden. \\
+Dabei werden gleichzeitig Daten über MOSI übertragen.\\
 Der Baudratencontroller ist f"ur die SCLK und somit f"ur die "Ubertragungsgeschwindigkeit zust"andig.
 Er nutzt den APB-Bus-Takt und teilt ihn, falls im BR-Register konfiguriert, durch einen Prescaler. \\
-F"ur den Zweck der SD-Karten-Kommunikation wurde die SPI-Peripherie als Master konfiguriert mit 
-einem frei w"ahlbaren, softwareseitig zuschaltbaren NSS-Pin (chip select).
+F"ur den Zweck der SD-Karten-Kommunikation wurde die SPI-Peripherie als Master konfiguriert, mit 
+einem frei w"ahlbaren, softwareseitig zuschaltbaren NSS-Pin (Chip Select).
 
 
 \begin{listing}[H]
@@ -1064,48 +1061,51 @@ public:
     }
 };
     \end{minted}
-\caption{Chip select als Klasse}
+\caption{Auszug aus der \texttt{src/sdcarddriver.hpp}}
 \label{listing:chipselect}
 \end{listing}
 
 
 Der Quellcode \ref{listing:chipselect} zeigt die St"arke von C++ im Gegensatz zu C in diesem Kontext.
-Der NSS-Pin muss am Anfang der meisten SD-Funktionen wie \cpp{SD_ReadBlock(...)}
-oder \cpp{SD_SendCmd(...)} auf Low konfiguriert werden und beim Verlassen der Funktion wieder auf High.
+Der NSS-Pin muss am Anfang der meisten SD-Funktionen wie \cpp{SD_ReadBlock}
+oder \cpp{SD_SendCmd} auf Low konfiguriert werden und beim Verlassen der Funktion wieder auf High.
 Mit \cpp{ChipSelect<GPIOA_BASE, 8> chipselect_tmp;} w"urde ein Objekt erzeugt werden. Beim Konstruieren, also dem Erzeugen
-des Objektes, w"urde der Konstruktor Pin 8 von GPIOA auf Low setzen und beim Verlassen der Funktion w"urde der Destruktor aufgerufen
-werden und den Pin wieder auf High setzen. In C m"ussten manuell alle Stellen gefunden werden, bei dem die Funktion verlassen wird
-oder Laufzeitkosten in Kauf genommen werden mit dem Aufruf einer Helferfunktion.
-Die Informationen welcher GPIO-Port mit welchem Pin benutzt werden soll steht zur Compilezeit fest, der verwendete
+des Objektes, w"urde der Konstruktor Pin 8 von GPIOA auf Low setzen, und beim Verlassen der Funktion w"urde der Destruktor aufgerufen
+werden und den Pin wieder auf High setzen. In C m"ussten alle Stellen gefunden werden, bei denen die Funktion verlassen wird,
+oder es m"ussten Laufzeitkosten in Kauf genommen werden mit dem Aufruf einer Helferfunktion.
+Die Informationen, welche GPIO-Ports mit welchen Pins benutzt werden sollen, stehen zur Compilezeit fest; der verwendete
 Cast ist \cpp{static inline const},
 sodass ein guter C++-Compiler die gesamte Klasse vollständig auf zwei direkte Registerzugriffe reduzieren kann.
 
 
 \subsubsection{SPI Treiber}
-''spidriver.hpp'' kapselt die hardwarenahe Konfiguration und Kommunikation über die SPI-Peripherie des STM32G431.
+Die Quelldatei \texttt{/src/spidriver.hpp} kapselt die hardwarenahe Konfiguration und Kommunikation über die SPI-Peripherie des STM32G431.
 Die Initialisierung konfiguriert den jeweiligen SPI-Controller als Master mit softwaregesteuertem NSS
 und einer Datenbreite von acht Bit. Die Methode \cpp{static uint8_t Transfer(uint8_t data)} kapselt schließlich das Senden und Empfangen eines Bytes 
 und übernimmt dabei die notwendige Synchronisation mit den Statusflags der SPI-Peripherie.
 Zus"atzlich kann der verwendete Baudratenteiler über die Methode \cpp{static void SetHighSpeed(SpiDiv div)} verwendet werden,
 um zwischen einer Initialisierung mit niedriger und einer sp"ateren Kommunikation mit höherer "Ubertragungsgeschwindigkeit zu wechseln.
+Der maximale SPI-Clock kann dabei auf maximal die H"alfte des Systemtaktes festgelegt werden: Da in dem Fall der vorliegenden Arbeit
+kein gesonderter Takt in den RCC-Registern konfiguriert wurde, 
+arbeitet der Mikrocontroller mit dem internen Takt des RC-Oszillators von 16\,MHz, sodass ein SPI-Takt von 8\,MHz m"oglich ist.
 
 \subsection{Initialisierung der SD-Karte in den SPI-Modus}
 
 \begin{figure}[H]
     \centering
     \includegraphics[height=12cm]{BilderExt/sd_spec_SPIINIT.png}
-    \caption{Initialisierung der SD-Karte in den SPI-Modus\cite{sd_spec}}
+    \caption{Initialisierung der SD-Karte in den SPI-Modus \cite{sd_spec}}
     \label{fig:sd_spiinit}
 \end{figure}
 
 \fig{fig:sd_spiinit} zeigt den vollst"andigen Initialisierungsprozess als Flussdiagramm aus der SD-Spezifikation.
-Die Initialiserung und Treiberfunktionen finden sich in der Datei \texttt{sdcarddriver.hpp}. Die Initialisierung
-ist etwas verk"urzt, wie auf der Abbildung zu sehen ist CMD58 nur notwendig, wenn Interesse an den unterst"utzten Spannungsbereichen
+Die Initialisierung und Treiberfunktionen finden sich in der Datei \texttt{src/sdcarddriver.hpp}. Die praktische Implementierung der Initialisierung 
+ist etwas verk"urzt worden; wie auf der Abbildung zu sehen ist, ist CMD58 nur notwendig, wenn Interesse an den unterst"utzten Spannungsbereichen
 der SD-Karte besteht. 3,3 V Betriebsspannung ist aber f"ur praktisch jede auf dem Markt gebr"auchliche SD-Karte zul"assig.
-Zumal die Spezifikation den Nutzer hier vor ein klares Henne-Ei-Problem stellt. Ohne eine geeignete Spannungsversorgung l"asst sich 
+Zumal die Spezifikation den Nutzer hier vor ein klares Henne-Ei-Problem stellt: Ohne eine geeignete Spannungsversorgung l"asst sich 
 der unterst"utzte Spannungsversorgungsbereich der Karte nicht auslesen.\\
 Weiterhin unterschl"agt die Abbildung die Tatsache, dass f"ur die Benutzung von ACMD41 zun"achst einmal CMD55 gesendet
-werden muss. Diese Tatsache muss aus einem anderen Teil der Dokumentation entnommen werden. 
+werden muss. Diese Information muss aus einem anderen Teil der Dokumentation entnommen werden. 
 
 \begin{listing}[H]
     \begin{minted}[
@@ -1142,24 +1142,26 @@ werden muss. Diese Tatsache muss aus einem anderen Teil der Dokumentation entnom
     (...)
     }
     \end{minted}
-    \caption{Auszug aus der Funktion SD\_InitSPI()}
+    \caption{Auszug aus der Funktion \cpp{SD_InitSPI}}
     \label{listing:sdcardinit}
 \end{listing}
 
 \coderef{listing:sdcardinit} zeigt einen Auszug aus der Initialisierungsfunktion,
 \coderef{listing:sdcardsendcmd} beschreibt die verwendete \cpp{SD_SendCmd} Funktion.
-\cpp{SD_SendCmd} nutzt den zugrundeliegenden SPI-Treiber, um auf der im Templateparameter Config
+\cpp{SD_SendCmd} nutzt den zugrunde liegenden SPI-Treiber, um auf der im Templateparameter Config
 spezifizierten Peripherie die korrekten Daten "uber
-die bereits implementierte \cpp{Transfer(uint8_t Data)} Funktion zu senden.
-Die Daten f"ur die Peripherien k"onnen in der Datei \texttt{init\_conf.hpp} konfiguriert werden.
+die bereits implementierte \\
+\cpp{Transfer(uint8_t Data)} Funktion zu senden.
+Die Daten f"ur die Peripherien k"onnen in der Datei \\
+\texttt{src/init\_conf.hpp} konfiguriert werden.
 F"ur die vorliegende Arbeit und Platine sind diese nat"urlich fix, allerdings l"asst der 
-STM32G431 einiges an Spielraum zu was variable Peripheriekonfiguration angeht.\\
-Wichtig ist hierbei, dass bei CMD0 und CMD8 zun"acht korrekte CRC-Werte f"ur ihre Befehle
+STM32G431 einiges an Spielraum zu, was variable Peripheriekonfiguration angeht.\\
+Wichtig ist hierbei, dass CMD0 und CMD8 zun"achst korrekte CRC-Werte f"ur ihre Befehle
 ben"otigen. Das SD-Protokoll spezifiziert hier f"ur den SPI-Modus etwas anderes als
 f"ur den SD-Modus: Im normalen SD-Modus wird bei grunds"atzlich jedem CMD die Pr"ufsumme
 gepr"uft und muss daher mitgesendet werden. Im SPI-Modus ist diese Pr"ufsummenberechnung
 grunds"atzlich deaktiviert und kann optional mit CMD59 aktiviert werden. Dies gilt
-aber nicht f"ur CMD0 und CMD8, diese Befehle brauchen immer einen korrekten CRC7-Wert.
+aber nicht f"ur CMD0 und CMD8; diese Befehle brauchen immer einen korrekten CRC7-Wert.
 \begin{listing}[H]
     \begin{minted}[
         frame=lines,      % Rahmenlinien oben und unten
@@ -1190,11 +1192,11 @@ aber nicht f"ur CMD0 und CMD8, diese Befehle brauchen immer einen korrekten CRC7
     (...)
     }
     \end{minted}
-\caption{Auszug aus der Funktion \cpp{SD_SendCmd()}}
+\caption{Auszug aus der Funktion \cpp{SD_SendCmd}}
 \label{listing:sdcardsendcmd}
 \end{listing}
 
-\coderef{listing:sdcardsendcmd} verdeutlicht wie das Senden von einzelnen SD-Befehlen "uber die SPI-Peripherie
+\coderef{listing:sdcardsendcmd} verdeutlicht, wie das Senden von einzelnen SD-Befehlen "uber die SPI-Peripherie
 prinzipiell funktioniert. Tats"achlich wurde die Funktion \cpp{SD_SendCmd} selten verwendet, da nach dem 
 Senden des 4-Byte Arguments meistens noch f"ur die konkreten SD-Befehle spezifische Abl"aufe folgen. 
 
@@ -1212,7 +1214,7 @@ die von einem Betriebssystem oder Dateisystem adressiert wird. Ein Block kann al
 sein als ein Sektor, aber nicht anders herum.\\
 Ein Cluster ist genau dasselbe wie ein Block, taucht aber im Zusammenhang mit dem
 FAT-Dateisystem auf, wohingegen der Block in der Unixwelt gel"aufiger ist.\\
-Im Zusammenhang von Flashspeicher wird die Page als kleinste programmierbare Einheit beschrieben,
+Im Zusammenhang mit Flashspeicher wird die Page als kleinste programmierbare Einheit beschrieben,
 wohingegen der Erase Block die kleinste löschbare Einheit beschreibt.\\
 Leider werden in Spezifikationen und Literatur die Begrifflichkeiten nicht eindeutig verwendet.
 So spricht man im Zusammenhang von SD-Karten in aller Regel von Bl"ocken, die beschrieben werden,
@@ -1235,14 +1237,14 @@ F"ur das blockweise Lesen eines Blocks wurde die Funktion
 Die Funktion \\
 \cpp{uint8_t SD_ReadBlocks(uint32_t block_addr, uint32_t block_count, uint8_t *buffer)}
 hingegen implementiert das Lesen von mehreren Bl"ocken. Das Argument \cpp{uint32_t block_count}
-gibt dabei an wie viele Bl"ocke hintereinander gelesen werden sollen, wohingegen
+gibt dabei an, wie viele Bl"ocke hintereinander gelesen werden sollen, wohingegen
 \cpp{uint32_t block_addr} den Startblock angibt, angefangen bei Block 0.
 Da das Feld 32-bit gro"s ist, lassen sich damit genau 
 $
 \frac{2^{32} \cdot 512}{1024^4} = 2 \,\text{TB}
 $
 an Daten adressieren. Dies gilt f"ur den modernen SDHC/SDXC-Kartenstandard und somit 
-f"ur den ansoluten Gr"o"steil aller heutigen SD-Karten. 
+f"ur den ansoluten Gro"steil aller heutigen SD-Karten. 
 Der "altere SDSC-Standard hat auf eine Byteadressierung gesetzt und hat somit 
 ein Speicherlimit von 2\,GB. Vereinzelt braucht es allerdings SDSC-Karten noch f"ur alte
 Hardware aus den fr"uhen 2000er Jahren, die den neuen Standard nicht implementiert hat.
@@ -1259,7 +1261,7 @@ CMD17 entspricht dem Befehl \enquote{Read Single Block} aus der SD-Spezifikation
 kann nach der Initialisierung der SD-Karte in den SPI-Modus gesendet werden.
 Wenn die Karte nach dem Empfang des CMD17 bereit ist, so sendet sie ein \texttt{0x00}-Byte zur"uck und im
 Anschluss ein \texttt{0xFE}-Byte. Nach dem \texttt{0xFE}-Byte folgt dann der angeforderte Block 
-bestehend aus 512-Bytes an Daten, die in einen Buffer eingelesen werden k"onnen. \\
+bestehend aus 512 Bytes an Daten, die in einen Buffer eingelesen werden k"onnen. \\
 An zahlreichen Stellen wird durch
 einen Timeout sichergestellt, dass die Funktion bei Fehlschlag nicht den gesamten
 Programmfluss blockiert. Die SD-Spezifikation gibt hier keine Vorgaben, also wurden
@@ -1297,26 +1299,26 @@ Werte bis zur Bew"ahrung getestet.\\
 \end{listing}
 
 \coderef{listing:lesefunktionen} zeigt beispielhaft einen Auszug der Funktion \cpp{SD_ReadBlock}, 
-der auf das \texttt{0xFE-Byte} wartet und danach 512-Bytes empf"angt. Da die SPI-Peripherie
+der auf das \texttt{0xFE-Byte} wartet und danach 512 Bytes empf"angt. Da die SPI-Peripherie
 immer gleichzeitig sendet und empf"angt, m"ussen f"ur den Empfang von Bytes willk"urliche 
-Daten gesendet werden. Ebenfalls zeigt der Auszug wie mittels eines Hardwaretimers der Timeout 
+Daten gesendet werden. Ebenfalls zeigt der Auszug, wie mittels eines Hardwaretimers der Timeout 
 implementiert wurde. \\
 Die Funktion \cpp{SD_ReadBlocks} ist die etwas komplexere Version, die f"ur
 das Lesen von multiplen Bl"ocken genutzt werden kann. Dies hat den Vorteil,
 dass es den Overhead im Vergleich mit der Payload minimiert: W"ahrend bei der 
 \cpp{SD_ReadBlock}-Funktion f"ur alle 512 Bytes einmal CMD17 gesendet 
-werden muss zuz"uglich aller potentiellen Wartezeiten im SD-Controller, so reicht
-ein CMD18-Befehl f"ur beliebig viele 512-Byte Bl"ocke.\\
+werden muss, zuz"uglich aller potenziellen Wartezeiten im SD-Controller, so reicht
+ein CMD18-Befehl f"ur beliebig viele 512 Byte Bl"ocke.\\
 Prinzipiell ist der Programmablauf "ahnlich: Zun"achst muss CMD18 gesendet werden.
 Das entspricht dem Befehl \enquote{Read Multiple Block} aus der Spezifikation.
-Nach dem \texttt{0xFE}-Byte folgen aber so lange Bytes, bis ein CMD12 (\enquote{Stop Transmission}
+Nach dem \texttt{0xFE}-Byte folgen aber so lange Bytes, bis ein CMD12 (\enquote{Stop Transmission})
 den Datenfluss unterbricht. \\
 Es sollte beachtet werden, dass die Buffergr"o"se f"ur \cpp{SD_ReadBlocks} ein Vielfaches 
-von 512-Byte sein muss, wobei der Faktor dem Argument \texttt{block\_count} gleicht. 
+von 512 Byte sein muss, wobei der Faktor dem Argument \texttt{block\_count} gleicht. 
 
 
 \subsubsection{Schreibfunktionen}
-F"ur das blockweise Schreiben eines einzelnen 512-Byte Blocks stellt
+F"ur das blockweise Schreiben eines einzelnen 512 Byte Blocks stellt
 der SD-Treiber die Funktion
 \cpp{uint8_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buffer)}
 zur Verf"ugung.
@@ -1333,7 +1335,7 @@ Die Argumente verhalten sich analog zu denen der lesenden Funktionen.
 \end{figure}
 
 \fig{fig:sd_flowchartcmd24} zeigt den prinzipiellen Programmfluss f"ur den 
-SD-Befehl CMD24 \enquote{"Write Single Block"}. Zun"achst wird wie immer
+SD-Befehl CMD24 \enquote{Write Single Block}. Zun"achst wird wie immer
 der entsprechende Befehl, hier CMD24, gesendet. Bei erfolgreicher
 Antwort wird mit dem Startbyte \texttt{0xFE} der Beginn der "Ubertragung
 signalisiert. Dann folgen 512 Bytes an zu schreibenden Daten und es wird
@@ -1344,13 +1346,13 @@ Berechnung einer echten CRC verzichtet werden und es k"onnen stattdessen beliebi
 2 Bytes gesendet werden. Im n"achsten Schritt muss die SD-Karte mit einem
 \texttt{0x05} antworten, falls die CRC-"Uberpr"ufung erfolgreich war. \\
 Die Funktion kann erfolgreich verlassen werden, wenn die SD-Karte im Anschluss mit 
-einem \text{0x00} signalisiert, dass alle Daten erfolgreich im Flash abgelegt werden konnten.\\
+einem \texttt{0x00} signalisiert, dass alle Daten erfolgreich im Flash abgelegt werden konnten.\\
 Der SD-Befehl CMD25 f"ur das Schreiben von mehreren Bl"ocken "ahnelt vom Ablauf her 
 sehr CMD24. Statt dem \texttt{0xFE}-Byte kommt hier ein \texttt{0xFC}-Byte als Startbyte
-zum Einsatz. Es wird weiterhin in 512-Byte Abschnitten gearbeitet: Zun"achst werden Startbyte + 512-Byte Daten + 2 Byte CRC geschrieben,
+zum Einsatz. Es wird weiterhin in 512 Byte Abschnitten gearbeitet: Zun"achst werden Startbyte + 512 Byte Daten + 2 Byte CRC geschrieben,
 dann sendet die SD-Karte ein Statusbyte, in dem sie die erhaltene Information akzeptiert. 
 Im Anschluss wird darauf gewartet, dass die SD-Karte den Block tats"achlich geschrieben hat.
-Dieser Ablauf erfolgt f"ur alle zu schreibenen Bl"ocke in einer Schleife. 
+Dieser Ablauf erfolgt f"ur alle zu schreibenden Bl"ocke in einer Schleife. 
 Am Ende folgt dann statt dem \texttt{0xFC}-Startbyte f"ur einen neuen Block ein \texttt{0xFD}-Stopbyte,
 welches den Schreibvorgang beendet.
 
@@ -1360,7 +1362,7 @@ welches den Schreibvorgang beendet.
 Zu guter Letzt braucht es f"ur eine Implementation von Dateisystemen als Information zumindest
 die Speicherkapazit"at der SD-Karte. Die Rohinformation l"asst sich mit   
 \cpp{uint8_t SD_GetCSD(uint8_t *buffer, const uint8_t BUF_SIZE)}
-abrufen. Diese Funktion nutzt den SD-Befehl CMD9 \enquote{Send CSD (Card Specific Data)}.
+abrufen. Diese Funktion nutzt den SD-Befehl CMD9 \enquote{Send CSD}.
 
 
 \begin{listing}[H]
@@ -1394,12 +1396,12 @@ abrufen. Diese Funktion nutzt den SD-Befehl CMD9 \enquote{Send CSD (Card Specifi
 \label{listing:statusfunktionen}
 \end{listing}
 \coderef{listing:statusfunktionen} zeigt den wichtigsten Teil der \cpp{SD_GetCSD}-Funktion.
-Diese Arbeitet im Prinzip genauso wie die \cpp{SD_ReadBlock}-Funktion mit der Ausnahme, 
-dass sie eine von der SD-Karte fixe 16 Byte Sequenz erh"alt, die sogenannte CSD.
+Diese arbeitet im Prinzip genauso wie die \cpp{SD_ReadBlock}-Funktion, mit der Ausnahme, 
+dass sie eine von der SD-Karte fixe 16 Byte Sequenz erh"alt, die sogenannte CSD (Card Specific Data).
 Diese enth"alt eine Vielzahl an Informationen, wie beispielsweise die maximale
 "Ubertragungsgeschwindigkeit der SD-Karte pro Datenleitung. Die genaue Bedeutung der Informationen
-unterscheidet sich allerdings einmal wieder je nachdem ob eine alte SDSC-Karte (CSD V1.0) oder
-eine moderne SDHC/SDXC-Karten (CSD V2.0) vorliegt. Alle Details befinden sich in der SD-Spezifikation.
+unterscheidet sich allerdings einmal wieder je nachdem, ob eine alte SDSC-Karte (CSD V1.0) oder
+eine moderne SDHC/SDXC-Karte (CSD V2.0) vorliegt. Alle Details befinden sich in der SD-Spezifikation.
 Als Hinweis sei hier aber noch erw"ahnt, dass in der CSD V2.0 zwar zum Beispiel das Feld
 \enquote{erase sector size} tabellarisch auftaucht und genau so benannt wird, es aber nicht f"ur die Gr"o"se
 des L"oschblocks steht. Tats"achlich wird das Feld in CSD V2.0 schlichtweg nicht genutzt, was erst in 
@@ -1408,7 +1410,7 @@ Die SD-Spezifikation hat das Feld dennoch nicht umbenannt. \\
 Die Funktion
 \cpp{uint8_t parse_csd(const uint8_t* rawcsd, Csd_Common* csd)}
 extrahiert aus der Vielzahl von Informationen lediglich die Kartengr"o"se,
-da dies im folgenden die einzig relevante Information darstellt. 
+da dies im Folgenden die einzig relevante Information darstellt. 
 
 
 
@@ -1426,7 +1428,7 @@ Laut den Autoren werden drei essenzielle Anforderungen an die Langzeitspeicherun
 Tanenbaum und Bos nutzen in ihrem Buch den Begriff des Prozesses zur Ressourcenverwaltung und -abstraktion, 
 w"ahrend diese Notwendigkeit in der vorliegenden Arbeit entf"allt, 
 da das Programm direkte Kontrolle über die gesamte Hardware des Mikrocontrollers besitzt.
-Im Prinzip k"onnte das Problem eine gro"se Menge an Information zu speichern bereits mit zwei Operationen
+Im Prinzip k"onnte das Problem, eine gro"se Menge an Information zu speichern bereits mit zwei Operationen
 l"osen:
 \begin{enumerate}
     \item Einen w"ahlbaren Block lesen
@@ -1438,26 +1440,26 @@ In der Praxis sind diese zwei Operationen allerdings zu primitiv, um Daten effek
 Tanenbaum und Bos stellen beispielhaft folgende Fragen:
 \begin{itemize}
     \item Wie findet man eine bestimmte Information
-    \item Wie verhindert man (auf Mehrbenutzersystemen), dass ein Benutzer nicht die Daten eines anderen ausliest?
+    \item Wie verhindert man (auf Mehrbenutzersystemen), dass ein Benutzer die Daten eines anderen ausliest?
     \item Woher wei"s man, welche Bl"ocke frei sind?
 \end{itemize}
 
 F"ur diese und viele andere praktische Probleme hilft das Konzept der Datei.
 Die Datei ist etymologisch ein Neologismus aus Daten und Kartei.
-Im Kontext moderner Betriebssysteme definieren Tanenbaum und Bos\cite{tanenbaum2015} Dateien als 
+Im Kontext moderner Betriebssysteme definieren Tanenbaum und Bos Dateien als 
 logische Einheiten von Information, die von Prozessen erzeugt werden und diese "uberdauern.
-Eine Datei soll erst gel"oscht werden, wenn ein Besitzer dies explizit veranlasst.\\
+Eine Datei soll erst gel"oscht werden, wenn ein Besitzer dies explizit veranlasst \cite{tanenbaum2015}.\\
 Wie Dateien strukturiert, benannt, aufgerufen, genutzt, geschützt, implementiert und verwaltet werden ist Sache
 des Dateisystems. Ein Dateisystem l"ost (je nach Funktionsumfang) viele der oben gestellten Anforderungen.
 Aus Sicht des Nutzers ist der wichtigste Aspekt eines Dateisystems,
 wie es sich darstellt: Was eine Datei ausmacht, wie Dateien benannt und geschützt werden, 
 welche Operationen auf Dateien erlaubt sind. Die Details darüber, ob verkettete Listen oder Bitmaps verwendet werden, 
 um den freien Speicherplatz zu verwalten, oder wie viele Sektoren ein logischer Festplattenblock enthält, sind für den Nutzer von keinem Interesse,
-obwohl sie für die Entwickler des Dateisystems von großer Bedeutung sind\cite{tanenbaum2015}.
+obwohl sie für die Entwickler des Dateisystems von großer Bedeutung sind \cite{tanenbaum2015}.
 Zusammenfassend l"asst sich sagen, dass ein Dateisystem eine f"ur den Anwendungszweck geeignete Struktur in einen rohen Speicherbereich bringt.
 W"ahrend Tanenbaum und Bos den Schwerpunkt auf Dateisystemen f"ur Betriebssysteme legen, 
 was sicherlich der "ubliche Anwendungsbereich ist, geht es in dieser Arbeit um die Verwendung
-von Dateisystemen in eingebetteten Systemen, bzw. konkret auf einem STM32-G431 und deren Vor- und Nachteile.
+von Dateisystemen in eingebetteten Systemen, bzw. konkret auf einem STM32G431 und um deren Vor- und Nachteile hinsichtlich der Nutzung.
 
 \subsection{Layout eines Dateisystem}
 W"ahrend das Design eines Dateisystems grunds"atzlich frei entschieden werden kann,
@@ -1473,8 +1475,8 @@ n"otig ist.
 Der erste Sektor eines Speichermediums wird reserviert f"ur den MBR (Master Boot Record) und wird "ublicherweise
 zum Starten eines Computers verwendet. Das Ende des MBR enth"alt die Partitionstabelle, in welcher eine
 der Partitionen als aktiv markiert ist. Ein physisches Medium kann mehrere Partitionen und somit mehrere Dateisysteme 
-beinhalten. Wenn der Computer gebooted wird, dann stellt ein Programm fest, welche Partition
-aktiv ist und f"uhrt die Anweisungen in dem ''Boot block'' aus. "Ublicherweise folgt darauf Superblock, in dem
+beinhalten. Wenn der Computer gebootet wird, dann stellt ein Programm fest, welche Partition
+aktiv ist und f"uhrt die Anweisungen in dem \enquote{Boot block} aus. "Ublicherweise folgt darauf Superblock, in dem
 wichtige Informationen "uber das Dateisystem stehen wie der Typ des Dateisystems oder die Anzahl der vorhandenen Bl"ocke.
 Im Anschluss folgen typischerweise Informationen über die freien Blöcke des Dateisystems, 
 die beispielsweise in Form einer Zeigerliste organisiert sind. 
@@ -1483,13 +1485,17 @@ und alle relevanten Datei-Metadaten enthält.
 Danach schließt sich das Wurzelverzeichnis (Root Directory) an, 
 welches die Wurzel der gesamten Dateisystemstruktur bildet. 
 Der verbleibende Speicherplatz des Datenträgers steht schließlich für alle weiteren Verzeichnisse
- und die eigentlichen Dateien zur Verfügung\cite[S. 282]{tanenbaum2015}.\\
- Im folgenden Abschnitt soll es um eben diesen verbleibenden Speicherplatz und dessen m"ogliche
- Organisation gehen.
+und die eigentlichen Dateien zur Verfügung\cite[S. 282]{tanenbaum2015}.\\
+W"ahrend Felder wie der MBR von praktisch allen Dateisystemen beachtet werden,
+unterscheidet sich das Layout teilweise doch deutlich von dem vorgestellten, theoretischen
+Entwurf nach Tanenbaum und Bos.\\
 
-\subsection{Design eines Dateisystems}
-Die Autoren des littlefs-Dateisystems kategorisieren auf ihrer \href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{GitHub Seite} 
-Dateisysteme sehr "ubersichtlich in vier Gruppen\cite{littlefs}:
+
+Die Autoren des littlefs-Dateisystems kategorisieren auf ihrer
+\href{https://github.com/littlefs-project/littlefs/blob/master/DESIGN.md}{GitHub Seite} 
+in der Datei \enquote{DESIGN.md}
+Dateisysteme sehr "ubersichtlich in vier Gruppen \cite{littlefs}:
+
 \subsubsection{Nicht-resiliente, blockbasierte Dateisysteme}
 Bekannte Vertreter sind hier FAT f"ur Microsoftsysteme und ext2 f"ur Linux-Betriebssysteme.
 Diese grundlegenden Systeme führen Aktualisierungen direkt an Ort und Stelle
@@ -1498,6 +1504,7 @@ sehr anf"allig für Datenkorruption. Im Zusammenhang mit Flashspeicher ist ein w
 dass derselbe Block somit mehrfach beschrieben wird und es zur einer schnellen Abnutzung des Speichers kommt.
 Vorteile sind jedoch, dass diese Dateisysteme meistens 
 sehr schnell und klein sind, sowie einfach in der Implementation.
+
 \subsubsection{Logging-Dateisysteme}
 Reine Logging-Dateisysteme sind heutzutage selten in Benutzung. 
 Vertreter hiervon hei"sen JFFS, YAFFS, SPIFFS.
@@ -1509,9 +1516,9 @@ Mit einer Pr"ufsumme l"asst sich ein Stromausfall leicht erkennen
 und auf den vorherigen Zustand zur"ucksetzen, indem man fehlgeschlagene Anhänge einfach ignoriert.
 Au"serdem sorgt die zyklische Natur dafür, dass Logging-Dateisysteme den Verschleiß
 perfekt über den Speicher verteilen.
-Dies minimiert die Löschzyklen auf Flash-Speichern 
+Dies minimiert die Löschzyklen auf Flashspeichern 
 und garantiert eine hohe Ausfallsicherheit.
-Nachteile sind die verh"altnism"asig hohen Laufzeitkosten (h"aufig O($n^2$)) und der hohe RAM-Verbrauch,
+Nachteile sind die verh"altnism"a"sig hohen Laufzeitkosten (h"aufig O($n^2$)) und der hohe RAM-Verbrauch,
 was sie f"ur Embeddedanwendungen eher ungeeignet macht.
 \subsubsection{Journaling-Dateisysteme}
 Bekannte und moderne Vertreter sind hier ext3, ext4 f"ur Linuxbetriebssysteme oder
@@ -1529,7 +1536,7 @@ Transaktionen mit einem gültigen Commit-Eintrag können erneut an ihre endgült
 Dadurch wird verhindert, dass eine Dateisystemänderung nur teilweise übernommen wird.
 Der Prozess ist wie erw"ahnt nur schematisch dargestellt,
 beispielsweise sichert ext4 standardm"a"sig nur seine Metadaten
-"uber Journals, tr"agt somit aber erheblich zur Konsistenz des Dateisystems bei\cite{kernel1}. \\
+"uber Journals, tr"agt somit aber erheblich zur Konsistenz des Dateisystems bei \cite{kernel1}. \\
 Leider bringen Journaling-Dateisysteme einige Probleme mit sich.
 Sie sind ziemlich umfangreich in der Implementation, da im Grunde zwei Konzepte von Dateisystemen parallel benutzt werden,
 was zu Lasten der Codekomplexit"at geht.
@@ -1538,8 +1545,8 @@ Zusammenhang mit Flashspeichern. Dennoch sind sie seit Jahrzehnten der absolute 
 
 
 \subsubsection{Copy-on-Write (COW) Dateisysteme}
-Den letzten Typ von Dateisystemen bilden die copy-on-write (COW) Dateisysteme wie btrfs, ZFS oder
-das moderne Dateisystem von Windows ReFS.
+Den letzten Typ von Dateisystemen bilden die Copy-On-Write (COW) Dateisysteme wie btrfs, ZFS oder
+das moderne Windows-Dateisystem ReFS.
 Diese sind den anderen blockbasierten Dateisystemen sehr "ahnlich,
 aber anstatt Blöcke direkt an Ort und Stelle zu aktualisieren,
 werden alle Aktualisierungen durchgeführt,
@@ -1551,15 +1558,17 @@ und die Verweise auf den neuen Block umgelenkt werden.
     \caption{Funktionsprinzip COW nach der DESIGN.md}
     \label{fig:cowdesign}
 \end{figure}
-COW-Dateisysteme bieten eine langsamere, aber zumindest vergleichbare Performance zu blockbasierten Dateisystemen, 
-w"ahrend sie es gleichzeitig schaffen Aktualisierungen durchzuführen,
-ohne Datenänderungen direkt in einem Log oder Journal zu speichern. \\
+COW-Dateisysteme bieten eine langsamere, aber in der Praxis oft brauchbare Performance
+im direkten Vergleich mit blockbasierten Dateisystemen, 
+w"ahrend sie es gleichzeitig schaffen, Aktualisierungen durchzuführen,
+ohne Datenänderungen direkt in einem Log oder Journal zu speichern. Gleichzeitig ist stets die
+Dateisystemkonsistenz gew"ahrleistet. \\
 \fig{fig:cowdesign} zeigt das Prinzip der Organisation anschaulich. Daten werden
 bei COW-Dateisystemen oft in (balancierten) B"aumen gespeichert. Dies bezieht sich 
-sowohl auf eine einzelne Datei, als auch auf z.b Verzeichnisstrukturen.
+sowohl auf eine einzelne Datei, als auch auf z. B. Verzeichnisstrukturen.
 Der gro"se Nachteil von COW-Dateisystemen ist, dass immer ein gesamter Zweig aktualisiert werden muss
 bis zur Wurzel, egal wie klein die "Anderung ist.
-Wenn man beispielsweise Daten in Block D ändert, passiert folgendes:
+Wenn man beispielsweise Daten in Block D ändert, passiert Folgendes:
 Es wird eine komplett neue Kopie erstellt namens \enquote{D neu}.
 Weil \enquote{D neu} jetzt an einer ganz anderen Stelle auf dem Speichermedium liegt als das alte \enquote{D},
 stimmt der Verweis im übergeordneten Ordner (Block B) nicht mehr.
@@ -1578,7 +1587,7 @@ Das FAT-Dateisystem wurde 1980 von Microsoft entwickelt und erstmals von MS-DOS 
 Es wurde ursprünglich als einfaches Dateisystem entwickelt, 
 das für Disketten mit einer Größe von weniger als 500 KB geeignet war. 
 FAT ist die Abkürzung für File Allocation Table (Dateizuordnungstabelle). 
-Derzeit gibt es vier FAT-Untertypen: FAT12, FAT16, FAT32 und seit 2006 exFAT als Nachfolger\cite{FAT32}.
+Derzeit gibt es vier FAT-Untertypen: FAT12, FAT16, FAT32 und seit 2006 exFAT als Nachfolger \cite{FAT32}.
 Im Laufe der Zeit wurden die Spezifikationen erweitert, 
 um mit zunehmender Kapazität auch größere Speichermedien zu unterstützen.
 
@@ -1597,46 +1606,88 @@ um mit zunehmender Kapazität auch größere Speichermedien zu unterstützen.
     \addlinespace
     \textbf{FAT32} & 4 GB  & 2 TB  & USB-Sticks, ältere Kameras oder Konsolen \\
     \addlinespace
-    \textbf{exFAT} & 512 TB oder mehr & 512 TB oder mehr & Moderne SDXC/SDUC-Speicherkarten, externe SSDs \\
+    \textbf{exFAT} & 512 TB oder mehr & 512 TB oder mehr & Moderne SDHC/SDXC-Speicherkarten, externe SSDs \\
     \bottomrule
     \end{tabular}
     \end{table}
 
-\tab{tab:fat_limits} zeigt die maximal m"oglichen, \textit{"ublichen} Datei- und Mediengr"osen f"ur die FAT-Dateisysteme
+\tab{tab:fat_limits} zeigt die maximal m"oglichen, \textit{"ublichen} Datei- und Mediengr"o"sen f"ur die FAT-Dateisysteme
 und soll in erster Linie die Entwicklung der Spezifikation und die Probleme der "alteren Dateisysteme darstellen.
-So ist es einem FAT32-Dateisystem beispielsweise nicht m"oglich eine 12 GB gro"se .iso Datei aufzunehmen.
-
-Wie ergeben sich die maximalen Datei und Mediengr"o"sen?
-Der Unterschied zwischen einem Sektor und einem Block wurde bereits erl"autert: Der Sektor ist die physisch kleinste adressierbare Einheit, 
-w"ahrend der Block die logisch die kleinste adressierbare Einheit ist. Im Kontext der FAT-Dateisysteme wird
+So ist es einem FAT32-Dateisystem beispielsweise nicht m"oglich eine 12 GB gro"se .iso-Datei aufzunehmen.\\
+Wie ergeben sich die maximalen Datei- und Mediengr"o"sen?\\
+Der Unterschied zwischen einem Sektor und einem Block wurde bereits erl"autert: 
+Der Sektor ist die physisch kleinste adressierbare Einheit, 
+w"ahrend der Block die logisch kleinste adressierbare Einheit ist. Im Kontext der FAT-Dateisysteme wird
 der Block allerdings Cluster genannt, w"ahrend der Begriff des Blocks meist im Unix-Kontext "ublich ist. 
 FAT12 stehen 12 Bits, FAT16 16 Bits und FAT32 28 Bits f"ur die Adressierung der Cluster zur Verf"ugung.
-Mit gr"o"seren Clustergr"o"sen ergibt sich also eine gr"o"sere Mediengr"ose. 
+Mit gr"o"seren Clustergr"o"sen ergibt sich also eine gr"o"sere Mediengr"o"se. 
 Gro"se Cluster haben allerdings den Nachteil, dass sehr kleine Dateien mindestens so gro"s werden wie die Clustergr"o"se.
 Weiterhin wurden Clustergr"o"sen immer gedeckelt, "ublicherweise mit 32 KB Maximalgr"o"se f"ur FAT16 und FAT32.
 Dies f"uhrt bei FAT16 zu den genannten 2 GB und bei FAT32 zu 8 TB maximaler Mediengr"o"se.
 Hinzu kommt allerdings eine weitere Limitierung: Der MBR enth"alt die Partitionstabelle. Dieser z"ahlt allerdings
 in 512 Byte gro"sen Sektoren und ihm steht lediglich ein Feld von 32 Bit f"ur die Adressierung zur Verf"ugung.
-Folglich kann das FAT32-Dateisystem zwar eine gr"o"sere Medien unterst"utzen, wird dann aber von der MBR-Partitionstabelle
-gebremst\cite{MSLearnFS}\cite{FAT32}. 
+Folglich kann das FAT32-Dateisystem zwar ein gr"o"seres Medium unterst"utzen, wird dann aber von der MBR-Partitionstabelle
+gebremst \cite{MSLearnFS}\cite{FAT32}. 
 
 Die moderne L"osung dieser Limitierung liegt in der Verwendung des GUID Partition Table (GPT),
 die ebenfalls viele weitere Vorteile zum MBR bringt wie beispielsweise eine erh"ohte Anzahl von Prim"arpartitionen und ein Backup
 der Partitionstabelle am Ende des Speichermediums \cite{gpt}.
 
-Die Dateigr"o"se bei FAT32-Systemen ist durch ein 32 Bit-Adressierungsfeld limitiert. Dieses z"ahlt in Bytes, wodurch sich
+Die Dateigr"o"se bei FAT32-Systemen ist durch ein 32-Bit-Adressierungsfeld limitiert. Dieses z"ahlt in Bytes, wodurch sich
 die charakteristischen 4 GB Dateigr"o"se ergeben, die f"ur heutige Zwecke manchmal nicht ausreichend sind\cite{MSLearnFS}\cite{FAT32}.
 Zu diesem Zweck wurde mit exFAT als moderne FAT-Variante 2006 eingef"uhrt.
 
-\subsection{FatFs}
+\subsubsection{Funktionsweise}
+Die Funktionsweise soll im Rahmen dieser Arbeit nur schemenhaft aufgegriffen werden.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{BilderExt/fat_map.png}}
+    \caption{Struktur der FAT-Dateisysteme \cite{fatmap}}
+    \label{fig:fatmap}
+\end{figure}
+
+\fig{fig:fatmap} zeigt die Struktur der FAT-Dateisysteme.
+\hyperref[sec:fatfs]{ChaN} unterteilt das Dateisystem dabei in folgende Bereiche \cite{FAT32}:
+
+\begin{itemize}
+    \item \textbf{Reservierter Bereich:} Enth"alt im BPB (BIOS Parameter Block) Konfigurationsparameter zur Partition wie z. B. Sektorgr"o"se, Sektoranzahl pro Cluster, oder die Anzahl der FAT-Kopien.
+    \item \textbf{FAT (File Allocation Table):} Tabelle mit einem Eintrag pro Cluster; verkettet Cluster zu Dateien und markiert freie Cluster.
+    \item \textbf{Root-Verzeichnis:} Bei FAT12/16 fest, bei FAT32 ein normales Verzeichnis, also nicht als fester Bereich vorhanden. Enthält Dateieinträge (Name, Größe, Startcluster, Attribute).
+    \item \textbf{Datenbereich:} Die eigentlichen Cluster, in denen Dateiinhalte liegen.
+\end{itemize}
+
+Der namensgebende Bereich, die File Allocation Table (FAT), ist oft in zweifacher Ausf"uhrung vorhanden, wobei das Feld 
+\cpp{BPB_NumFATs} im BPB letztlich entscheidet, wie viele Kopien vorhanden sind. 
+Dateien sind als verkettete Liste von Clustern gespeichert; die FAT gibt jeweils an, welcher Cluster auf welchen folgt.
+Wenn z. B. eine Datei mit dem Cluster 7 anf"angt, dann steht in der FAT, dass auf Cluster 7 bspw. Cluster 12 folgt, dann Cluster 47 und 
+zuletzt ein EOF (End Of File). Ein Defekt der FAT geht daher mit erheblichen Datenverlusten einher.
+Die FAT \enquote{kennt} allerdings weder Dateinamen noch Dateiinhalt.
+Die eigentlichen Daten befinden sich im Datenbereich. Dateinamen und Metadaten wie Attribute und Gr"o"se werden dort
+in einem FAT-Verzeichniseintrag gespeichert (FAT Directory), wobei damit sowohl gew"ohnliche Dateien
+gemeint sind als auch das, was gemeinhin unter einem \enquote{Verzeichnis} bekannt ist. In diesem FAT-Verzeichniseintrag
+steht auch das Startcluster, sodass mit diesem und der File Allocation Table in Kombination eine Datei zusammengesetzt
+werden kann. \\
+Das Funktionsprinzip des FAT-Dateisystems ist verh"altnism"a"sig simpel, bringt aber mindestens zwei Schwachstellen
+mit sich. Das erste Problem betrifft die sogenannte Fragmentierung: Wenn Dateien gel"oscht und neue Dateien erstellt werden, 
+dann f"ullt FAT die L"ucken im Datenbereich jeweils mit dem nächsten freien Cluster auf,
+den es findet. Eine Datei kann dadurch stark über den Datenträger verstreut werden. Zusammenh"angende Daten 
+haben allerdings bei den allermeisten Datentr"agern schnellere Abruf- und Schreibzeiten. \\
+Weiterhin ist auch klar geworden, dass die FAT ein fester Bereich am Anfang des Datentr"agers ist.
+Da diese bei jeder Dateioperation aktualisiert wird, f"uhrt dies unweigerlich zum bereits vielfach erw"ahnten 
+Wear Leveling Problem auf flashspeicherbasierten Medien.
+
+
+\subsection{FatFs}\label{sec:fatfs}
 \subsubsection{Einleitung}
 FatFs ist ein plattformunabhängiges, quelloffenes Software-Modul zur Implementierung von FAT/exFAT-Dateisystemen in ressourcenbeschränkten, eingebetteten Systemen. 
-Es wurde von dem Entwickler ChaN\cite{fatfs} entworfen und zeichnet sich durch einen extrem geringen Speicherbedarf sowohl im Programm- als auch im Arbeitsspeicher aus.
+Es wurde von dem Entwickler ChaN \cite{fatfs} entworfen und zeichnet sich durch einen extrem geringen Speicherbedarf sowohl im Programm- als auch im Arbeitsspeicher aus.
 Das Modul ist vollständig in ANSI C (C89) geschrieben. 
 Dadurch ist es hardwareunabhängig auf praktisch jedem gängigen Mikrocontroller 
 (z. B. AVR, PIC oder STM32) ohne "Anderungen des Codes direkt lauffähig.\\ 
 Die Architektur trennt das Dateisystem strikt in zwei logische Schichten: 
-Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zur Datei- und Verzeichnisverwaltung wie f\_open, f\_read, f\_write und f\_close zur Verfügung, 
+Das Application Interface stellt der Anwendung abstrakte, bekannte Funktionen zur Datei- und Verzeichnisverwaltung 
+wie \cpp{f_open}, \cpp{f_read}, \cpp{f_write} und \cpp{f_close} zur Verfügung, 
 während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Dateisystem entkoppelt. 
 
 \subsubsection{Implementierung}
@@ -1653,7 +1704,8 @@ während das Media Access Interface (Disk I/O) die Hardware vollkommen vom Datei
 \fig{fig:fatfsimplement} zeigt den vollständigen Implementierungsstack für die Verwendung 
 von FatFs und damit für den Zugriff auf ein FAT-Dateisystem auf dem STM32G431. 
 Alle in der Abbildung unterhalb von FatFs dargestellten Schichten m"ussen implementiert bzw. bereitgestellt werden. 
-Die Datei \texttt{diskio.cpp} (in den meisten Implementierungen \texttt{diskio.c})
+Die Datei \\
+\texttt{src/diskio.cpp} (in den meisten Implementierungen \texttt{diskio.c})
 stellt dabei die von FatFs ben"otigte Schnittstelle zum darunterliegenden Blockgerät, hier SD-Karte, bereit.
 Sie übersetzt die von FatFs angeforderten Lese-, Schreib- und Statusoperationen in die entsprechenden Funktionen
 des verwendeten Treibers.
@@ -1674,16 +1726,17 @@ des verwendeten Treibers.
     DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff);
     
         \end{minted}
-\caption{Funktionen, die in der diskio.cpp implementiert werden mussten}
+\caption{Funktionen, die in der \texttt{src/diskio.cpp} implementiert werden mussten}
 \label{listing:diskioimplement}
 \end{listing}
 
 \coderef{listing:diskioimplement} zeigt die Funktionen, die f"ur FatFs implementiert werden m"ussen.
-Zus"atzlich musste auch noch \cpp{DWORD get_fattime()} implementiert werden, da jede FAT-Datei einen 
+Zus"atzlich musste auch noch \cpp{DWORD get_fattime} implementiert werden, da jede FAT-Datei einen 
 Zeitstempel braucht. Da die vorhandene Platine keine Echtzeituhr mitbringt, besitzt jede geschriebene
-Datei einen fixen Zeitstempel, der auf den 1. Januar 2026 datiert wurde. Die Funktion findet sich in der Datei \texttt{fatfs\_time.cpp},
-da sie thematisch nicht zu den anderen Funktionen in der \texttt{diskio.cpp} passt. \\
-Bei den restlichen Funktionen ist die Hauptaufgabe die Funktionen aus der \texttt{sdcarddriver.hpp} korrekt
+Datei einen fixen Zeitstempel, der auf den 1. Januar 2026 datiert wurde. 
+Die Funktion findet sich in der Datei \texttt{src/fatfs\_time.cpp},
+da sie thematisch nicht zu den anderen Funktionen in der \texttt{src/diskio.cpp} passt. \\
+Bei den restlichen Funktionen ist die Hauptaufgabe, die Funktionen aus der \texttt{src/sdcarddriver.hpp} korrekt
 aufzurufen.
 
 
@@ -1725,15 +1778,15 @@ DRESULT SD_disk_read(BYTE* buff, LBA_t sector, UINT count)
 \end{listing}
 
 \coderef{listing:cpp-diskread} zeigt beispielhaft die Implementation von \cpp{SD_disk_read},
-welches wiederrum in der urspr"unglichen Funktion \cpp{disk_read} aufgerufen wird. Da im
+welches wiederum in der urspr"unglichen Funktion \cpp{disk_read} aufgerufen wird. Da im
 Treiber Template-Funktionen verwendet werden, die urspr"unglich von FatFs zur Verf"ugung gestellten
 Funktionen sich aber in einer \cpp{extern "C"} Umgebung befinden, ist ein zweistufiger Prozess
 mit einer Helferfunktion notwendig. In der eigentlichen \cpp{disk_read} wird noch das Argument
-\cpp{BYTE pdrv} implementiert, was entscheidet, welches physische Laufwerk benutzt werden soll.
-In unserem Falle bleibt die Wahl zwischen den beiden SD-Kartenslots: Der SPI1-Peripherie bei \cpp{pdrv=0}
+\cpp{BYTE pdrv} "ubergeben, was entscheidet, welches physische Laufwerk benutzt werden soll.
+In unserem Fall bleibt die Wahl zwischen den beiden SD-Kartenslots: der SPI1-Peripherie mit \cpp{pdrv=0}
 und der SPI3-Peripherie mit \cpp{pdrv=1}.\\
 Der \coderef{listing:cpp-diskread} hingegen zeigt, dass sich die ben"otigten Aufrufe f"ur FatFs fast
-direkt in Funktionsaufrufe aus der \texttt{sdcarddriver.hpp} "ubersetzen lassen. \\
+direkt in Funktionsaufrufe aus der \texttt{src/sdcarddriver.hpp} "ubersetzen lassen. \\
 An dieser Stelle kommt es auch zu dem bereits erw"ahnten Namenskonflikt bei den Argumenten:
 So wird bei der Funktion \cpp{SD_ReadBlock} das Argument \texttt{sector} eingef"ugt, 
 obwohl die Funktion das Argument \texttt{block} verlangt. In diesem Zusammenhang sind beide gleichbedeutend.
@@ -1741,16 +1794,16 @@ obwohl die Funktion das Argument \texttt{block} verlangt. In diesem Zusammenhang
 
 \subsubsection*{ffconf.h}
 
-Die Datei ffconf.h ist die zentrale Konfigurationsdatei des FatFs-Moduls. 
+Die Datei \texttt{FatFs/ffconf.h} ist die zentrale Konfigurationsdatei des FatFs-Moduls. 
 Über den C-Präprozessor lässt sich der Funktionsumfang auf die Hardware-Ressourcen des Mikrocontrollers zuschneiden.
+Im Folgenden sollen die Konfigurationsm"oglichkeiten durch eine kleine Auswahl an Optionen verdeutlicht werden: 
 
 \begin{itemize}
     \item \textbf{Anpassbarer Funktionsumfang:}
     \begin{itemize}
-        \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab, was Flash-Speicher einspart.
-        \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie z.B. die Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
+        \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab.
+        \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie z. B. die Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
         \item \texttt{FF\_USE\_MKFS}: Aktiviert oder deaktiviert die Formatierungsfunktion \texttt{f\_mkfs}.
-        \item \texttt{FF\_USE\_FASTSEEK}: Beschleunigt den wahlfreien Zugriff auf große Dateien.
         \item \texttt{FF\_USE\_FIND}: Aktiviert Suchfunktionen wie \texttt{f\_findfirst()} und \texttt{f\_findnext()}.
     \end{itemize}
     
@@ -1761,39 +1814,25 @@ Die Datei ffconf.h ist die zentrale Konfigurationsdatei des FatFs-Moduls.
         \item \texttt{FF\_LFN\_UNICODE}: Aktiviert Unicode-Unterstützung für Dateinamen.
     \end{itemize}
     
-    \item \textbf{Speicher- und Laufwerksoptionen:}
-    \begin{itemize}
-        \item \texttt{FF\_VOLUMES}: Definiert die Anzahl der logischen Laufwerke, die gleichzeitig verwaltet werden können.
-        \item \texttt{FF\_MAX\_SS} \& \texttt{FF\_MIN\_SS}: Definiert die vom Dateisystem unterstützten logischen Sektorgrößen. Üblicherweise besitzen SD-Karten eine logische Sektorgröße von 512 Byte, FatFs kann jedoch auch größere Sektorgrößen unterstützen.
-        \item \texttt{FF\_FS\_LOCK}: Legt fest, wie viele Dateien gleichzeitig vor konkurrierenden Zugriffen geschützt werden können.
-    \end{itemize}
-    
     \item \textbf{Systemeinstellungen:}
     \begin{itemize}
-        \item \texttt{FF\_FS\_TINY}: Reduziert den RAM-Bedarf pro Datei, indem interne Puffer gemeinsam genutzt werden.
-        \item \texttt{FF\_FS\_EXFAT}: Aktiviert die Unterstützung des exFAT-Dateisystems für SDXC-Speicherkarten.
-        \item \texttt{FF\_FS\_NORTC}: Verwendet feste Zeitstempel, wenn keine Echtzeituhr (RTC) vorhanden ist.
-        \item \texttt{FF\_FS\_REENTRANT}: Aktiviert die Thread-Sicherheit des Dateisystems für Mehrthread-Anwendungen.
+        \item \texttt{FF\_FS\_TINY}: Reduziert den RAM-Bedarf pro Datei, indem interne Buffer gemeinsam genutzt werden.
+        \item \texttt{FF\_FS\_EXFAT}: Aktiviert die Unterstützung des exFAT-Dateisystems.
     \end{itemize}
 \end{itemize}
 
-Darüber hinaus stellt FatFs zahlreiche weitere Konfigurationsoptionen bereit.
-Dazu gehören beispielsweise Einstellungen für mehrere Partitionen
-(\texttt{FF\_MULTI\_PARTITION}), Laufwerksbezeichnungen
-(\texttt{FF\_STR\_VOLUME\_ID}), Dateiattribute
-(\texttt{FF\_USE\_CHMOD}), Laufwerkslabels
-(\texttt{FF\_USE\_LABEL}) oder die Unterstützung von TRIM-Befehlen für
-Flash-Speicher (\texttt{FF\_USE\_TRIM}). Dadurch lässt sich das
-Dateisystem flexibel an die Anforderungen der jeweiligen
+Darüber hinaus stellt FatFs zahlreiche weitere Konfigurationsoptionen bereit, wie z. B. die Unterst"utzung 
+f"ur mehrere Partitionen oder die Unterst"utzung f"ur GPT-Partitionstabellen.
+Dadurch lässt sich das Dateisystem flexibel an die Anforderungen der jeweiligen
 Embedded-Anwendung anpassen.
-Eine vollst"andige Auflistung findet sich einerseits direkt in der ffconf.h mit hilfreichen Kommentaren,
+Eine vollst"andige Auflistung findet sich einerseits direkt in der \texttt{FatFs/ffconf.h} mit hilfreichen Kommentaren,
 andererseits auf der \href{https://elm-chan.org/fsw/ff/doc/config.html}{offiziellen Webseite des Entwicklers}.
 
-
-
-Aufgrund der verfügbaren Ressourcen des STM32G431 wurde auf eine weitgehend vollständige FatFs-Konfiguration zurückgegriffen, 
-einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
-
+FatFs wurde in dieser Arbeit "uberwiegend im vorkonfigurierten Umfang eingesetzt: 
+Alle Standardfunktionen waren voll verf"ugbar (\texttt{FF\_FS\_MINIMIZE}=0), 
+mkfs zur Formatierung wurde benutzt, exFAT wurde nicht
+getestet. Au"serdem wurden Versuche sowohl mit langen
+als auch mit kurzen Dateinamen durchgef"uhrt.
 
 
 \subsection{LittleFS}
@@ -1801,7 +1840,7 @@ einschließlich der Unterstützung langer Dateinamen und des exFAT-Dateisystems.
 
 \subsubsection{Ziele von littlefs}
 
-Die Entwickler des littlefs-Dateisystems nennen auf ihrer Github-Seite drei gro"se Vorteile ihres Dateisystems:
+Die Entwickler des littlefs-Dateisystems nennen auf ihrer GitHub-Seite drei gro"se Vorteile ihres Dateisystems:
 \begin{itemize}
     \item \textbf{Ausfallsicherheit bei Stromausfall} 
     \item \textbf{Verschleißregulierung des Flashspeichers (Wear Leveling)} 
@@ -1820,16 +1859,16 @@ des bereits erl"auterten COW (Copy-on-Write) f"ur die grunds"atzliche Neubeschaf
 Das sogenannte CObW (Copy-On-bounded-Write) f"uhrt einen Z"ahler ein, sodass nicht bei jeder Modifikation
 der gesamte Baum neu geschrieben werden muss wie bei COW, sondern nur alle N male. Bis zur N-ten Modifikation
 bleibt der alte Baum g"ultig. Dies reduziert den Aufw"artskaskadierungsaufwand, den COW-Dateisysteme mit sich bringen,
-um den Faktor N. CObW wird bei littlefs also f"ur die gr"o"sen Datenstrukturen verwendet und bringt 
-den Vorteil des Wear-Leveling mit sich, sowie eine Dateikonsistenzgarantie bei unerwartetem Stromausfall. \\
+um den Faktor N. CObW wird bei littlefs also f"ur die gro"sen Datenstrukturen verwendet und bringt 
+den Vorteil des Wear-Levelings mit sich sowie eine Dateikonsistenzgarantie bei unerwartetem Stromausfall. \\
 Auf Dateiebene nutzt littlefs unterschiedliche Mechanismen
 f"ur die tats"achlichen Dateiinhalte und die Metadaten (Dateiname, Gr"o"se, etc.).
-F"ur den Dateiinhalt wird eine sogenannte \enquote{CTZ skip-list} verwendet, 
+F"ur den Dateiinhalt wird eine sogenannte \enquote{CTZ skip list} verwendet, 
 die man sich als eine Erweiterung der Datenstruktur der verketteten Liste vorstellen kann.
 
 \begin{table}[h]
     \centering
-    \caption{Zahl von Zeigern in der \enquote{CTZ skip-list} in Abhängigkeit des Blockindexes.}
+    \caption{Zahl von Zeigern in der \enquote{CTZ skip list} in Abhängigkeit des Blockindexes.}
     \begin{tabular}{c c c c}
         \hline
         Blockzahl & Blockzahl(bin) & CTZ & Zeiger \\
@@ -1847,15 +1886,16 @@ die man sich als eine Erweiterung der Datenstruktur der verketteten Liste vorste
     \label{tab:ctz-pointers}
 \end{table}
 
-Der gro"se Unterschied ist, dass die \enquote{skip-list} zus"atzliche Zeiger einf"uhrt, die Elemente
-"uberspringen k"onnen. In einer gew"ohnlichen \enquote{skip-list} ist es zufallsbasiert, wie viele Zeiger
-ein bestimmter Eintrag hat. Die CTZ-skip-list (Count Trailing Zeros) nutzt als Zeigerverteilung einfach
-die Anzahl der Nullen einer Zahl in Bin"ardarstellung.
+Der gro"se Unterschied ist, dass die \enquote{skip list} zus"atzliche Zeiger einf"uhrt, die Elemente
+"uberspringen k"onnen. In einer gew"ohnlichen \enquote{skip list} ist es zufallsbasiert, wie viele Zeiger
+ein bestimmter Eintrag hat. Die CTZ skip list (Count Trailing Zeros) nutzt als Zeigerverteilung einfach
+die Anzahl der abschlie"senden Nullen einer Zahl in Bin"ardarstellung.
 \tab{tab:ctz-pointers} zeigt die Verteilung beispielhaft f"ur die Bl"ocke 1 bis 8.
 Der Vorteil dieser Datenstruktur ist die Suchlaufzeit
-von O(log n) f"ur einen speziellen Block, w"ahrend die Traversion durch alle Bl"ocke einer Datei in einer Laufzeit von O(n)
-m"oglich ist und ein Anh"angen eines Blocks an eine Datei in O(1). Eine r"uckw"arts verkettete Liste h"atte beispielsweise den Nachteil, dass die Traversion durch
-alle Bl"ocke O($n^2$) Schritte ben"otigt, w"ahrend eine vorw"arts verkettete Liste nicht an eine Datei Bl"ocke anf"ugen kann
+von O($log(n)$) f"ur einen speziellen Block, w"ahrend die Traversion durch alle Bl"ocke einer Datei in einer Laufzeit von O($n \cdot log(n)$)
+m"oglich ist und ein Anh"angen eines Blocks an eine Datei nur einen Schritt (O(1)) ben"otigt. 
+Eine r"uckw"arts verkettete Liste h"atte beispielsweise den Nachteil, dass die Traversion durch
+alle Bl"ocke O($n^2$) Schritte ben"otigt, w"ahrend eine vorw"arts verkettete Liste nicht an eine Datei Bl"ocke anf"ugen kann,
 ohne mindestens einen vorherigen Block zu modifizieren. Andere beliebte Datenstrukturen wie balancierte B"aume haben Nachteile
 bez"uglich einer beschr"ankten RAM-Nutzung, wie sie bei eingebetteten Systemen gefordert ist. \\ 
 F"ur Metadaten wird ein \enquote{two-block log} verwendet.
@@ -1869,12 +1909,12 @@ F"ur Metadaten wird ein \enquote{two-block log} verwendet.
 
 \fig{fig:littlefsmetaidea} zeigt die Idee hinter dem \enquote{two-block log} f"ur Metadaten auf.
 Die Metadaten stehen zu jedem Zeitpunkt in zwei Bl"ocken, die in sich eine begrenzte
-Anzahl an commits zulassen. Ein commit kann beispielsweise eine "Anderung der Metadaten beinhalten oder 
-ein Hinzuf"ugen von Metadaten. Jeder commit wird mit einer CRC32 abgeschlossen; Ist diese nicht g"ultig,
-so wird der commit verworfen. Das Prinzip ist also das eines Logging-Dateisystems, allerdings beschr"ankt
+Anzahl an Commits zulassen. Ein Commit kann beispielsweise eine "Anderung der Metadaten beinhalten oder 
+ein Hinzuf"ugen von Metadaten. Jeder Commit wird mit einer CRC32 abgeschlossen; ist diese nicht g"ultig,
+so wird der Commit verworfen. Das Prinzip ist also das eines Logging-Dateisystems, allerdings beschr"ankt
 in der Gr"o"se. Sobald einer der Bl"ocke voll ist, wird er auf den anderen Block komprimiert. Diesem wird
 dann eine neue Revisionsnummer gegeben und fortan ist dies der neue aktive Logblock.
-Die Vorteile, die das System mit sich bringt ist die dauerhafte Konsistenz der Metadaten, da nichts
+Der Vorteil, den das System mit sich bringt, ist die dauerhafte Konsistenz der Metadaten, da nichts
 "uberschrieben wird, sondern zu jedem Zeitpunkt eine korrekte Version der Daten existiert. Weiterhin
 bringt das Logging durch die Begrenzung der Gr"o"se des Logs eine nahezu konstante Laufzeit mit sich.
 Dadurch, dass aber "uberwiegend mit Logs gearbeitet wird, ist fundamental der Anspruch an Wear-Leveling erf"ullt.  
@@ -1883,7 +1923,7 @@ gesamte Dateiintegrit"at, falls die Schreiboperation scheitert. Ebenfalls ist da
 optimal f"ur das Wear-Leveling.\\
 Grunds"atzlich gilt f"ur Metadaten bei littlefs der Begriff der Atomarität:
 Entweder die Operation wird vollst"andig ausgef"uhrt oder gar nicht. 
-Die CRC32-Pr"ufsumme gew"ahrleistet die Vollst"andigkeit eines commits.
+Die CRC32-Pr"ufsumme gew"ahrleistet die Vollst"andigkeit eines Commits.
 
 
 \begin{figure}[H]
@@ -1896,11 +1936,11 @@ Die CRC32-Pr"ufsumme gew"ahrleistet die Vollst"andigkeit eines commits.
 \fig{fig:littlefsall} zeigt anschaulich den prinzipiellen Aufbau einer Datei in littlefs nach dem
 erl"auterten Prinzip. \\
 
-Ein wichtige, wenn auch in der DESIGN.md nur am Rande erw"ahnte Funktionalit"at, ist das Zur"ucklesen des
+Eine wichtige, in der DESIGN.md erw"ahnte Funktionalit"at ist das Zur"ucklesen des
 geschriebenen Buffers und ein Vergleichen der Nachricht. Damit kann littlefs feststellen, ob das 
-Schreiben tats"achlich geklappt hat oder doch m"oglicherweise ein Schreibfehler vorliegt. Im Falle vom 
+Schreiben tats"achlich geklappt hat oder m"oglicherweise ein Schreibfehler vorliegt. Im Falle von 
 Flashspeicher k"onnte in diesem Falle ein Badblock vorliegen, also ein defekter Speicherblock.
-Das Dateisystem probiert daher das Schreiben auf einem anderen Block und zwar solange, bis
+Das Dateisystem probiert daher das Schreiben auf einem anderen Block und zwar so lange, bis
 es die Nachricht korrekt zur"ucklesen kann.   
 
 
@@ -1927,21 +1967,21 @@ Kurzum sind die vorhandenen Informationen im Gegensatz zu FatFs sehr beschr"ankt
 sodass zwar eine funktionierende, aber m"oglicherweise keine optimale Implementierung 
 der Bindeschicht in der \texttt{src/sdcardlittlefs.cpp} gew"ahrleistet werden konnte.
 
-\subsubsection{littlefs FUSE wrapper}
+\subsubsection{littlefs FUSE Wrapper}
 W"ahrend sich mit FAT formatierte SD-Karten problemlos an jedem Desktop-PC mit jedem 
 erdenklichen Betriebssystem auslesen lassen, existiert f"ur littlefs das 
-\href{https://github.com/littlefs-project/littlefs-fuse}{littlefs FUSE wrapper} Projekt.
+\href{https://github.com/littlefs-project/littlefs-fuse}{littlefs FUSE Wrapper} Projekt.
 Nach erfolgreichem Kompilieren des Projektes l"asst sich unter Linux beispielsweise mit 
 \texttt{sudo ./lfs /dev/mmcblk0 mount/ -o allow\_other} das Dateisystem einh"angen und
 mit kleinen Einschr"ankungen nutzen. Zu den Einschr"ankungen geh"ort,
 dass littlefs keine Zeitstempel f"ur Dateien anlegt und auch kein System f"ur spezielle
 Berechtigungen existiert. \\
 An dieser Stelle stellt sich f"ur die Praxis ebenfalls die Frage, ob der Endnutzer mit dem Dateisystem
-in Ber"uhrung kommen wird. W"ahrend die Einrichtung des littlefs FUSE wrapper Projektes  
-f"ur technisch versierte und mit GitHub vertraute Personen problemlos in unter einer Stunde 
+in Ber"uhrung kommen wird. W"ahrend die Einrichtung des littlefs FUSE Wrapper Projektes  
+f"ur technisch versierte und mit GitHub vertraute Personen problemlos in weniger als einer Stunde 
 m"oglich ist, ist es f"ur normale Endnutzer ungeeignet und "uberfordernd. Littlefs ist
-also kein Dateisystem, was f"ur Ger"ate wie beispielsweise Digitalkameras oder Oszilloskope
-zu empfehlen w"are, wo dem Endnutzer eine garantierte Kompatiblit"at mit dem Dateisystem 
+also kein Dateisystem, das f"ur Ger"ate wie beispielsweise Digitalkameras oder Oszilloskope
+zu empfehlen w"are, wo dem Endnutzer eine Kompatibilit"at mit dem Dateisystem 
 garantiert werden sollte.
 
 \section{Vergleich littlefs, FatFs und direkter Blockadressierung}
@@ -1949,19 +1989,20 @@ Im Folgenden wird die direkte Blockadressierung als \enquote{NoFs} bezeichnet.
 
 \subsection{RAM- und Flashverbrauch}\label{sec:ramflash}
 \tab{tab:flash-ram} ist die Auswertung der Ausgabe des Compilers \enquote{arm-none-eabi-gcc} bei
-unterschiedlichen Optimierungsstufen. F"ur FatFs wurde eine kleine Standardardkonfiguration verwendet.
+unterschiedlichen Optimierungsstufen. \\
+F"ur FatFs wurde eine kleine Standardkonfiguration verwendet.
 Das bedeutet konkret, dass alle Standardfunktionen vorhanden sind (FF\_FS\_MINIMIZE=0),
-aber der Support f"ur lange Dateinamen (FF\_USE\_LFN=0) abgeschaltet ist. 
+aber der Support f"ur lange Dateinamen \\ (FF\_USE\_LFN=0) abgeschaltet ist. \\
 Der statische RAM-Verbrauch h"alt sich "uber alle Dateisysteme
 recht stabil im Bereich von 2 KB und schwankt auch nach der Compileroptimierung nicht sonderlich.
-Hiervon ausgenommen ist FatFs, dessen statischer RAM-Verbrauch in optimierten Builds um fast 500 kB sinkt
+Hiervon ausgenommen ist FatFs, dessen statischer RAM-Verbrauch in optimierten Builds um fast 500 Bytes sinkt
 im Vergleich zum unoptimierten Build, sodass lediglich 1,5 KB an statischem RAM verbraucht werden.
 Da auch FatFs intern dieselben Treiber verwendet wie NoFs und littlefs, ist dies ein Hinweis darauf,
 dass die internen Buffer f"ur FatFs auf dem Stack allokiert werden, w"ahrend NoFs und littlefs statische
 Buffer nutzt, die der Compiler beim Build im .data oder .bss Segment verordnen und somit anzeigen kann.\\
 Weitere Untersuchungen des FatFs-Dateisystems haben gezeigt, dass sich der Hauptbuffer von FatFs in
 der Struktur \texttt{FIL} befindet und diese eine Gr"o"se von 552 Bytes aufweist. Ob der Buffer also auf dem Stack liegt oder
-im statischen/globalen Segment allokiert wird liegt in diesem Fall also in der Hand des Programmierers,
+im statischen/globalen Segment allokiert wird, liegt in diesem Fall also in der Hand des Programmierers,
 was f"ur Systeme, die ihren RAM-Bereich fest aufteilen, sehr n"utzlich sein kann. Dies ist selbstverst"andlich
 auch der Fall f"ur NoFs.
 \\
@@ -1971,9 +2012,9 @@ des Dateisystems zusammen. W"ahrend FatFs ein relativ simples, blockbasiertes Da
 fusioniert littlefs die Ideen der Journaling and Copy-on-Write Dateisysteme f"ur mehr Ausfallresilienz
 und Wear-Leveling. Dies spiegelt sich im Speicherverbrauch f"ur den Programmspeicher wider.
 NoFs verwendet in der kleinsten Variante etwa 2 KB, FatFs etwa 15 KB und littlefs etwa 35 KB Speicher auf dem Flash.
-W"ahrend das f"ur den verwendeten STM32-G431 mit 128 KB Flashspeicher kein Problem darstellt, so
+W"ahrend das f"ur den verwendeten STM32G431 mit 128 KB Flashspeicher kein Problem darstellt, so
 gibt es zahlreiche kosteng"unstige STM-Modelle wie beispielsweise Modelle aus der STM32C0-Serie,
-die nur "uber 32 kB Programmspeicher verf"ugen und somit kein littlefs in dieser Konfiguration nutzen k"onnen. \\
+die nur "uber 32 KB Programmspeicher verf"ugen und somit kein littlefs in dieser Konfiguration nutzen k"onnen. \\
 Ebenfalls interessant ist zu sehen, dass die Programmgr"o"se bei der Optimierung \enquote{-O3} gr"o"ser ist als 
 bei \enquote{-O2}. Dies h"angt damit zusammen, dass auf Ausf"uhrungsgeschwindigkeit optimiert wird statt auf Gr"o"se.
 So werden beispielsweise Funktionen aggressiver geinlined, um Funktionsaufrufe zu sparen, was sich aber wiederum 
@@ -2059,14 +2100,14 @@ Der Schreibtest f"ur das FatFs-Dateisystem ist analog dazu in \texttt{test/fatfs
 \fig{fig:versuch1loop} verdeutlicht den Ablauf anschaulich. 
 Die aufgenommenen Testdaten finden sich im GitHub-Projektverzeichnis unter 
 \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest1}{(root)/test\_data/Writetest1/}.
-Die Auswertung folgte am station"aren Desktop-Computer. Dazu wurden kurze Pythonskripte erstellt, die
+Die Auswertung erfolgte am station"aren Desktop-Computer. Dazu wurden kurze Pythonskripte erstellt, die
 Dateigr"o"se und Integrit"at der Daten pr"ufen. Das relevanteste Skript ist hierbei 
 \href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/test\_data/Writetest1/test\_readable.py}{(root)/test\_data/Writetest1/test\_readable.py}.
 In der Auswertung zeigt sich, dass unter etwa 9000 littlefs-Dateien und rund 8000 FatFs-Dateien keine einzige Datei auch nur
 einen einzigen messbaren Bitfehler aufweist, trotz fehlender CRC-Pr"ufsumme bei der SPI-Daten"ubertragung.
 Somit kann anhand dieses Versuchs keine Aussage dar"uber getroffen werden,
 ob ein Dateisystem zuverl"assiger mit Daten umgeht als das andere.
-Gleichzeitig best"atigt der Versuch, dass die zugrundeliegenden Blockschreibfunktionen "uber eine Vielzahl Aufrufe zuverl"assig arbeiten.
+Gleichzeitig best"atigt der Versuch, dass die zugrunde liegenden Blockschreibfunktionen "uber eine Vielzahl von Aufrufen zuverl"assig arbeiten.
 
 \begin{figure}[H]
     \centering
@@ -2075,15 +2116,15 @@ Gleichzeitig best"atigt der Versuch, dass die zugrundeliegenden Blockschreibfunk
     \label{fig:versuch1loop}
 \end{figure}
 
-Tats"achlich war der Plan etwa die zehnfache Menge an geschriebenen Daten f"ur diesen
+Tats"achlich war der Plan, etwa die zehnfache Menge an geschriebenen Daten f"ur diesen
 Versuch zu erzeugen. Dies war durch kurze Messreihen von einer Minute abgesch"atzt worden.
 W"ahrend des Schreibversuches ist klar geworden, dass deutlich weniger Dateien erstellt wurden
 als zun"achst angenommen. 
-W"ahrend in dieser Arbeit zwar vorrangig die Zuverl"assigkeit der Dateisysteme bez"uglich
+Obwohl in dieser Arbeit vorrangig die Zuverl"assigkeit der Dateisysteme bez"uglich
 der Datenintegrit"at untersucht werden sollte, ist es beispielsweise f"ur Logginganwendungen
-unverzichtbar ein konsistentes Verhalten beim Erstellen und Schreiben von Dateien zu erreichen.
+unverzichtbar, ein konsistentes Verhalten beim Erstellen und Schreiben von Dateien zu erreichen.
 Also wurde der Versuch um einen Zeitstempel im Dateinamen erweitert, sodass die Dauer des gesamten Zyklus
-der Dateierstellung wie in \fig{fig:versuch1loop} aufgezeigt, gemessen werden konnte.
+der Dateierstellung, wie in \fig{fig:versuch1loop} aufgezeigt, gemessen werden konnte.
 
 \begin{figure}[H]
     \centering
@@ -2093,8 +2134,8 @@ der Dateierstellung wie in \fig{fig:versuch1loop} aufgezeigt, gemessen werden ko
 \end{figure}
 
 \fig{fig:fatfstime} zeigt die Dauer des Schreibvorgangs f"ur eine 1024 Byte Datei in Abh"angigkeit
-davon wie viele Dateien bereits erstellt wurden. Es zeigt sich ein klare lineare Abh"angigkeit mit einem 
-auff"allig periodisch wiederkehrendem Muster.
+davon, wie viele Dateien bereits erstellt wurden. Es zeigt sich eine klare lineare Abh"angigkeit mit einem 
+auff"allig periodisch wiederkehrenden Muster.
 
 \begin{figure}[H]
     \centering
@@ -2107,10 +2148,10 @@ auff"allig periodisch wiederkehrendem Muster.
 Auch hier sehen wir einen konstanten, linearen Anstieg der Dateierstelldauer in Abh"angigkeit der bereits vorhandenen
 Dateien. Zus"atzlich braucht das Dateisystem alle 38 Dateien einmalig deutlich l"anger f"ur die Erstellung einer Datei.
 Eine m"ogliche Erkl"arung f"ur dieses Verhalten k"onnte der bereits erw"ahnte CObW-Mechanismus sein. Nach 38 Dateien w"are
-der Zeitpunkt erreicht, wo einmalig ein ganzer Zweig eines Baumes neu geschrieben werden muss.
+der Zeitpunkt erreicht, an dem einmalig ein ganzer Zweig eines Baumes neu geschrieben werden muss.
 
-W"ahrend hier der "ubersichtlichkeithalber nur ein Auszug von rund 850 Dateien dargestellt ist, wurden alle vorhandenen
-Messdaten untersucht. Sowohl f"ur littlefs, als auch f"ur FatFs setzt sich das typische Muster mit linear steigender Dateierstelldauer fort.
+W"ahrend hier der "Ubersichtlichkeit halber nur ein Auszug von rund 850 Dateien dargestellt ist, wurden alle vorhandenen
+Messdaten untersucht. Sowohl f"ur littlefs als auch f"ur FatFs setzt sich das typische Muster mit linear steigender Dateierstelldauer fort.
 
 Bei genauer Betrachtung der Werte f"allt auf, dass das FatFs-Dateisystem trotz geringerer Dateisystemkomplexit"at l"anger
 f"ur die Erstellung von Dateien ben"otigt als littlefs. Die Vermutung lag nahe, dass das mit FatFs Option \enquote{LFN}, \enquote{Long File Names}
