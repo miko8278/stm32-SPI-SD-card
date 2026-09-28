@@ -11,10 +11,10 @@ This project uses **FatFs** by ChaN.
 
 ## LittleFS
 
-This project also uses **LittleFS** by the littlefs-project.
+This project also uses **littlefs** by the littlefs-project.
 
 - Project: [LittleFS – GitHub Repository](https://github.com/littlefs-project/littlefs)
-- The LittleFS source code used by this project is included in this repository under `code/spi-sdcardwrite/littlefs`.
+- The littlefs source code used by this project is included in this repository under `code/spi-sdcardwrite/littlefs`.
 
 
 ## Project
