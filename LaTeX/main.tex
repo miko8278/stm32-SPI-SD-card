@@ -282,8 +282,6 @@ Hierzu wurde eine Hard- und Softwareumgebung entwickelt,
 die einen direkten Zugriff des Mikrocontrollers auf eine SD-Karte ermöglicht. 
 Auf dieser Grundlage konnten die untersuchten Dateisysteme FatFs und littlefs hinsichtlich ihres Speicherbedarfs, 
 ihres Schreibverhaltens und ihrer Zuverlässigkeit bei der Datenspeicherung untersucht werden.
-Ein Schwerpunkt lag dabei auf dem Verhalten der Dateisysteme bei Schreibfehlern 
-und unerwarteten Stromausfällen.
 
 Ausgangspunkt für die Untersuchung waren praktische Erfahrungen mit der Datenspeicherung
 auf SD-Karten in Verbindung mit Einplatinencomputern, 
@@ -1606,7 +1604,7 @@ um mit zunehmender Kapazität auch größere Speichermedien zu unterstützen.
 
 \begin{table}[H]
     \centering
-    \caption{Technische Adressierungsgrenzen der FAT-Dateisysteme\cite{MSLearnFS}}
+    \caption{Technische Adressierungsgrenzen der FAT-Dateisysteme \cite{MSLearnFS}}
     \label{tab:fat_limits}
     \smallskip
     \begin{tabular}{l l l p{5cm}}
@@ -1817,7 +1815,7 @@ Im Folgenden sollen die Konfigurationsm"oglichkeiten durch eine kleine Auswahl a
         \item \texttt{FF\_FS\_READONLY}: Schaltet das Schreiben komplett ab.
         \item \texttt{FF\_FS\_MINIMIZE}: Entfernt gezielt ungenutzte APIs wie z. B. die Verzeichnisoperationen (\texttt{f\_mkdir}, \texttt{f\_opendir}) oder Suchfunktionen.
         \item \texttt{FF\_USE\_MKFS}: Aktiviert oder deaktiviert die Formatierungsfunktion \texttt{f\_mkfs}.
-        \item \texttt{FF\_USE\_FIND}: Aktiviert Suchfunktionen wie \texttt{f\_findfirst()} und \texttt{f\_findnext()}.
+        \item \texttt{FF\_USE\_FIND}: Aktiviert Suchfunktionen wie \texttt{f\_findfirst} und \texttt{f\_findnext}.
     \end{itemize}
     
     \item \textbf{Dateinamen und Zeichenkodierung:}
@@ -2069,7 +2067,10 @@ in einer h"oheren Programmgr"o"se widerspiegelt.
 
 \subsection{Versuch 1: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge}\label{sec:v1}
 
-
+Der erste Versuch sollte die grunds"atzliche Korrektheit der Schreibfunktionen
+der beiden verwendeten Dateisysteme
+auf Basis eines umfangreicheren Datensatzes verifizieren, sowie die Menge an verursachten
+Schreibfehlern feststellen.
 
 \begin{listing}[H]
     \begin{minted}[
@@ -2116,7 +2117,7 @@ Die aufgenommenen Testdaten finden sich im GitHub-Projektverzeichnis unter
 Die Auswertung erfolgte am station"aren Desktop-Computer. Dazu wurden kurze Pythonskripte erstellt, die
 Dateigr"o"se und Integrit"at der Daten pr"ufen. Das relevanteste Skript ist hierbei 
 \href{https://github.com/miko8278/stm32-SPI-SD-card/blob/main/test\_data/Writetest1/test\_readable.py}{(root)/test\_data/Writetest1/test\_readable.py}.
-In der Auswertung zeigt sich, dass unter etwa 9000 littlefs-Dateien und rund 8000 FatFs-Dateien keine einzige Datei auch nur
+\\In der Auswertung zeigt sich, dass unter etwa 9000 littlefs-Dateien und rund 8000 FatFs-Dateien keine einzige Datei auch nur
 einen einzigen messbaren Bitfehler aufweist, trotz fehlender CRC-Pr"ufsumme bei der SPI-Daten"ubertragung.
 Somit kann anhand dieses Versuchs keine Aussage dar"uber getroffen werden,
 ob ein Dateisystem zuverl"assiger mit Daten umgeht als das andere.
@@ -2290,7 +2291,10 @@ besprochenen Schutzmechanismen hier klare Vorteile mit sich.
 Die Idee dieses Versuches ist einerseits, die Konsistenz der Schreiboperationen
 bei pseudo-zuf"alligen Daten festzustellen, andererseits die Schreibperformance
 bei dem Anh"angen von Daten an eine bereits existierende Datei im Gegensatz zur Neuerstellung 
-der Datei zu untersuchen. Weiterhin wurde der SPI-Takt bei diesem Versuch auf 8 MHz erh"oht,
+der Datei zu untersuchen. Da bisher nur festgelegte Zeichenfolgen
+untersucht wurden, ist noch nicht ausgeschlossen, dass es bei bestimmten Zeichen dennoch
+zu Schreibfehlern kommt.
+Weiterhin wurde der SPI-Takt bei diesem Versuch auf 8 MHz erh"oht,
 um mehr potenzielle Schreibfehler zu provozieren.\\
 
 
@@ -2332,12 +2336,12 @@ von 1\,KB Daten an eine bestehende Datei ben"otigt.
 \Fig{fig:timeappend2} und \ref{fig:timeappend1} zeigen anschaulich das Verhalten der beiden Dateisysteme und
 nutzen denselben Datensatz in unterschiedlicher Skalierung.
 W"ahrend das Anh"angen von 1 KB Datengr"o"se an eine Datei bei FatFs eine sehr gute, konstante Performance
-von 5\,ms bei 8\,MHz liefert, zeigt sich bei littlefs der Overhead der Datenintegrit"atskontrolle: 
+von etwa 5\,ms bei 8\,MHz liefert, zeigt sich bei littlefs der Overhead der Datenintegrit"atskontrolle: 
 Grunds"atzlich ist der Schreibzyklus beim littlefs-Dateisystem ca. 8-mal langsamer. 
 Das weitaus problematischere Verhalten ist aber, dass das Anh"angen von Daten in regelm"a"sigen Abst"anden deutlich
 l"anger braucht. Die zus"atzliche Zeit, die es ben"otigt, ist abh"angig von der Dateigr"o"se.
 Bei einer Dateigr"o"se von nur 1 MB dauert diese zus"atzliche Erstellzeit bereits "uber 10\s.
-Eine bessere Implementierung und gr"o"sere Buffer in der Konfiguration k"onnen diese Zahlen quantitativ
+Eine bessere Anbindung an die SD-Funktionen und gr"o"sere Buffer in der Konfiguration k"onnen diese Zahlen quantitativ
 zwar reduzieren, "andern aber nichts an ihrem prinzipiellen Vorhandensein. 
 Das macht littlefs als Echtzeitdateisystem unbrauchbar. Im Hintergrund scheint littlefs f"ur seine
 Dateiintegrit"atsmechanismen immer wieder die gesamte Datei zu "uberpr"ufen, was f"ur einen Einsatz 
@@ -2345,19 +2349,21 @@ in embedded Umgebungen zu viele Hardwareressourcen bindet. Dateisysteme wie ext4
 beispielsweise bewusst nur f"ur ihre Metadaten, 
 um die Dateisystemintegrit"at abzusichern, damit es nicht zu schweren Performanceeinbu"sen kommt wie
 sie hier zu beobachten sind.\\
-
- 
-
-
-
+F"ur den Schreibtest mit pseudo-randomisierten Daten wurden rund 22\,MB an Daten f"ur littlefs 
+und "uber 160\,MB an Daten f"ur FatFs untersucht.
+Die aufgenommenen Rohdaten und Testskripte finden sich in \href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest3}{(root)/test\_data/Writetest3/},
+wobei der gro"se Datensatz von FatFs aufgrund der Dateigr"o"senbeschr"ankung nicht auf GitHub hochgeladen werden konnte. 
+Schreibfehler konnten auch in diesem Fall nicht festgestellt werden.
 
 
 \subsubsection*{Fazit Versuch 3}
-Die Schutzmechanismen von littlefs konnten in diesem Versuch ihre Funktionalit"at beweisen.
-Gleichzeitig wurde aber auch ein Performanceproblem beobachtet, das f"ur den 
-Einsatz in einem praktischen System zun"achst einmal gel"ost werden m"usste. \\
-FatFs hingegen gestaltet sich wie erwartet bei unsicherem Daten"ubertragungskanal 
-nicht resilient gegen"uber Fehlern und f"uhrt zu potenziell schweren Datei- und Dateisysteminkonsistenzen.
+Das Fazit ist, dass die verwendeten Dateisysteme und somit auch die zugrunde liegenden SD-Funktionen 
+bei beliebigen Daten zuverl"assig arbeiten.\\
+Weiterhin ist die Operation, Daten an eine Datei anzuh"angen deutlich ressourcenschonender als 
+die Neuerstellung einer Datei. W"ahrend das zun"achst auf beide Dateisysteme zutrifft,
+f"uhrt littlefs periodisch eine unbekannte Dateioperation durch, die eine 
+mit der Dateigr"o"se linear steigende Ausf"uhrdauer mitbringt.
+Mit der aktuellen Konfiguration ist littlefs daher nur sehr beschr"ankt auf Echtzeitsystemen einsetzbar.  
 
 
 
@@ -2368,7 +2374,7 @@ Die Entwickler des littlefs-Dateisystems versprechen
 eine hohe Datei- und Dateisystemkonsistenz bei Stromausf"allen. Dies soll
 praktisch getestet werden und mit dem FAT-Dateisystem verglichen werden.
 Eine erste Idee war, die \texttt{Watchdog}-Funktionalit"at des STM32G431 zu nutzen.
-Diese greift allerdings zu kurz, da dabei keine Unterbrechung der SD-Karten-Spannungsversorgung
+Diese Idee greift allerdings zu kurz, da dabei keine Unterbrechung der SD-Karten-Spannungsversorgung
 herbeigef"uhrt wird.\\
 Die Spannungsversorgung der in dieser Bachelorarbeit verwendeten Platine wird entweder "uber die vorhandene 5\,V USB-C-Buchse
 oder "uber eine Stiftleiste, die haupts"achlich f"ur
@@ -2390,7 +2396,7 @@ aufgrund der vorhandenen Bauteile etwas komplexer gestaltet werden als im Prinzi
 Letztlich wird lediglich ein Schalter ben"otigt, der periodisch 5\,V an- und ausschaltet.
 So w"are ein mit 3,3 V schaltbares Relais mit einer R"ucklaufdiode ausreichend f"ur diesen Zweck gewesen.
 Aufgrund von eingeschr"ankter Bauteilverf"ugbarkeit wurde aber auf den vorhandenen MOSFET \texttt{IRF620A} zur"uckgegriffen.
-Dieser kann im durchgeschalteten Zustand den Pegel vom 5\,V LDO Eingang auf nahezu 0 V bringen. Das ist ohne destruktiven Kurzschluss
+Dieser kann in der vorliegenden Schaltung im durchgeschalteten Zustand den Pegel vom 5\,V LDO Eingang auf nahezu 0 V bringen. Das ist ohne destruktiven Kurzschluss
 nat"urlich nur durch die Widerst"ande $R_1$ und $R_2$ m"oglich. Diese begrenzen den f"ur den LDO verf"ugbaren Strom auf
 rund $\frac{5\,V}{26\,\Omega} \approx 190\,mA$. Dies ist f"ur die durchschnittliche Stromaufnahme der Platine (gemessen: 23,3\,mA)
 vollkommen ausreichend und wird mit dem Kondensator $C_1$ zus"atzlich gepuffert. 
@@ -2478,8 +2484,8 @@ die Testdaten des unsichereren Dateisystems FatFs, dass sich mit Stromausf"allen
 praktisch keine Schreibfehler erzeugen lassen. \\
 Der Effekt war bei FatFs im "Ubrigen ebenfalls vorhanden.
 Dennoch konnte problemlos die 70-fache Menge an Daten in derselben Zeit erzeugt werden. 
-Das Pythonskript zur Verifikation findet sich unter 
-\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest4/test\_readable.py}{(root)/test\_data/Writetest4/test\_readable.py}.
+Die Rohdaten und Skripte zur Verifikation finden sich unter 
+\href{https://github.com/miko8278/stm32-SPI-SD-card/tree/main/test\_data/Writetest4/}{(root)/test\_data/Writetest4/}.
 
 \subsubsection*{Fazit Versuch 4}
 Trotz der kontinuierlichen Stromausf"alle kam es in keinem der beiden Dateisysteme auch nur zu einem Schreibfehler.
@@ -2506,13 +2512,12 @@ in die Karte integrierte SD-Kartencontroller scheint also bereits daf"ur zu sorg
 dass auch bei Stromausf"allen nur verl"assliche Daten auf der Karte landen. F"ur eine
 zus"atzliche Sicherheit bei der "Ubertragung lie"se sich die CRC-Pr"ufsumme, die im SPI-Modus
 standardm"a"sig deaktiviert ist, wieder aktivieren.\\
-
 Der Versuch hat ebenfalls noch einmal verdeutlicht, dass der Umgang mit littlefs 
 in Echtzeitsystemen sehr genau geplant sein muss. F"ur eine Einhaltung von gegebenen Zeitgrenzen m"ussen
 bei dem Dateisystem vorab Tests und Messungen gemacht werden, w"ahrend FatFs sich responsiver und weniger
 unberechenbar verh"alt.\\
 
-Das endg"ultige Fazit ist, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
+Das endg"ultige Fazit ist also, dass der zus"atzliche Datenschutz durch das littlefs-Dateisystem die h"ohere Komplexit"at
 des Systems im Zusammenhang mit SD-Karten nicht rechtfertigt. In anderen Anwendungen, vor allem bei einem gegebenen unsicheren Datenkanal,
 ist littlefs durchaus erw"agenswert. 
 
@@ -2598,6 +2603,9 @@ Das Fazit in diesem Versuch ist die Erkenntnis, dass FatFs bei der genutzten Kon
 den vorhandenen Blockschreibfunktionen keinen Schreiboverhead einf"uhrt. Da bereits festgestellt wurde,
 dass FatFs auch hinsichtlich der RAM-Nutzung kaum schwerer wiegt als NoFs, ist der einzige gr"o"sere Nachteil
 von FatFs gegen"uber NoFs der Flashverbrauch, der im schlimmsten Fall rund 13\,KB h"oher ausf"allt. 
+Littlefs hingegen ist im besten Falle rund 8-mal langsamer als NoFs, weist aber zus"atzlich das
+in den anderen Versuchen besprochene Problem auf, dass es in regelm"a"sigen Abst"anden einen von
+der Dateigr"o"se abh"angigen Schreibvorgang durchf"uhrt.  
 
 \section{Gesamtfazit}
 
@@ -2615,15 +2623,15 @@ und Erweiterbarkeit f"ur zuk"unftige Projekte. Da viel Abstraktion mit modernem 
 die Kompilierzeit verschoben werden kann, bleibt die Ausf"uhrungsgeschwindigkeit trotz
 Nutzung von (eigenen) Libraries wie der \texttt{src/GPIO\_HAL.hpp} sehr hoch.\\
 Die Arbeit am SD-Treiber war eine
-der Grundvoraussetzungen f"ur den Rest der Arbeit. Nat"urlich implementiert diese nicht 
+der Grundvoraussetzungen f"ur den Rest der Arbeit. Nat"urlich implementiert dieser nicht 
 das gesamte SD-Protokoll, sondern nur die f"ur diese Arbeit relevanten Funktionen:
 Das Schreiben und Lesen von Einzel- und Mehrfachbl"ocken und das Abrufen von SD-Karteninformationen.
 Es konnte festgestellt werden, dass die Schreibperformance sich nah an der physikalischen Grenze 
 der SPI-Peripherie befindet und sehr zuverl"assig funktioniert. Tats"achlich lie"s sich "uber 
 alle Versuche hinweg kein einziger Schreibfehler provozieren und es musste f"ur eine Untersuchung
-von Schreibfehlern eine gezielte Injektion von falschen Daten erfolgen.\\ 
-Ein weiterer Vorteil des SD-Treibers ist der recht geringe Flashspeicherverbrauch von nur rund 2\,KB,
-sodass er sich problemlos in eine Vielzahl von weiteren aufbauenden Projekten integrieren l"asst.
+von Schreibfehlern eine gezielte Injektion von falschen Daten erfolgen.Ein weiterer Vorteil des eigenen SD-Treibers 
+ist der recht geringe Flashspeicherverbrauch von nur rund 2\,KB,
+sodass er sich problemlos in eine Vielzahl von weiteren aufbauenden Projekten integrieren l"asst. \\
 Ein gro"ser Teil der Arbeit bestand in dem Vergleich zwischen FatFs und littlefs.
 Noch einmal sollen an dieser Stelle die drei gro"sen Vorteile des littlefs-Dateisystems genannt werden:
 \begin{itemize}
@@ -2636,7 +2644,7 @@ Leider fallen im Zusammenhang mit SD-Karten die Vorteile sehr gering aus:
 \hyperref[sec:v4]{Versuch 4} hat gezeigt, dass die tats"achlichen Bitfehlerraten beim Schreiben und
 der "Ubertragung extrem niedrig sind. Durch Nutzung der SD-karteninternen CRC-Pr"ufsumme besteht optional 
 bereits auf SPI/SD-Kartenebene ein zus"atzlicher Fehlerschutz.
-Gleichzeitig f"uhrt das integrierte Fehlerpr"ufsystem zu
+Gleichzeitig f"uhrt das integrierte Fehlerpr"ufsystem von littlefs zu
 einem Verlust von leicht vorhersagbarer Echtzeitf"ahigkeit des Systems, da das
 Dateisystem in regelm"a"sigen Abst"anden deutlich l"anger zum Schreiben einer Datei braucht
 als im Durchschnitt. \\
@@ -2654,7 +2662,11 @@ Dennoch hat \hyperref[sec:v2]{Versuch 2} klargemacht, dass die Verwendung von li
 Datentragungskanal durchaus von Vorteil sein kann, wenn man die erw"ahnten Nachteile beachtet:
 W"ahrend FatFs schnell zu Inkonsistenzen im Dateisystem, Metadaten und Dateien selbst neigt, demonstriert
 littlefs eindrucksvoll, dass die Mechanismen zur Erkennung von fehlerhaften Daten selbst bei 
-hohen Bitfehlerraten einwandfrei funktionieren.\\
+hohen Bitfehlerraten einwandfrei funktionieren.
+Zusammenfassend zeigt sich, dass der Verwendungszweck von littlefs vor allem bei reinem Flashspeicher liegt. 
+Aber ganz unabh"angig vom physikalischen Medium:
+Sollte eine L"osung f"ur die irregul"aren, sehr langen Schreibvorg"ange gefunden werden,
+so w"are littlefs eine echte Alternative bei st"oranf"alligen Nachrichtenkan"alen. \\
 Alles in allem gewinnt in der Praxis allerdings die Verwendung von FatFs bei SD-Karteneinsatz, selbst wenn 
 es auf Datenintegrit"at ankommt:
 Da das FAT-Dateisystem seit "uber 40 Jahren in Verwendung ist, existiert sehr viel Software wie 
@@ -2665,17 +2677,14 @@ mit konstanter Laufzeit beibeh"alt.
 Fehlerschutz muss weiterhin nicht auf Dateisystemebene passieren: Aufbauend auf FatFs lassen sich externe Schutzmechanismen
 wie die bereits genannten CRC-Pr"ufsummen oder kryptographische Hashfunktionen wie SHA-256 oder MD5 anwenden,
 wie sie auch bei Downloads von gr"o"seren Dateien "ublich sind. Mit Datensicherungsstrategien wie doppelter oder dreifacher
-Redundanz l"asst sich ohne zus"atzlichen Rechenaufwand zus"atzliche Sicherheit schaffen auf Kosten des Speicherplatzes.     
+Redundanz l"asst sich ohne zus"atzlichen Rechenaufwand zus"atzliche Sicherheit schaffen auf Kosten des Speicherplatzes.\\     
 Die Verwendung von reinem Blockspeicher hingegen (NoFs) hat sich recht schnell als zu aufwendig herausgestellt:
 Ohne die Herstellung eines eigenen Systems zur Speicherung der Daten ist das Wiederauffinden einer bestimmten
 Information sehr schwierig. Weiterhin m"usste ein Mechanismus implementiert werden, der die Daten extrahiert
 und letztlich wieder in eine dateisystemlesbare Datei "uberf"uhrt. NoFs eignet sich daher h"ochstens f"ur 
 sehr einfache Daten, die einem simplen Schema folgen, wie beispielsweise Temperatursensordaten mit einer
-festen Gr"o"se. Ein m"ogliches Vorgehen f"ur NoFs wurde in \hyperref[sec:v3]{Versuch 3} demonstriert.\\
-Alles in allem liegt der Verwendungszweck von littlefs vor allem bei reinem Flashspeicher. 
-Aber ganz unabh"angig vom physikalischen Medium:
-Sollte allerdings eine L"osung f"ur die irregul"aren, sehr langen Schreibvorg"ange auftauchen,
-so w"are littlefs eine echte Alternative bei st"oranf"alligen Nachrichtenkan"alen. 
+festen Gr"o"se. Ein m"ogliches Vorgehen f"ur NoFs wurde in \hyperref[sec:v5]{Versuch 5} demonstriert.\\
+
 
 
 
