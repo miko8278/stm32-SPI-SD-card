@@ -1,0 +1,11 @@
+\beamer@slide {themen-des-vortrags}{2}
+\beamer@slide {uxfcberblick}{3}
+\beamer@slide {motivation-persuxf6nlich}{4}
+\beamer@slide {motivation-technisch}{5}
+\beamer@slide {hardware-schaltplan}{6}
+\beamer@slide {hardware-platine-unbestuxfcckt}{7}
+\beamer@slide {hardware-platine-bestuxfcckt}{8}
+\beamer@slide {software-spi-sd-treiber}{9}
+\beamer@slide {software-fatfs}{10}
+\beamer@slide {software-littlefs}{11}
+\beamer@slide {bildertest-2-nebeneinander}{12}
