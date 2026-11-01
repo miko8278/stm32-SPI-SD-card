@@ -77,6 +77,44 @@
 \makeatother
 \usepackage{xcolor}
 \newif\ifbibliography
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -94,6 +132,7 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\titlegraphic{\includegraphics[height=1.5cm]{Bilder/bht_grey.png}}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -118,8 +157,6 @@ Dietrich}
 
 \begin{frame}{Themen des Vortrags}
 \phantomsection\label{themen-des-vortrags}
-\footnotesize
-
 \begin{enumerate}
 \tightlist
 \item
@@ -150,8 +187,6 @@ Dietrich}
     Analyse von pseudo-randomisierter Zeichenfolge bei Anhang an Datei
   \item
     Verhalten der Dateisysteme bei Stromunterbrechungen
-  \item
-    Direkte Blockadressierung (NoFs)
   \end{enumerate}
 \item
   Fazit \normalsize
@@ -160,16 +195,67 @@ Dietrich}
 
 \begin{frame}{Überblick}
 \phantomsection\label{uxfcberblick}
+\begin{itemize}
+\tightlist
+\item
+  Design einer Platine, die einen STM32-G431 über eine SPI-Schnittstelle
+  mit einem SD-Kartenslot verbindet
+\item
+  Softwareseitige Implementation eines SPI-SD-Kartentreibers für
+  blockweise Lese- und Schreibfunktionen
+\item
+  Nutzung dieser Funktionen für eine Anbindung von zwei Dateisystemen:
+  FatFs (FAT32) und littlefs
+\item
+  Vergleich dieser beiden Dateisysteme über eigens erstellte Tests
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Motivation persönlich}
 \phantomsection\label{motivation-persuxf6nlich}
--test 1 -test 2 ---
+\begin{itemize}
+\tightlist
+\item
+  Wenig Interesse am Praktikumsthema Drehgeber
+
+  \begin{itemize}
+  \tightlist
+  \item
+    3 Monate Erfahrung mit Embedded C++
+  \end{itemize}
+\item
+  Interesse an PCB-Design
+\item
+  Dateisysteme und Speicherung von Daten kaum Thema im Studium
+\item
+  Projekt eine gute Mischung aus Elektrotechnik und
+  Kommunikationstechnik
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Motivation technisch}
 \phantomsection\label{motivation-technisch}
--test 3 -test 4
+\begin{itemize}
+\tightlist
+\item
+  Wie größere Mengen an bspw. Sensordaten speichern oder Daten ausgeben?
+\item
+  Einplatinencomputer RPI
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Hoher Stromverbrauch (\textgreater200 mA bei 5 V vs 20 mA bei 5 V)
+  \item
+    Betriebssystemoverhead / Echtzeitfähigkeit?
+  \end{itemize}
+\item
+  NOR-Flash 16 MB (lcsc) -\textgreater{} 1,9 \$, 10,63 Eurocent pro MB
+\item
+  SD-Karte 32 GB (reichelt) -\textgreater{} 7 €, 0,0219 Eurocent pro MB
+\item
+  SPI-Schnittstelle allgegenwärtig in eingebetteten Systemen
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Hardware: Schaltplan}
@@ -193,29 +279,195 @@ Dietrich}
 \includegraphics[width=1\textwidth,height=\textheight]{Bilder/Platine_bestueckt.jpg}
 \end{frame}
 
+\begin{frame}{Software: VSCodium + CMake + Cortex-Debug}
+\phantomsection\label{software-vscodium-cmake-cortex-debug}
+\begin{itemize}
+\tightlist
+\item
+  Demo
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Software: SPI-SD-Treiber}
 \phantomsection\label{software-spi-sd-treiber}
+\begin{itemize}
+\tightlist
+\item
+  SPI konfiguriert auf byteweisen Transfer mit variabler SCLK
+\item
+  SD-Treiber implementiert
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Blockweises Lesen Schreiben (CMD17, CMD24)
+  \item
+    Schreiben und Lesen von multiplen Blöcken (CMD18, CMD24)
+  \item
+    Abfrage der CSD (Card-Specific Data, CMD9) -\textgreater{}
+    hauptsächlich SD-Kartengröße
+  \end{itemize}
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Software: FatFs}
-\phantomsection\label{software-fatfs}
+\begin{frame}{Software: SPI-SD-Treiber blockweises Lesen (CMD17)}
+\phantomsection\label{software-spi-sd-treiber-blockweises-lesen-cmd17}
+\centering
+
+\includegraphics[width=1\textwidth,height=\textheight]{Bilder/CMD17_grey.png}
 \end{frame}
 
-\begin{frame}{Software: littlefs}
-\phantomsection\label{software-littlefs}
+\begin{frame}{Dateisystem: FatFs}
+\phantomsection\label{dateisystem-fatfs}
+\begin{itemize}
+\tightlist
+\item
+  C-Bibliothek von Chan für FAT-Dateisysteme auf Mikrocontrollern
+\item
+  Unterstützt FAT12/16/32 und optional exFAT
+\item
+  SD-Karten über SPI oder SDIO mit passendem Treiber
+\item
+  Out-of-Box Kompatibilität mit allen Betriebssystemen
+\item
+  Kein Journaling: Stromausfälle oder anderweitige Schreibfehler können
+  das Dateisystem beschädigen
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Bildertest 2 Nebeneinander}
-\phantomsection\label{bildertest-2-nebeneinander}
+\begin{frame}{Dateisystem: littlefs}
+\phantomsection\label{dateisystem-littlefs}
+\begin{itemize}
+\tightlist
+\item
+  Ebensfalls in C geschriebenes Dateisystem, das speziell für
+  Flash-Speicher entwickelt und optimiert wurde
+\item
+  Copy-on-Write erhöht die Robustheit bei Stromausfällen
+\item
+  Dynamisches Wear-Leveling verteilt Schreibzugriffe
+\item
+  Mit passender Blockgeräte-Anbindung auch auf SD-Karten nutzbar
+\item
+  Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper
+  vorhanden)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Dateisystem: FatFs und littlefs Implementierungsstack}
+\phantomsection\label{dateisystem-fatfs-und-littlefs-implementierungsstack}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\includegraphics[width=1\textwidth,height=\textheight]{Bilder/MISO_dip.png}
+\includegraphics[width=1\textwidth,height=\textheight]{Bilder/FatFSStack.png}
 \end{column}
 
 \begin{column}{0.48\textwidth}
-\includegraphics[width=1\textwidth,height=\textheight]{Bilder/MISO_dip.png}
+\includegraphics[width=1\textwidth,height=\textheight]{Bilder/littlefsstack.png}
 \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}{{[}Versuch1{]} Dateisystemtests: Analyse der
+Schreibfehlerraten mittels bekannter Zeichenfolge}
+\phantomsection\label{versuch1-dateisystemtests-analyse-der-schreibfehlerraten-mittels-bekannter-zeichenfolge}
+\vspace{0.3cm}
+\centering
+
+\includegraphics[width=0.35\textwidth,height=\textheight]{Bilder/Versuch1loop_grey.png}
+\end{frame}
+
+\begin{frame}{{[}Versuch1{]} Dateisystemtests: Analyse der
+Schreibfehlerraten mittels bekannter Zeichenfolge}
+\phantomsection\label{versuch1-dateisystemtests-analyse-der-schreibfehlerraten-mittels-bekannter-zeichenfolge-1}
+\centerline{\includegraphics[width=1.35\textwidth]{Bilder/4_dateierstellzeit_all_grey.png}}
+\end{frame}
+
+\begin{frame}[fragile]{{[}Versuch2{]} Dateisystemtests: Analyse der
+Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter
+Schreibfunktion}
+\phantomsection\label{versuch2-dateisystemtests-analyse-der-schreibfehlerraten-mittels-bekannter-zeichenfolge-und-manipulierter-schreibfunktion}
+\small
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{// send 512 byte blockdata}
+    \ControlFlowTok{for} \OperatorTok{(}\DataTypeTok{uint16\_t}\NormalTok{ i }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ i }\OperatorTok{\textless{}} \DecValTok{512}\OperatorTok{;}\NormalTok{ i}\OperatorTok{++)} \OperatorTok{\{}
+        \CommentTok{//Injecting errors every 5000 byte}
+        \ControlFlowTok{if}\OperatorTok{(}\NormalTok{err\_cnt }\OperatorTok{==} \DecValTok{5000}\OperatorTok{)} 
+        \OperatorTok{\{} 
+            \CommentTok{//some random data}
+\NormalTok{             SpiDriver}\OperatorTok{\textless{}}\NormalTok{Config}\OperatorTok{::}\NormalTok{SpiBase}\OperatorTok{\textgreater{}::}\NormalTok{Transfer}\OperatorTok{(}\BaseNTok{0xAA}\OperatorTok{);}
+\NormalTok{             err\_cnt }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}
+             \ControlFlowTok{continue}\OperatorTok{;}
+         \OperatorTok{\}} 
+\NormalTok{        err\_cnt}\OperatorTok{++;}
+\NormalTok{        SpiDriver}\OperatorTok{\textless{}}\NormalTok{Config}\OperatorTok{::}\NormalTok{SpiBase}\OperatorTok{\textgreater{}::}\NormalTok{Transfer}\OperatorTok{(}\NormalTok{buffer}\OperatorTok{[}\NormalTok{i}\OperatorTok{]);}
+    \OperatorTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}{{[}Versuch2{]} Dateisystemtests: Analyse der
+Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter
+Schreibfunktion}
+\phantomsection\label{versuch2-dateisystemtests-analyse-der-schreibfehlerraten-mittels-bekannter-zeichenfolge-und-manipulierter-schreibfunktion-1}
+\centerline{\includegraphics[width=1.1\textwidth]{Bilder/defect_filesystem.png}}
+\end{frame}
+
+\begin{frame}{Dateisystemtests: Analyse von pseudo-randomisierter
+Zeichenfolge bei Anhang an Datei}
+\phantomsection\label{dateisystemtests-analyse-von-pseudo-randomisierter-zeichenfolge-bei-anhang-an-datei}
+\vspace{0.3cm}
+\centering
+
+\includegraphics[width=0.35\textwidth,height=\textheight]{Bilder/Versuch3loop_grey.png}
+\end{frame}
+
+\begin{frame}{Dateisystemtests: Verhalten der Dateisysteme bei
+Stromunterbrechungen}
+\phantomsection\label{dateisystemtests-verhalten-der-dateisysteme-bei-stromunterbrechungen}
+\vspace{0.3cm}
+\centering
+
+\includegraphics[width=0.8\textwidth,height=\textheight]{Bilder/killswitchschaltung_grey.png}
+\end{frame}
+
+\begin{frame}{Fazit}
+\phantomsection\label{fazit}
+\begin{itemize}
+\tightlist
+\item
+  Hardware grundsätzlich funktional -\textgreater{} Hauptproblem
+  Spannungsversorgung SD-Karte
+\item
+  Durch eigenen SD-Kartentreiber hohes Maß an Kontrolle möglich:
+  Minimale Funktionalität -\textgreater{} minimaler RAM/Flashverbrauch.
+\item
+  FatFs überzeugt auf der SD-Karte durch einfache Handhabbarkeit,
+  Anbindung und minimalen Overhead
+\item
+  Littlefs bringt integrierten Fehlerschutz mit, führt aber zu
+  Laufzeitkosten, die eine Echtzeitfähigkeit des Systems einschränken
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Sinnvoller auf echter Flashhardware statt SD-Karte
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Q\&A}
+\phantomsection\label{qa}
+\vspace{2cm}
+\centering
+
+\Huge \textbf{Danke für die Aufmerksamkeit}
+
+\vspace{0.5cm}
+\Large
+
+Fragen \& Antworten
 \end{frame}
 
 \end{document}

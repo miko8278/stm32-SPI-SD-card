@@ -6,11 +6,13 @@ author: "Michael Kolorz (miko8278@bht-berlin.de)"
 institute: "Erstprüfer:Prof. Dr. Peter Gober \\
             Zweitprüfer:Prof. Dr. David Dietrich"
 date: 4. November 2026
+header-includes:
+  - \titlegraphic{\includegraphics[height=1.5cm]{Bilder/bht_grey.png}}
 ---
 
 
 # Themen des Vortrags
-\footnotesize
+
 1. Überblick und Motivation
 2. Hardwaredesign
 3. Software
@@ -21,7 +23,6 @@ date: 4. November 2026
     2. Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion
     3. Analyse von pseudo-randomisierter Zeichenfolge bei Anhang an Datei
     4. Verhalten der Dateisysteme bei Stromunterbrechungen
-    5. Direkte Blockadressierung (NoFs)
 7. Fazit
 \normalsize
 
@@ -29,19 +30,32 @@ date: 4. November 2026
 
 # Überblick
 
+* Design einer Platine, die einen STM32-G431 über eine SPI-Schnittstelle mit einem SD-Kartenslot verbindet
+* Softwareseitige Implementation eines SPI-SD-Kartentreibers für blockweise Lese- und Schreibfunktionen
+* Nutzung dieser Funktionen für eine Anbindung von zwei Dateisystemen: FatFs (FAT32) und littlefs
+* Vergleich dieser beiden Dateisysteme über eigens erstellte Tests 
 
 ---
 
 # Motivation persönlich
 
--test 1
--test 2
+* Wenig Interesse am Praktikumsthema Drehgeber 
+    * 3 Monate Erfahrung mit Embedded C++
+* Interesse an PCB-Design
+* Dateisysteme und Speicherung von Daten kaum Thema im Studium
+* Projekt eine gute Mischung aus Elektrotechnik und Kommunikationstechnik
+
 ---
 
 # Motivation technisch
 
--test 3
--test 4
+* Wie größere Mengen an bspw. Sensordaten speichern oder Daten ausgeben?
+* Einplatinencomputer RPI
+    * Hoher Stromverbrauch (>200 mA bei 5 V vs 20 mA bei 5 V)
+    * Betriebssystemoverhead / Echtzeitfähigkeit?
+* NOR-Flash 16 MB (lcsc) -> 1,9 $, 10,63 Eurocent pro MB
+* SD-Karte 32 GB (reichelt) -> 7 €, 0,0219 Eurocent pro MB
+* SPI-Schnittstelle allgegenwärtig in eingebetteten Systemen
 
 ---
 # Hardware: Schaltplan
@@ -60,23 +74,115 @@ date: 4. November 2026
 \centering
 ![](Bilder/Platine_bestueckt.jpg){ width=100% }
 
+# Software: VSCodium + CMake + Cortex-Debug
+
+* Demo
+
 # Software: SPI-SD-Treiber
 
-# Software: FatFs
+* SPI konfiguriert auf byteweisen Transfer mit variabler SCLK
+* SD-Treiber implementiert
+    * Blockweises Lesen Schreiben (CMD17, CMD24)
+    * Schreiben und Lesen von multiplen Blöcken (CMD18, CMD24)
+    * Abfrage der CSD (Card-Specific Data, CMD9) -> hauptsächlich SD-Kartengröße
 
-# Software: littlefs
+
+# Software: SPI-SD-Treiber blockweises Lesen (CMD17)
+
+\centering
+![](Bilder/CMD17_grey.png){ width=100% }
 
 
+# Dateisystem: FatFs
 
-# Bildertest 2 Nebeneinander
+- C-Bibliothek von Chan für FAT-Dateisysteme auf Mikrocontrollern
+- Unterstützt FAT12/16/32 und optional exFAT
+- SD-Karten über SPI oder SDIO mit passendem Treiber
+- Out-of-Box Kompatibilität mit allen Betriebssystemen
+- Kein Journaling: Stromausfälle oder anderweitige Schreibfehler können das Dateisystem beschädigen
+
+# Dateisystem: littlefs
+
+- Ebensfalls in C geschriebenes Dateisystem, das speziell für Flash-Speicher entwickelt und optimiert wurde
+- Copy-on-Write erhöht die Robustheit bei Stromausfällen
+- Dynamisches Wear-Leveling verteilt Schreibzugriffe
+- Mit passender Blockgeräte-Anbindung auch auf SD-Karten nutzbar
+- Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper vorhanden)
+
+
+# Dateisystem: FatFs und littlefs Implementierungsstack
 
 ::: columns
 ::: column
-![](Bilder/MISO_dip.png){ width=100% }
+![](Bilder/FatFSStack.png){ width=100% }
 :::
 
 ::: column
-![](Bilder/MISO_dip.png){ width=100% }
+![](Bilder/littlefsstack.png){ width=100% }
 :::
 :::
 
+
+# [Versuch1] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
+\vspace{0.3cm}
+\centering
+![](Bilder/Versuch1loop_grey.png){ width=35% }
+
+
+# [Versuch1] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
+
+\centerline{\includegraphics[width=1.35\textwidth]{Bilder/4_dateierstellzeit_all_grey.png}}
+
+# [Versuch2] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion
+
+\small
+```cpp
+    // send 512 byte blockdata
+    for (uint16_t i = 0; i < 512; i++) {
+        //Injecting errors every 5000 byte
+        if(err_cnt == 5000) 
+        { 
+            //some random data
+             SpiDriver<Config::SpiBase>::Transfer(0xAA);
+             err_cnt = 0;
+             continue;
+         } 
+        err_cnt++;
+        SpiDriver<Config::SpiBase>::Transfer(buffer[i]);
+    }
+```
+
+# [Versuch2] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion
+
+\centerline{\includegraphics[width=1.1\textwidth]{Bilder/defect_filesystem.png}}
+
+# Dateisystemtests: Analyse von pseudo-randomisierter Zeichenfolge bei Anhang an Datei
+\vspace{0.3cm}
+\centering
+![](Bilder/Versuch3loop_grey.png){ width=35% }
+
+# Dateisystemtests: Verhalten der Dateisysteme bei Stromunterbrechungen
+
+\vspace{0.3cm}
+\centering
+![](Bilder/killswitchschaltung_grey.png){ width=80% }
+
+
+
+# Fazit
+
+* Hardware grundsätzlich funktional -> Hauptproblem Spannungsversorgung SD-Karte
+* Durch eigenen SD-Kartentreiber hohes Maß an Kontrolle möglich: Minimale Funktionalität -> minimaler RAM/Flashverbrauch.
+* FatFs überzeugt auf der SD-Karte durch einfache Handhabbarkeit, Anbindung und minimalen Overhead
+* Littlefs bringt integrierten Fehlerschutz mit, führt aber zu Laufzeitkosten, die eine Echtzeitfähigkeit des Systems einschränken
+    * Sinnvoller auf echter Flashhardware statt SD-Karte
+
+# Q&A
+
+\vspace{2cm}
+\centering
+\Huge \textbf{Danke für die Aufmerksamkeit}
+
+\vspace{0.5cm}
+\Large
+Fragen & Antworten

@@ -1,0 +1,21 @@
+\frametitle{{[}Versuch2{]} Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge und manipulierter Schreibfunktion}
+\phantomsection\label{versuch2-dateisystemtests-analyse-der-schreibfehlerraten-mittels-bekannter-zeichenfolge-und-manipulierter-schreibfunktion}
+\small
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{// send 512 byte blockdata}
+    \ControlFlowTok{for} \OperatorTok{(}\DataTypeTok{uint16\_t}\NormalTok{ i }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}\NormalTok{ i }\OperatorTok{\textless{}} \DecValTok{512}\OperatorTok{;}\NormalTok{ i}\OperatorTok{++)} \OperatorTok{\{}
+        \CommentTok{//Injecting errors every 5000 byte}
+        \ControlFlowTok{if}\OperatorTok{(}\NormalTok{err\_cnt }\OperatorTok{==} \DecValTok{5000}\OperatorTok{)}
+        \OperatorTok{\{}
+            \CommentTok{//some random data}
+\NormalTok{             SpiDriver}\OperatorTok{\textless{}}\NormalTok{Config}\OperatorTok{::}\NormalTok{SpiBase}\OperatorTok{\textgreater{}::}\NormalTok{Transfer}\OperatorTok{(}\BaseNTok{0xAA}\OperatorTok{);}
+\NormalTok{             err\_cnt }\OperatorTok{=} \DecValTok{0}\OperatorTok{;}
+             \ControlFlowTok{continue}\OperatorTok{;}
+         \OperatorTok{\}}
+\NormalTok{        err\_cnt}\OperatorTok{++;}
+\NormalTok{        SpiDriver}\OperatorTok{\textless{}}\NormalTok{Config}\OperatorTok{::}\NormalTok{SpiBase}\OperatorTok{\textgreater{}::}\NormalTok{Transfer}\OperatorTok{(}\NormalTok{buffer}\OperatorTok{[}\NormalTok{i}\OperatorTok{]);}
+    \OperatorTok{\}}
+\end{Highlighting}
+\end{Shaded}
