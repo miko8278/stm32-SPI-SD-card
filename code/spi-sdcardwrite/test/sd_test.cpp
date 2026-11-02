@@ -14,7 +14,7 @@
 #include "init_conf.hpp"
 #include "ff.h"
 #include "sdcardlittlefs.hpp"
-
+#include <cstdio>
 
 
 //Generate pseudorandom testdata
@@ -423,6 +423,14 @@ int main()
 
         //my .svd file seems wrong, the CNT register for TIM2 is not 32bit.
         //TIM2CNT = TIM2->CNT;
+        
+        //debug print show
+        for(int i = 1; i < 5; i++){
+            char buffa[64];
+            std::sprintf(buffa, "Hallo Abschlusspraese %d", i);
+            debug_gdb_print(buffa);
+            delay_ms<1000>();
+        }
 
         tests_done();
 
