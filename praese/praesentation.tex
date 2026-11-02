@@ -250,9 +250,16 @@ Dietrich}
     Betriebssystemoverhead / Echtzeitfähigkeit?
   \end{itemize}
 \item
-  NOR-Flash 16 MB (lcsc) -\textgreater{} 1,9 \$, 10,63 Eurocent pro MB
-\item
-  SD-Karte 32 GB (reichelt) -\textgreater{} 7 €, 0,0219 Eurocent pro MB
+  Warum SD-Karten?
+
+  \begin{itemize}
+  \tightlist
+  \item
+    NOR-Flash 16 MB (lcsc) -\textgreater{} 1,9 \$, 10,63 Eurocent pro MB
+  \item
+    SD-Karte 32 GB (reichelt) -\textgreater{} 7 €, 0,0219 Eurocent pro
+    MB
+  \end{itemize}
 \item
   SPI-Schnittstelle allgegenwärtig in eingebetteten Systemen
 \end{itemize}
@@ -279,13 +286,19 @@ Dietrich}
 \includegraphics[width=1\textwidth,height=\textheight]{Bilder/Platine_bestueckt.jpg}
 \end{frame}
 
+\begin{frame}{Hardware: Problem 2. SD-Kartenslot MISO}
+\phantomsection\label{hardware-problem-2.-sd-kartenslot-miso}
+\centering
+
+\includegraphics[width=1\textwidth,height=\textheight]{Bilder/MISO_dip.png}
+\end{frame}
+
 \begin{frame}{Software: VSCodium + CMake + Cortex-Debug}
 \phantomsection\label{software-vscodium-cmake-cortex-debug}
-\begin{itemize}
-\tightlist
-\item
-  Demo
-\end{itemize}
+\vspace{2cm}
+\centering
+
+\Huge \textbf{Demo}
 \end{frame}
 
 \begin{frame}{Software: SPI-SD-Treiber}
@@ -302,7 +315,7 @@ Dietrich}
   \item
     Blockweises Lesen Schreiben (CMD17, CMD24)
   \item
-    Schreiben und Lesen von multiplen Blöcken (CMD18, CMD24)
+    Schreiben und Lesen von multiplen Blöcken (CMD18, CMD25)
   \item
     Abfrage der CSD (Card-Specific Data, CMD9) -\textgreater{}
     hauptsächlich SD-Kartengröße
@@ -317,40 +330,39 @@ Dietrich}
 \includegraphics[width=1\textwidth,height=\textheight]{Bilder/CMD17_grey.png}
 \end{frame}
 
-\begin{frame}{Dateisystem: FatFs}
-\phantomsection\label{dateisystem-fatfs}
+\begin{frame}{Dateisysteme: FatFs und littlefs}
+\phantomsection\label{dateisysteme-fatfs-und-littlefs}
 \begin{itemize}
 \tightlist
 \item
-  C-Bibliothek von Chan für FAT-Dateisysteme auf Mikrocontrollern
-\item
-  Unterstützt FAT12/16/32 und optional exFAT
-\item
-  SD-Karten über SPI oder SDIO mit passendem Treiber
-\item
-  Out-of-Box Kompatibilität mit allen Betriebssystemen
-\item
-  Kein Journaling: Stromausfälle oder anderweitige Schreibfehler können
-  das Dateisystem beschädigen
-\end{itemize}
-\end{frame}
+  FatFs:
 
-\begin{frame}{Dateisystem: littlefs}
-\phantomsection\label{dateisystem-littlefs}
-\begin{itemize}
-\tightlist
+  \begin{itemize}
+  \tightlist
+  \item
+    C-Bibliothek von Chan für alle FAT-Dateisysteme auf Mikrocontrollern
+  \item
+    Out-of-Box Kompatibilität mit allen Betriebssystemen
+  \item
+    Kein Journaling: Stromausfälle oder anderweitige Schreibfehler
+    können das Dateisystem beschädigen
+  \end{itemize}
 \item
-  Ebensfalls in C geschriebenes Dateisystem, das speziell für
-  Flash-Speicher entwickelt und optimiert wurde
-\item
-  Copy-on-Write erhöht die Robustheit bei Stromausfällen
-\item
-  Dynamisches Wear-Leveling verteilt Schreibzugriffe
-\item
-  Mit passender Blockgeräte-Anbindung auch auf SD-Karten nutzbar
-\item
-  Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper
-  vorhanden)
+  littlefs:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Ebensfalls in C geschriebenes Dateisystem, das speziell für
+    Flash-Speicher entwickelt und optimiert wurde
+  \item
+    Dynamisches Wear-Leveling verteilt Schreibzugriffe
+  \item
+    COW und two-block log für Dateisystemintegrität
+  \item
+    Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper
+    vorhanden)
+  \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -358,11 +370,11 @@ Dietrich}
 \phantomsection\label{dateisystem-fatfs-und-littlefs-implementierungsstack}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\includegraphics[width=1\textwidth,height=\textheight]{Bilder/FatFSStack.png}
+\includegraphics[width=0.95\textwidth,height=\textheight]{Bilder/FatFSStack.png}
 \end{column}
 
 \begin{column}{0.48\textwidth}
-\includegraphics[width=1\textwidth,height=\textheight]{Bilder/littlefsstack.png}
+\includegraphics[width=0.95\textwidth,height=\textheight]{Bilder/littlefsstack.png}
 \end{column}
 \end{columns}
 \end{frame}
@@ -414,18 +426,18 @@ Schreibfunktion}
 \centerline{\includegraphics[width=1.1\textwidth]{Bilder/defect_filesystem.png}}
 \end{frame}
 
-\begin{frame}{Dateisystemtests: Analyse von pseudo-randomisierter
-Zeichenfolge bei Anhang an Datei}
-\phantomsection\label{dateisystemtests-analyse-von-pseudo-randomisierter-zeichenfolge-bei-anhang-an-datei}
+\begin{frame}{{[}Versuch3{]} Dateisystemtests: Analyse von
+pseudo-randomisierter Zeichenfolge bei Anhang an Datei}
+\phantomsection\label{versuch3-dateisystemtests-analyse-von-pseudo-randomisierter-zeichenfolge-bei-anhang-an-datei}
 \vspace{0.3cm}
 \centering
 
 \includegraphics[width=0.35\textwidth,height=\textheight]{Bilder/Versuch3loop_grey.png}
 \end{frame}
 
-\begin{frame}{Dateisystemtests: Verhalten der Dateisysteme bei
-Stromunterbrechungen}
-\phantomsection\label{dateisystemtests-verhalten-der-dateisysteme-bei-stromunterbrechungen}
+\begin{frame}{{[}Versuch4{]} Dateisystemtests: Verhalten der
+Dateisysteme bei Stromunterbrechungen}
+\phantomsection\label{versuch4-dateisystemtests-verhalten-der-dateisysteme-bei-stromunterbrechungen}
 \vspace{0.3cm}
 \centering
 

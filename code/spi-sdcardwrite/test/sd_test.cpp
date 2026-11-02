@@ -325,7 +325,6 @@ void test_sd(Testfilesystem testfilesystem = Testfilesystem::None){
     lfs_test.readwrite_res = 0xFE;
 
     //If sdcard-initialisation worked, then test littlefs
-    test_breakpoint();
     if(sdtest.initsd == SD_INIT_OK && testfilesystem == Testfilesystem::littlefs)
     {
         littlefs_Test<Config>();
@@ -349,7 +348,7 @@ int main()
     TIM2_Init();
     //Some startup delay
     delay_ms<500>();
-    //debug_gdb_print("Hello Debug\n");
+    debug_gdb_print("Hello Debug\n");
     GPIO_Init();
     
     //Don't run this forever, not good for the hardware!
@@ -370,7 +369,7 @@ int main()
             // GpioPin<GPIOB_BASE, 4>::InputInit(Pull::Up);
             //}
 
-        //test_sd<SD1_Config>(Testfilesystem::littlefs);
+        test_sd<SD1_Config>(Testfilesystem::littlefs);
         test_sd<SD1_Config>(Testfilesystem::FatFs);
         //test_sd<SD3_Config>();
 

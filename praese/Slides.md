@@ -53,8 +53,9 @@ header-includes:
 * Einplatinencomputer RPI
     * Hoher Stromverbrauch (>200 mA bei 5 V vs 20 mA bei 5 V)
     * Betriebssystemoverhead / Echtzeitfähigkeit?
-* NOR-Flash 16 MB (lcsc) -> 1,9 $, 10,63 Eurocent pro MB
-* SD-Karte 32 GB (reichelt) -> 7 €, 0,0219 Eurocent pro MB
+* Warum SD-Karten?
+    * NOR-Flash 16 MB (lcsc) -> 1,9 $, 10,63 Eurocent pro MB
+    * SD-Karte 32 GB (reichelt) -> 7 €, 0,0219 Eurocent pro MB
 * SPI-Schnittstelle allgegenwärtig in eingebetteten Systemen
 
 ---
@@ -74,16 +75,24 @@ header-includes:
 \centering
 ![](Bilder/Platine_bestueckt.jpg){ width=100% }
 
+
+# Hardware: Problem 2. SD-Kartenslot MISO
+
+\centering
+![](Bilder/MISO_dip.png){ width=100% }
+
 # Software: VSCodium + CMake + Cortex-Debug
 
-* Demo
+\vspace{2cm}
+\centering
+\Huge \textbf{Demo}
 
 # Software: SPI-SD-Treiber
 
 * SPI konfiguriert auf byteweisen Transfer mit variabler SCLK
 * SD-Treiber implementiert
     * Blockweises Lesen Schreiben (CMD17, CMD24)
-    * Schreiben und Lesen von multiplen Blöcken (CMD18, CMD24)
+    * Schreiben und Lesen von multiplen Blöcken (CMD18, CMD25)
     * Abfrage der CSD (Card-Specific Data, CMD9) -> hauptsächlich SD-Kartengröße
 
 
@@ -93,34 +102,32 @@ header-includes:
 ![](Bilder/CMD17_grey.png){ width=100% }
 
 
-# Dateisystem: FatFs
+# Dateisysteme: FatFs und littlefs
 
-- C-Bibliothek von Chan für FAT-Dateisysteme auf Mikrocontrollern
-- Unterstützt FAT12/16/32 und optional exFAT
-- SD-Karten über SPI oder SDIO mit passendem Treiber
-- Out-of-Box Kompatibilität mit allen Betriebssystemen
-- Kein Journaling: Stromausfälle oder anderweitige Schreibfehler können das Dateisystem beschädigen
-
-# Dateisystem: littlefs
-
-- Ebensfalls in C geschriebenes Dateisystem, das speziell für Flash-Speicher entwickelt und optimiert wurde
-- Copy-on-Write erhöht die Robustheit bei Stromausfällen
-- Dynamisches Wear-Leveling verteilt Schreibzugriffe
-- Mit passender Blockgeräte-Anbindung auch auf SD-Karten nutzbar
-- Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper vorhanden)
+* FatFs:
+    * C-Bibliothek von Chan für alle FAT-Dateisysteme auf Mikrocontrollern
+    * Out-of-Box Kompatibilität mit allen Betriebssystemen
+    * Kein Journaling: Stromausfälle oder anderweitige Schreibfehler können das Dateisystem beschädigen
+* littlefs:
+    * Ebensfalls in C geschriebenes Dateisystem, das speziell für Flash-Speicher entwickelt und optimiert wurde
+    * Dynamisches Wear-Leveling verteilt Schreibzugriffe
+    * COW und two-block log für Dateisystemintegrität
+    * Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper vorhanden)
 
 
 # Dateisystem: FatFs und littlefs Implementierungsstack
 
 ::: columns
 ::: column
-![](Bilder/FatFSStack.png){ width=100% }
+![](Bilder/FatFSStack.png){ width=95% }
 :::
 
 ::: column
-![](Bilder/littlefsstack.png){ width=100% }
+![](Bilder/littlefsstack.png){ width=95% }
 :::
 :::
+
+
 
 
 # [Versuch1] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
@@ -156,12 +163,12 @@ header-includes:
 
 \centerline{\includegraphics[width=1.1\textwidth]{Bilder/defect_filesystem.png}}
 
-# Dateisystemtests: Analyse von pseudo-randomisierter Zeichenfolge bei Anhang an Datei
+# [Versuch3] Dateisystemtests: Analyse von pseudo-randomisierter Zeichenfolge bei Anhang an Datei
 \vspace{0.3cm}
 \centering
 ![](Bilder/Versuch3loop_grey.png){ width=35% }
 
-# Dateisystemtests: Verhalten der Dateisysteme bei Stromunterbrechungen
+# [Versuch4] Dateisystemtests: Verhalten der Dateisysteme bei Stromunterbrechungen
 
 \vspace{0.3cm}
 \centering
