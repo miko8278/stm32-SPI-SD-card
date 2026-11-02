@@ -3,8 +3,8 @@ title: "Vergleich verschiedener Dateisysteme für
 den SD-Karten-Einsatz in eingebetteten
 Systemen"
 author: "Michael Kolorz (miko8278@bht-berlin.de)"
-institute: "Erstprüfer:Prof. Dr. Peter Gober \\
-            Zweitprüfer:Prof. Dr. David Dietrich"
+institute: "Erstprüfer: Prof. Dr. Peter Gober \\
+            Zweitprüfer: Prof. Dr. David Dietrich"
 date: 4. November 2026
 header-includes:
   - \titlegraphic{\includegraphics[height=1.5cm]{Bilder/bht_grey.png}}
@@ -37,16 +37,6 @@ header-includes:
 
 ---
 
-# Motivation persönlich
-
-* Wenig Interesse am Praktikumsthema Drehgeber 
-    * 3 Monate Erfahrung mit Embedded C++
-* Interesse an PCB-Design
-* Dateisysteme und Speicherung von Daten kaum Thema im Studium
-* Projekt eine gute Mischung aus Elektrotechnik und Kommunikationstechnik
-
----
-
 # Motivation technisch
 
 * Wie größere Mengen an bspw. Sensordaten speichern oder Daten ausgeben?
@@ -56,7 +46,13 @@ header-includes:
 * Warum SD-Karten?
     * NOR-Flash 16 MB (lcsc) -> 1,9 $, 10,63 Eurocent pro MB
     * SD-Karte 32 GB (reichelt) -> 7 €, 0,0219 Eurocent pro MB
-* SPI-Schnittstelle allgegenwärtig in eingebetteten Systemen
+
+# Motivation persönlich
+
+* Wenig Interesse am Praktikumsthema Drehgeber 
+    * 3 Monate Erfahrung mit Embedded C++
+* Interesse an PCB-Design
+* Dateisysteme und Speicherung von Daten wenig Thema im Studium
 
 ---
 # Hardware: Schaltplan
@@ -129,7 +125,6 @@ header-includes:
 
 
 
-
 # [Versuch1] Dateisystemtests: Analyse der Schreibfehlerraten mittels bekannter Zeichenfolge
 \vspace{0.3cm}
 \centering
@@ -179,7 +174,7 @@ header-includes:
 # Fazit
 
 * Hardware grundsätzlich funktional -> Hauptproblem Spannungsversorgung SD-Karte
-* Durch eigenen SD-Kartentreiber hohes Maß an Kontrolle möglich: Minimale Funktionalität -> minimaler RAM/Flashverbrauch.
+* Durch eigenen SD-Kartentreiber hohes Maß an Kontrolle möglich: Schlanke Funktionalität -> minimaler RAM/Flashverbrauch.
 * FatFs überzeugt auf der SD-Karte durch einfache Handhabbarkeit, Anbindung und minimalen Overhead
 * Littlefs bringt integrierten Fehlerschutz mit, führt aber zu Laufzeitkosten, die eine Echtzeitfähigkeit des Systems einschränken
     * Sinnvoller auf echter Flashhardware statt SD-Karte
