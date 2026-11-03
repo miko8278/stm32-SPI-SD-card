@@ -98,6 +98,18 @@ header-includes:
 ![](Bilder/CMD17_grey.png){ width=100% }
 
 
+# Dateisystem: FatFs und littlefs Implementierungsstack
+
+::: columns
+::: column
+![](Bilder/FatFSStack.png){ width=95% }
+:::
+
+::: column
+![](Bilder/littlefsstack.png){ width=95% }
+:::
+:::
+
 # Dateisysteme: FatFs und littlefs
 
 * FatFs:
@@ -111,17 +123,7 @@ header-includes:
     * Von PC-Betriebssystemen nicht nativ unterstützt (FUSE-Wrapper vorhanden)
 
 
-# Dateisystem: FatFs und littlefs Implementierungsstack
 
-::: columns
-::: column
-![](Bilder/FatFSStack.png){ width=95% }
-:::
-
-::: column
-![](Bilder/littlefsstack.png){ width=95% }
-:::
-:::
 
 
 
